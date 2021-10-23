@@ -2,9 +2,6 @@
 
 namespace Elegant\Collections;
 
-/**
- * @mixin \Elegant\Collections\Enumerable
- */
 class HigherOrderWhenProxy
 {
     /**
@@ -25,10 +22,10 @@ class HigherOrderWhenProxy
      * Create a new proxy instance.
      *
      * @param  \Elegant\Collections\Enumerable  $collection
-     * @param bool $condition
+     * @param  bool  $condition
      * @return void
      */
-    public function __construct(Enumerable $collection, bool $condition)
+    public function __construct(Enumerable $collection, $condition)
     {
         $this->condition = $condition;
         $this->collection = $collection;
@@ -37,10 +34,10 @@ class HigherOrderWhenProxy
     /**
      * Proxy accessing an attribute onto the collection.
      *
-     * @param string $key
+     * @param  string  $key
      * @return mixed
      */
-    public function __get(string $key)
+    public function __get($key)
     {
         return $this->condition
             ? $this->collection->{$key}
@@ -50,11 +47,11 @@ class HigherOrderWhenProxy
     /**
      * Proxy a method call onto the collection.
      *
-     * @param string $method
-     * @param array $parameters
+     * @param  string  $method
+     * @param  array  $parameters
      * @return mixed
      */
-    public function __call(string $method, array $parameters)
+    public function __call($method, $parameters)
     {
         return $this->condition
             ? $this->collection->{$method}(...$parameters)

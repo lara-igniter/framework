@@ -19,11 +19,11 @@ trait Macroable
     /**
      * Register a custom macro.
      *
-     * @param string $name
+     * @param  string  $name
      * @param  object|callable  $macro
      * @return void
      */
-    public static function macro(string $name, $macro)
+    public static function macro($name, $macro)
     {
         static::$macros[$name] = $macro;
     }
@@ -54,10 +54,10 @@ trait Macroable
     /**
      * Checks if macro is registered.
      *
-     * @param string $name
+     * @param  string  $name
      * @return bool
      */
-    public static function hasMacro(string $name): bool
+    public static function hasMacro($name)
     {
         return isset(static::$macros[$name]);
     }
@@ -65,13 +65,13 @@ trait Macroable
     /**
      * Dynamically handle calls to the class.
      *
-     * @param string $method
-     * @param array $parameters
+     * @param  string  $method
+     * @param  array  $parameters
      * @return mixed
      *
      * @throws \BadMethodCallException
      */
-    public static function __callStatic(string $method, array $parameters)
+    public static function __callStatic($method, $parameters)
     {
         if (! static::hasMacro($method)) {
             throw new BadMethodCallException(sprintf(
@@ -91,13 +91,13 @@ trait Macroable
     /**
      * Dynamically handle calls to the class.
      *
-     * @param string $method
-     * @param array $parameters
+     * @param  string  $method
+     * @param  array  $parameters
      * @return mixed
      *
      * @throws \BadMethodCallException
      */
-    public function __call(string $method, array $parameters)
+    public function __call($method, $parameters)
     {
         if (! static::hasMacro($method)) {
             throw new BadMethodCallException(sprintf(

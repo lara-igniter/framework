@@ -10,8 +10,6 @@ use stdClass;
 
 class Collection implements ArrayAccess, Enumerable
 {
-    use EnumeratesValues, Macroable;
-
     /**
      * The items contained in the collection.
      *
@@ -55,7 +53,7 @@ class Collection implements ArrayAccess, Enumerable
     /**
      * Get a lazy collection for the items in this collection.
      *
-     * @return \Tightenco\Collect\Support\LazyCollection
+     * @return \Elegant\Collections\LazyCollection
      */
     public function lazy()
     {
@@ -318,7 +316,7 @@ class Collection implements ArrayAccess, Enumerable
     /**
      * Get all items except for those with the specified keys.
      *
-     * @param  \Tightenco\Collect\Support\Collection|mixed  $keys
+     * @param  \Elegant\Collections\Collection|mixed  $keys
      * @return static
      */
     public function except($keys)
@@ -1395,7 +1393,7 @@ class Collection implements ArrayAccess, Enumerable
     /**
      * Get a base Support collection instance from this collection.
      *
-     * @return \Tightenco\Collect\Support\Collection
+     * @return \Elegant\Collections\Collection
      */
     public function toBase()
     {
