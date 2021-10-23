@@ -10,6 +10,8 @@ use stdClass;
 
 class Collection implements ArrayAccess, Enumerable
 {
+    use EnumeratesValues, Macroable;
+
     /**
      * The items contained in the collection.
      *
