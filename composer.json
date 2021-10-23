@@ -1,12 +1,12 @@
 {
-    "name": "giorgosstab/framework",
+    "name": "lara-igniter/framework",
     "description": "The Extended Codeigniter 3 Framework.",
     "keywords": ["framework", "codeigniter", "extend"],
     "license": "MIT",
     "homepage": "https://g-tsachrelias.com",
     "support": {
-        "issues": "https://github.com/giorgosstab/framework/issues",
-        "source": "https://github.com/giorgosstab/framework"
+        "issues": "https://github.com/lara-igniter/framework/issues",
+        "source": "https://github.com/lara-igniter/framework"
     },
     "authors": [
         {
