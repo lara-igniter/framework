@@ -17,6 +17,8 @@
     "require": {
         "php": "^7.2.5|^8.0",
         "ext-json": "*",
+        "codeigniter/framework": "3.1.*",
+        "maximebf/debugbar": "^1.17.2",
         "nesbot/carbon": "^2.31",
         "symfony/var-dumper": "^5.0",
         "vlucas/phpdotenv": "^4.0"
@@ -24,7 +26,10 @@
     "replace": {
         "elegant/collections": "self.version",
         "elegant/contracts": "self.version",
+        "elegant/database": "self.version",
+        "elegant/debug": "self.version",
         "elegant/macroable": "self.version",
+        "elegant/routing": "self.version",
         "elegant/support": "self.version"
     },
     "require-dev": {
@@ -37,10 +42,12 @@
     },
     "autoload": {
         "files": [
-            "src/Elegant/Collections/helpers.php"
+            "src/Elegant/Collections/helpers.php",
+            "src/Elegant/Foundation/helpers.php"
         ],
         "psr-4": {
-            "Elegant\\": "src/Elegant/"
+            "Elegant\\": "src/Elegant/",
+            "Elegant\\Support\\": ["src/Elegant/Macroable/", "src/Elegant/Collections/"]
         }
     },
     "autoload-dev": {
