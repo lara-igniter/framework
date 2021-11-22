@@ -5,8 +5,7 @@ namespace Elegant\Routing;
 use Elegant\Routing\Exceptions\RouteNotFoundException;
 use Elegant\Routing\Middleware\Middleware;
 use Elegant\Routing\Middleware\RouteAjaxMiddleware;
-use Elegant\Routing\RouteBuilder;
-use Elegant\Support\Facades\Route;
+use Elegant\Routing\RouteBuilder as Route;
 use Elegant\Support\Utils;
 use Exception;
 

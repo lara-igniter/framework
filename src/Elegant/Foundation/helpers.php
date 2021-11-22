@@ -1,7 +1,5 @@
 <?php
 
-use \Elegant\Support\Facades\Route;
-
 if (!function_exists('route')) {
     /**
      * Gets a route URL by its name
