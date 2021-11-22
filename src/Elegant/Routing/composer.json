@@ -1,0 +1,33 @@
+{
+    "name": "elegant/routing",
+    "description": "The Elegant Routing package.",
+    "license": "MIT",
+    "homepage": "https://lara-igniter.com",
+    "support": {
+        "issues": "https://github.com/lara-igniter/framework/issues",
+        "source": "https://github.com/lara-igniter/framework"
+    },
+    "authors": [
+        {
+            "name": "George Tsachrelias",
+            "email": "info@g-tsachrelias.com"
+        }
+    ],
+    "require": {
+
+    },
+    "autoload": {
+        "psr-4": {
+            "Elegant\\Routing\\": ""
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "8.x-dev"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev"
+}
