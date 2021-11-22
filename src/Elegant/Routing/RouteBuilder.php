@@ -3,6 +3,7 @@
 namespace Elegant\Routing;
 
 use Elegant\Routing\Exceptions\RouteNotFoundException;
+use Elegant\Support\Str;
 use Exception;
 
 class RouteBuilder
