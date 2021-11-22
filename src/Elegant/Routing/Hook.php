@@ -1,6 +1,6 @@
 <?php
 
-namespace Elegant\Foundation\Hooks;
+namespace Elegant\Routing;
 
 use Elegant\Routing\Exceptions\RouteNotFoundException;
 use Elegant\Routing\Middleware\Middleware;
@@ -10,7 +10,7 @@ use Elegant\Support\Facades\Route;
 use Elegant\Support\Utils;
 use Exception;
 
-class Routing
+class Hook
 {
     /**
      * Gets the Routing hooks
@@ -65,8 +65,8 @@ class Routing
      */
     private static function preSystemHook($config)
     {
-        define('LUTHIER_CI_VERSION', '1.0.5');
-        define('LUTHIER_CI_DIR', __DIR__);
+//        define('LUTHIER_CI_VERSION', '1.0.5');
+//        define('LUTHIER_CI_DIR', __DIR__);
 
         $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH'])
             && (!empty($_SERVER['HTTP_X_REQUESTED_WITH'])
@@ -75,51 +75,51 @@ class Routing
         $isCli = is_cli();
         $isWeb = !is_cli();
 
-        require_once __DIR__ . '../../Support/Facades/Route.php';
+        require_once __DIR__ . '/Facades/Route.php';
 
 //        if (in_array('auth', $config['modules'])) {
 //            require_once __DIR__ . '/Facades/Auth.php';
 //        }
 
-        if (!file_exists(APPPATH . '/routes')) {
-            mkdir(APPPATH . '/routes');
+        if (!file_exists(FCPATH . '/routes')) {
+            mkdir(FCPATH . '/routes');
         }
 
         if (!file_exists(APPPATH . '/middleware')) {
             mkdir(APPPATH . '/middleware');
         }
 
-        if (!file_exists(APPPATH . '/routes/web.php')) {
-            copy(realpath(dirname(__DIR__) . '../../Routing/Resources/WebRoutes.php'), APPPATH . '/routes/web.php');
+        if (!file_exists(FCPATH . '/routes/web.php')) {
+            copy(__DIR__ . '/Resources/WebRoutes.php', APPPATH . '/routes/web.php');
         }
 
         if ($isWeb) {
-            require_once(APPPATH . '/routes/web.php');
+            require_once(FCPATH . '/routes/web.php');
         }
 
-        if (!file_exists(APPPATH . '/routes/api.php')) {
-            copy(realpath(dirname(__DIR__) . '../../Routing/Resources/ApiRoutes.php'), APPPATH . '/routes/api.php');
+        if (!file_exists(FCPATH . '/routes/api.php')) {
+            copy(__DIR__ . '/Resources/ApiRoutes.php', APPPATH . '/routes/api.php');
         }
 
         if ($isAjax || $isWeb) {
             Route::group('/', ['middleware' => [new RouteAjaxMiddleware()]],
                 function () {
-                    require_once(APPPATH . '/routes/api.php');
+                    require_once(FCPATH . '/routes/api.php');
                 }
             );
         }
 
-        if (!file_exists(APPPATH . '/routes/cli.php')) {
-            copy(realpath(dirname(__DIR__) . '../../Routing/Resources/CliRoutes.php'), APPPATH . '/routes/cli.php');
+        if (!file_exists(FCPATH . '/routes/cli.php')) {
+            copy(__DIR__ . '/Resources/CliRoutes.php', APPPATH . '/routes/cli.php');
         }
 
         if ($isCli) {
-            require_once(APPPATH . '/routes/cli.php');
+            require_once(FCPATH . '/routes/cli.php');
             Route::set('default_controller', RouteBuilder::DEFAULT_CONTROLLER);
         }
 
         if (!file_exists(APPPATH . '/controllers/' . RouteBuilder::DEFAULT_CONTROLLER . '.php')) {
-            copy(realpath(dirname(__DIR__) . '../../Routing/Resources/Controller.php'), APPPATH . '/controllers/' . RouteBuilder::DEFAULT_CONTROLLER . '.php');
+            copy(__DIR__ . '/Resources/Controller.php', APPPATH . '/controllers/' . RouteBuilder::DEFAULT_CONTROLLER . '.php');
         }
 
         require_once(realpath(dirname(__DIR__) . '../../Foundation/helpers.php'));
