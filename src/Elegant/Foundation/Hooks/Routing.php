@@ -75,7 +75,7 @@ class Routing
         $isCli = is_cli();
         $isWeb = !is_cli();
 
-        require_once __DIR__ . '../../Support/Facades/Route.php';
+        require_once realpath(dirname(__FILE__) . '../../Support/Facades/Route.php');
 
 //        if (in_array('auth', $config['modules'])) {
 //            require_once __DIR__ . '/Facades/Auth.php';
