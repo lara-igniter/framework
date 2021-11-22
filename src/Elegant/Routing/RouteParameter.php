@@ -70,7 +70,7 @@ class RouteParameter
      *
      * @return string[]
      */
-    public static function getPlaceholderReplacements(): array
+    public static function getPlaceholderReplacements()
     {
         return self::$placeholderReplacements;
     }
@@ -78,7 +78,7 @@ class RouteParameter
     /**
      * @param string $segment Original route segment
      */
-    public function __construct(string $segment, $segmentIndex, $fullSegment)
+    public function __construct($segment, $segmentIndex, $fullSegment)
     {
         $this->segment = $segment;
 
@@ -114,7 +114,7 @@ class RouteParameter
      *
      * @return string
      */
-    public function getName(): string
+    public function getName()
     {
         return $this->name;
     }
@@ -124,7 +124,7 @@ class RouteParameter
      *
      * @return string
      */
-    public function getSegment(): string
+    public function getSegment()
     {
         return $this->segment;
     }
@@ -134,7 +134,7 @@ class RouteParameter
      *
      * @return string
      */
-    public function getRegex(): string
+    public function getRegex()
     {
         return $this->regex;
     }
@@ -144,7 +144,7 @@ class RouteParameter
      *
      * @return string
      */
-    public function getPlaceholder(): string
+    public function getPlaceholder()
     {
         return $this->placeholder;
     }
@@ -154,7 +154,7 @@ class RouteParameter
      *
      * @return bool
      */
-    public function isOptional(): bool
+    public function isOptional()
     {
         return $this->optional;
     }
@@ -162,7 +162,7 @@ class RouteParameter
     /**
      * @return string
      */
-    public function getFullSegment(): string
+    public function getFullSegment()
     {
         return $this->fullSegment;
     }
@@ -170,7 +170,7 @@ class RouteParameter
     /**
      * @return string
      */
-    public function getSegmentIndex(): string
+    public function getSegmentIndex()
     {
         return $this->segmentIndex;
     }

@@ -84,7 +84,7 @@ class Route
      *
      * @return array
      */
-    public static function getRoutes(): array
+    public static function getRoutes()
     {
         return RouteBuilder::getRoutes();
     }
@@ -93,7 +93,7 @@ class Route
      * @param string|array $methods Route accepted HTTP verbs
      * @param array $route Route attributes
      */
-    public function __construct($methods, array $route)
+    public function __construct($methods, $route)
     {
         if ($methods == 'any') {
             $methods = RouteBuilder::$verbs;
@@ -220,7 +220,7 @@ class Route
      *
      * @return array
      */
-    public function compile(): array
+    public function compile()
     {
         $routes = [];
 
@@ -282,7 +282,7 @@ class Route
      *
      * @return mixed
      */
-    public function param(string $name, string $value = null)
+    public function param($name, $value = null)
     {
         foreach ($this->params as &$_param) {
             if ($name == $_param->getName()) {
@@ -301,7 +301,7 @@ class Route
      *
      * @return bool
      */
-    public function hasParam(string $name): bool
+    public function hasParam($name)
     {
         foreach ($this->params as &$_param) {
             if ($name == $_param->getName()) {
@@ -318,7 +318,7 @@ class Route
      *
      * @return string
      */
-    public function buildUrl($params): string
+    public function buildUrl($params)
     {
         $defaults = RouteBuilder::getDefaultParams();
 
@@ -378,7 +378,7 @@ class Route
      *
      * @return self
      */
-    public function name(string $name): Route
+    public function name($name)
     {
         $this->name = $name;
         return $this;
@@ -389,7 +389,7 @@ class Route
      *
      * @return string
      */
-    public function getName(): string
+    public function getName()
     {
         return $this->name;
     }
@@ -401,7 +401,7 @@ class Route
      *
      * @return self
      */
-    public function setName(string $name): Route
+    public function setName(string $name)
     {
         $this->name = $name;
         return $this;
@@ -412,7 +412,7 @@ class Route
      *
      * @return string
      */
-    public function getPath(): string
+    public function getPath()
     {
         return $this->path;
     }
@@ -422,7 +422,7 @@ class Route
      *
      * @return string
      */
-    public function getFullPath(): string
+    public function getFullPath()
     {
         return $this->fullPath;
     }
@@ -434,7 +434,7 @@ class Route
      *
      * @return self
      */
-    public function setPath(string $path): Route
+    public function setPath(string $path)
     {
         $this->path = $path;
         return $this;
@@ -445,7 +445,7 @@ class Route
      *
      * @return string
      */
-    public function getPrefix(): string
+    public function getPrefix()
     {
         return $this->prefix;
     }
@@ -467,7 +467,7 @@ class Route
      *
      * @return self
      */
-    public function setAction($action): Route
+    public function setAction($action)
     {
         $this->action = $action;
         return $this;
@@ -478,7 +478,7 @@ class Route
      *
      * @return array
      */
-    public function getMiddleware(): array
+    public function getMiddleware()
     {
         return $this->middleware;
     }
@@ -488,7 +488,7 @@ class Route
      *
      * @return string
      */
-    public function getNamespace(): string
+    public function getNamespace()
     {
         return $this->namespace;
     }
@@ -498,7 +498,7 @@ class Route
      *
      * @return array|string[]
      */
-    public function getMethods(): array
+    public function getMethods()
     {
         return $this->methods;
     }

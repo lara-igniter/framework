@@ -51,7 +51,7 @@ class Middleware
      *
      * @return void
      */
-    final public function run($middleware, array $args = [])
+    final public function run($middleware, $args = [])
     {
         if (is_callable($middleware)) {
             call_user_func_array($middleware, $args);
@@ -84,7 +84,7 @@ class Middleware
      *
      * @return void
      */
-    final public function addHook(string $hook, callable $middleware, ...$args)
+    final public function addHook($hook, $middleware, ...$args)
     {
         if (is_callable($middleware)) {
             if (empty($args)) {

@@ -61,6 +61,11 @@ class RouteBuilder
      */
     private static $_404;
 
+    /**
+     * @var string|callable
+     */
+    private static $autoRoute = false;
+
     public static function __callStatic($callback, array $args)
     {
         if (is_cli() && $callback != 'cli' || !is_cli() && $callback == 'cli' || (!is_cli() && is_array($callback) && in_array('CLI', $callback))) {
@@ -85,6 +90,18 @@ class RouteBuilder
     }
 
     /**
+     * Allow to match URI against the controllers and methods
+     *
+     * @param boolean          $active
+     *
+     * @return void
+     */
+    public static function setAutoRoute($active)
+    {
+        self::$autoRoute = $active;
+    }
+
+    /**
      * Creates a new route group
      *
      * @param string $prefix
@@ -93,7 +110,7 @@ class RouteBuilder
      *
      * @return void
      */
-    public static function group(string $prefix, $attributes, callable $routes = null)
+    public static function group($prefix, $attributes, $routes = null)
     {
         if ($routes === null && is_callable($attributes)) {
             $routes = $attributes;
@@ -138,7 +155,7 @@ class RouteBuilder
      *
      * @return void
      */
-    public static function middleware($middleware, string $point = 'pre_controller')
+    public static function middleware($middleware, $point = 'pre_controller')
     {
         if (!is_array($middleware)) {
             $middleware = [$middleware];
@@ -203,7 +220,7 @@ class RouteBuilder
      *
      * @return void
      */
-    public static function resource(string $name, string $controller, array $only = [])
+    public static function resource($name, $controller, $only = [])
     {
         $routes = [
             'index' => ['/', ['GET']],
@@ -240,7 +257,7 @@ class RouteBuilder
      *
      * @throws Exception
      */
-    public static function set(string $name, string $value)
+    public static function set($name, $value)
     {
         if (!in_array($name, ['404_override', 'default_controller', 'translate_uri_dashes'])) {
             throw new Exception('Unknown reserved route "' . $name . '"');
@@ -289,7 +306,7 @@ class RouteBuilder
      * @throws RouteNotFoundException
      *
      */
-    public static function getByUrl(string $url, string $requestMethod = null)
+    public static function getByUrl($url, $requestMethod = null)
     {
         if (empty($requestMethod)) {
             $requestMethod = isset($_SERVER['REQUEST_METHOD']) ? strtoupper($_SERVER['REQUEST_METHOD']) : (!is_cli() ? 'GET' : 'CLI');
@@ -331,7 +348,7 @@ class RouteBuilder
      * @throws RouteNotFoundException
      *
      */
-    public static function getByName(string $name)
+    public static function getByName($name)
     {
         if (isset(self::$compiled['names'][$name])) {
             return self::$compiled['names'][$name];
@@ -355,7 +372,7 @@ class RouteBuilder
      *
      * @return Route|null
      */
-    public static function getCurrentRoute(): ?Route
+    public static function getCurrentRoute()
     {
         return self::$current;
     }
@@ -366,7 +383,7 @@ class RouteBuilder
      * @param mixed ...$patterns
      * @return bool
      */
-    public static function named(...$patterns): bool
+    public static function named(...$patterns)
     {
         if (is_null($routeName = self::getCurrentRoute()->getName())) {
             return false;
@@ -386,7 +403,7 @@ class RouteBuilder
      *
      * @return string
      */
-    public static function getGlobalMiddleware(): string
+    public static function getGlobalMiddleware()
     {
         return self::$context['middleware']['global'];
     }
@@ -414,7 +431,7 @@ class RouteBuilder
      *
      * @return mixed
      */
-    public static function getContext(string $context)
+    public static function getContext($context)
     {
         return self::$context[$context];
     }
@@ -439,7 +456,7 @@ class RouteBuilder
      *
      * @return void
      */
-    public static function setDefaultParam(string $name, string $value)
+    public static function setDefaultParam($name, $value)
     {
         self::$context['params'][$name] = $value;
     }
@@ -448,7 +465,7 @@ class RouteBuilder
      * Gets all (global) default sticky parameters values
      * @return string
      */
-    public static function getDefaultParams(): string
+    public static function getDefaultParams()
     {
         return self::$context['params'];
     }

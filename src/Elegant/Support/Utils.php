@@ -11,7 +11,7 @@ class Utils
      *
      * @return string
      */
-    public static function currentUrl(): string
+    public static function currentUrl()
     {
         if (is_cli()) {
             $args = array_slice($_SERVER['argv'], 1);

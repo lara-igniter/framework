@@ -6,6 +6,7 @@ use Elegant\Routing\Exceptions\RouteNotFoundException;
 use Elegant\Routing\Middleware\Middleware;
 use Elegant\Routing\Middleware\RouteAjaxMiddleware;
 use Elegant\Routing\RouteBuilder as Route;
+use Elegant\Support\Utils;
 
 class Hook
 {
@@ -16,7 +17,7 @@ class Hook
      *
      * @return array
      */
-    public static function getHooks(string $config = null)
+    public static function getHooks($config = null)
     {
         if (empty($config)) {
             $config = [
@@ -190,7 +191,7 @@ class Hook
      *
      * @return void
      */
-    private static function preControllerHook(array &$params, string &$URI, string &$class, string &$method)
+    private static function preControllerHook(&$params, &$URI, &$class, &$method)
     {
         $route = Route::getCurrentRoute();
 
@@ -310,7 +311,7 @@ class Hook
      *
      * @return void
      */
-    private static function postControllerConstructorHook(array $config, array &$params)
+    private static function postControllerConstructorHook($config, &$params)
     {
 //        if (!is_cli()) {
             // Auth module bootstrap
@@ -392,7 +393,7 @@ class Hook
      *
      * @return void
      */
-    private static function postControllerHook(array $config)
+    private static function postControllerHook($config)
     {
         if (ci()->route->is404) {
             return;
@@ -403,8 +404,8 @@ class Hook
         }
 
 //        if (!is_cli() && in_array('auth', $config['modules'])) {
-//            Auth::session('validated', false);
 //        }
+//            Auth::session('validated', false);
     }
 
     /**
