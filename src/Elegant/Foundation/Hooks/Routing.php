@@ -81,40 +81,40 @@ class Routing
 //            require_once __DIR__ . '/Facades/Auth.php';
 //        }
 
-        if (!file_exists(FCPATH . '/routes')) {
-            mkdir(FCPATH . '/routes');
+        if (!file_exists(APPPATH . '/routes')) {
+            mkdir(APPPATH . '/routes');
         }
 
         if (!file_exists(APPPATH . '/middleware')) {
             mkdir(APPPATH . '/middleware');
         }
 
-        if (!file_exists(FCPATH . '/routes/web.php')) {
-            copy(realpath(dirname(__DIR__) . '../../Routing/Resources/WebRoutes.php'), FCPATH . '/routes/web.php');
+        if (!file_exists(APPPATH . '/routes/web.php')) {
+            copy(realpath(dirname(__DIR__) . '../../Routing/Resources/WebRoutes.php'), APPPATH . '/routes/web.php');
         }
 
         if ($isWeb) {
-            require_once(FCPATH . '/routes/web.php');
+            require_once(APPPATH . '/routes/web.php');
         }
 
-        if (!file_exists(FCPATH . '/routes/api.php')) {
-            copy(realpath(dirname(__DIR__) . '../../Routing/Resources/ApiRoutes.php'), FCPATH . '/routes/api.php');
+        if (!file_exists(APPPATH . '/routes/api.php')) {
+            copy(realpath(dirname(__DIR__) . '../../Routing/Resources/ApiRoutes.php'), APPPATH . '/routes/api.php');
         }
 
         if ($isAjax || $isWeb) {
             Route::group('/', ['middleware' => [new RouteAjaxMiddleware()]],
                 function () {
-                    require_once(FCPATH . '/routes/api.php');
+                    require_once(APPPATH . '/routes/api.php');
                 }
             );
         }
 
-        if (!file_exists(FCPATH . '/routes/cli.php')) {
-            copy(realpath(dirname(__DIR__) . '../../Routing/Resources/CliRoutes.php'), FCPATH . '/routes/cli.php');
+        if (!file_exists(APPPATH . '/routes/cli.php')) {
+            copy(realpath(dirname(__DIR__) . '../../Routing/Resources/CliRoutes.php'), APPPATH . '/routes/cli.php');
         }
 
         if ($isCli) {
-            require_once(FCPATH . '/routes/cli.php');
+            require_once(APPPATH . '/routes/cli.php');
             Route::set('default_controller', RouteBuilder::DEFAULT_CONTROLLER);
         }
 
