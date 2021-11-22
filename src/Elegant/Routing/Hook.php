@@ -6,19 +6,17 @@ use Elegant\Routing\Exceptions\RouteNotFoundException;
 use Elegant\Routing\Middleware\Middleware;
 use Elegant\Routing\Middleware\RouteAjaxMiddleware;
 use Elegant\Routing\RouteBuilder as Route;
-use Elegant\Support\Utils;
-use Exception;
 
 class Hook
 {
     /**
      * Gets the Routing hooks
      *
-     * @param string|null $config Luthier CI configuration
+     * @param string|null $config Routing CI configuration
      *
      * @return array
      */
-    public static function getHooks(string $config = null): array
+    public static function getHooks(string $config = null)
     {
         if (empty($config)) {
             $config = [
@@ -114,14 +112,14 @@ class Hook
 
         if ($isCli) {
             require_once(APPPATH . '/routes/cli.php');
-            Route::set('default_controller', RouteBuilder::DEFAULT_CONTROLLER);
+            Route::set('default_controller', Route::DEFAULT_CONTROLLER);
         }
 
-        if (!file_exists(APPPATH . '/controllers/' . RouteBuilder::DEFAULT_CONTROLLER . '.php')) {
-            copy(__DIR__ . '/Resources/Controller.php', APPPATH . '/controllers/' . RouteBuilder::DEFAULT_CONTROLLER . '.php');
+        if (!file_exists(APPPATH . '/controllers/' . Route::DEFAULT_CONTROLLER . '.php')) {
+            copy(__DIR__ . '/Resources/Controller.php', APPPATH . '/controllers/' . Route::DEFAULT_CONTROLLER . '.php');
         }
 
-        require_once(realpath(dirname(__DIR__) . '../../Foundation/helpers.php'));
+        require_once(__DIR__ . '/helpers.php');
 
         // Auth module
 //        if (in_array('auth', $config['modules'])) {
@@ -159,7 +157,7 @@ class Hook
         try {
             $currentRoute = Route::getByUrl($url);
         } catch (RouteNotFoundException $e) {
-            Route::$compiled['routes'][$url] = RouteBuilder::DEFAULT_CONTROLLER . '/index';
+            Route::$compiled['routes'][$url] = Route::DEFAULT_CONTROLLER . '/index';
             $currentRoute = Route::{!is_cli() ? 'any' : 'cli'}($url, function () {
                 if (!is_cli() && is_callable(Route::get404())) {
                     $_404 = Route::get404();
@@ -294,10 +292,10 @@ class Hook
         if (is_callable($route->getAction())) {
             $RTR = &load_class('Router', 'core');
 
-            $class = RouteBuilder::DEFAULT_CONTROLLER;
+            $class = Route::DEFAULT_CONTROLLER;
 
             if (!class_exists($class)) {
-                require_once APPPATH . '/controllers/' . RouteBuilder::DEFAULT_CONTROLLER . '.php';
+                require_once APPPATH . '/controllers/' . Route::DEFAULT_CONTROLLER . '.php';
             }
 
             $method = 'index';
@@ -314,7 +312,7 @@ class Hook
      */
     private static function postControllerConstructorHook(array $config, array &$params)
     {
-        if (!is_cli()) {
+//        if (!is_cli()) {
             // Auth module bootstrap
 //            if (in_array('auth', $config['modules']) || in_array('debug', $config['modules'])) {
 //                ci()->load->library('session');
@@ -346,7 +344,7 @@ class Hook
 //                Debug::log('>>> CURRENT USER:', 'info', 'auth');
 //                Debug::log(Auth::user(), 'info', 'auth');
 //            }
-        }
+//        }
 
         // Current route configuration and dispatch
         ci()->route = Route::getCurrentRoute();
