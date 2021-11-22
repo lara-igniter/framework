@@ -70,12 +70,12 @@ class Routing
 
         $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH'])
             && (!empty($_SERVER['HTTP_X_REQUESTED_WITH'])
-            && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest');
+                && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest');
 
         $isCli = is_cli();
         $isWeb = !is_cli();
 
-        require_once realpath(dirname(__FILE__) . '../../Support/Facades/Route.php');
+        require_once realpath(dirname(__DIR__) . '../../Support/Facades/Route.php');
 
 //        if (in_array('auth', $config['modules'])) {
 //            require_once __DIR__ . '/Facades/Auth.php';
@@ -90,7 +90,7 @@ class Routing
         }
 
         if (!file_exists(FCPATH . '/routes/web.php')) {
-            copy(__DIR__ . '../../Routing/Resources/WebRoutes.php', FCPATH . '/routes/web.php');
+            copy(realpath(dirname(__DIR__) . '../../Routing/Resources/WebRoutes.php'), FCPATH . '/routes/web.php');
         }
 
         if ($isWeb) {
@@ -98,7 +98,7 @@ class Routing
         }
 
         if (!file_exists(FCPATH . '/routes/api.php')) {
-            copy(__DIR__ . '../../Routing/Resources/ApiRoutes.php', FCPATH . '/routes/api.php');
+            copy(realpath(dirname(__DIR__) . '../../Routing/Resources/ApiRoutes.php'), FCPATH . '/routes/api.php');
         }
 
         if ($isAjax || $isWeb) {
@@ -110,7 +110,7 @@ class Routing
         }
 
         if (!file_exists(FCPATH . '/routes/cli.php')) {
-            copy(__DIR__ . '../../Routing/Resources/CliRoutes.php', FCPATH . '/routes/cli.php');
+            copy(realpath(dirname(__DIR__) . '../../Routing/Resources/CliRoutes.php'), FCPATH . '/routes/cli.php');
         }
 
         if ($isCli) {
@@ -119,10 +119,10 @@ class Routing
         }
 
         if (!file_exists(APPPATH . '/controllers/' . RouteBuilder::DEFAULT_CONTROLLER . '.php')) {
-            copy(__DIR__ . '../../Routing/Resources/Controller.php', APPPATH . '/controllers/' . RouteBuilder::DEFAULT_CONTROLLER . '.php');
+            copy(realpath(dirname(__DIR__) . '../../Routing/Resources/Controller.php'), APPPATH . '/controllers/' . RouteBuilder::DEFAULT_CONTROLLER . '.php');
         }
 
-        require_once(__DIR__ . '../../Foundation/helpers.php');
+        require_once(realpath(dirname(__DIR__) . '../../Foundation/helpers.php'));
 
         // Auth module
 //        if (in_array('auth', $config['modules'])) {
