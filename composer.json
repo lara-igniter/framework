@@ -24,13 +24,13 @@
         "vlucas/phpdotenv": "^4.0"
     },
     "replace": {
-        "elegant/collections": "self.version",
-        "elegant/contracts": "self.version",
-        "elegant/database": "self.version",
-        "elegant/debug": "self.version",
-        "elegant/macroable": "self.version",
-        "elegant/routing": "self.version",
-        "elegant/support": "self.version"
+        "lara-elegant/collections": "self.version",
+        "lara-elegant/contracts": "self.version",
+        "lara-elegant/database": "self.version",
+        "lara-elegant/debug": "self.version",
+        "lara-elegant/macroable": "self.version",
+        "lara-elegant/routing": "self.version",
+        "lara-elegant/support": "self.version"
     },
     "require-dev": {
         "guzzlehttp/guzzle": "^6.3.1|^7.0.1",
