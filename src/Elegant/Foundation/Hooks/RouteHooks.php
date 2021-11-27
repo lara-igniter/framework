@@ -5,21 +5,19 @@ namespace Elegant\Foundation\Hooks;
 use Elegant\Routing\Exceptions\RouteNotFoundException;
 use Elegant\Routing\Middleware\Middleware;
 use Elegant\Routing\Middleware\RouteAjaxMiddleware;
-use Elegant\Routing\RouteBuilder;
-use Elegant\Support\Facades\Route;
+use Elegant\Routing\RouteBuilder as Route;
 use Elegant\Support\Utils;
-use Exception;
 
-class Routing
+class RouteHooks
 {
     /**
      * Gets the Routing hooks
      *
-     * @param string|null $config Luthier CI configuration
+     * @param string|null $config Routing CI configuration
      *
      * @return array
      */
-    public static function getHooks(string $config = null): array
+    public static function getHooks($config = null)
     {
         if (empty($config)) {
             $config = [
@@ -65,8 +63,8 @@ class Routing
      */
     private static function preSystemHook($config)
     {
-        define('LUTHIER_CI_VERSION', '1.0.5');
-        define('LUTHIER_CI_DIR', __DIR__);
+//        define('LUTHIER_CI_VERSION', '1.0.5');
+//        define('LUTHIER_CI_DIR', __DIR__);
 
         $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH'])
             && (!empty($_SERVER['HTTP_X_REQUESTED_WITH'])
@@ -75,7 +73,7 @@ class Routing
         $isCli = is_cli();
         $isWeb = !is_cli();
 
-        require_once __DIR__ . '../../Support/Facades/Route.php';
+        require_once __DIR__ . '/Facades/Route.php';
 
 //        if (in_array('auth', $config['modules'])) {
 //            require_once __DIR__ . '/Facades/Auth.php';
@@ -90,7 +88,7 @@ class Routing
         }
 
         if (!file_exists(APPPATH . '/routes/web.php')) {
-            copy(realpath(dirname(__DIR__) . '../../Routing/Resources/WebRoutes.php'), APPPATH . '/routes/web.php');
+            copy(__DIR__ . '/Resources/WebRoutes.php', APPPATH . '/routes/web.php');
         }
 
         if ($isWeb) {
@@ -98,7 +96,7 @@ class Routing
         }
 
         if (!file_exists(APPPATH . '/routes/api.php')) {
-            copy(realpath(dirname(__DIR__) . '../../Routing/Resources/ApiRoutes.php'), APPPATH . '/routes/api.php');
+            copy(__DIR__ . '/Resources/ApiRoutes.php', APPPATH . '/routes/api.php');
         }
 
         if ($isAjax || $isWeb) {
@@ -110,19 +108,19 @@ class Routing
         }
 
         if (!file_exists(APPPATH . '/routes/cli.php')) {
-            copy(realpath(dirname(__DIR__) . '../../Routing/Resources/CliRoutes.php'), APPPATH . '/routes/cli.php');
+            copy(__DIR__ . '/Resources/CliRoutes.php', APPPATH . '/routes/cli.php');
         }
 
         if ($isCli) {
             require_once(APPPATH . '/routes/cli.php');
-            Route::set('default_controller', RouteBuilder::DEFAULT_CONTROLLER);
+            Route::set('default_controller', Route::DEFAULT_CONTROLLER);
         }
 
-        if (!file_exists(APPPATH . '/controllers/' . RouteBuilder::DEFAULT_CONTROLLER . '.php')) {
-            copy(realpath(dirname(__DIR__) . '../../Routing/Resources/Controller.php'), APPPATH . '/controllers/' . RouteBuilder::DEFAULT_CONTROLLER . '.php');
+        if (!file_exists(APPPATH . '/controllers/' . Route::DEFAULT_CONTROLLER . '.php')) {
+            copy(__DIR__ . '/Resources/Controller.php', APPPATH . '/controllers/' . Route::DEFAULT_CONTROLLER . '.php');
         }
 
-        require_once(realpath(dirname(__DIR__) . '../../Foundation/helpers.php'));
+        require_once(__DIR__ . '/helpers.php');
 
         // Auth module
 //        if (in_array('auth', $config['modules'])) {
@@ -160,7 +158,7 @@ class Routing
         try {
             $currentRoute = Route::getByUrl($url);
         } catch (RouteNotFoundException $e) {
-            Route::$compiled['routes'][$url] = RouteBuilder::DEFAULT_CONTROLLER . '/index';
+            Route::$compiled['routes'][$url] = Route::DEFAULT_CONTROLLER . '/index';
             $currentRoute = Route::{!is_cli() ? 'any' : 'cli'}($url, function () {
                 if (!is_cli() && is_callable(Route::get404())) {
                     $_404 = Route::get404();
@@ -193,7 +191,7 @@ class Routing
      *
      * @return void
      */
-    private static function preControllerHook(array &$params, string &$URI, string &$class, string &$method)
+    private static function preControllerHook(&$params, &$URI, &$class, &$method)
     {
         $route = Route::getCurrentRoute();
 
@@ -295,10 +293,10 @@ class Routing
         if (is_callable($route->getAction())) {
             $RTR = &load_class('Router', 'core');
 
-            $class = RouteBuilder::DEFAULT_CONTROLLER;
+            $class = Route::DEFAULT_CONTROLLER;
 
             if (!class_exists($class)) {
-                require_once APPPATH . '/controllers/' . RouteBuilder::DEFAULT_CONTROLLER . '.php';
+                require_once APPPATH . '/controllers/' . Route::DEFAULT_CONTROLLER . '.php';
             }
 
             $method = 'index';
@@ -313,10 +311,10 @@ class Routing
      *
      * @return void
      */
-    private static function postControllerConstructorHook(array $config, array &$params)
+    private static function postControllerConstructorHook($config, &$params)
     {
-        if (!is_cli()) {
-            // Auth module bootstrap
+//        if (!is_cli()) {
+        // Auth module bootstrap
 //            if (in_array('auth', $config['modules']) || in_array('debug', $config['modules'])) {
 //                ci()->load->library('session');
 //            }
@@ -329,7 +327,7 @@ class Routing
 //                Auth::user(true);
 //            }
 
-            // Restoring flash debug messages
+        // Restoring flash debug messages
 //            if (ENVIRONMENT != 'production' && in_array('debug', $config['modules'])) {
 //                $debugBarFlashMessages = ci()->session->flashdata('_debug_bar_flash');
 //
@@ -347,7 +345,7 @@ class Routing
 //                Debug::log('>>> CURRENT USER:', 'info', 'auth');
 //                Debug::log(Auth::user(), 'info', 'auth');
 //            }
-        }
+//        }
 
         // Current route configuration and dispatch
         ci()->route = Route::getCurrentRoute();
@@ -395,7 +393,7 @@ class Routing
      *
      * @return void
      */
-    private static function postControllerHook(array $config)
+    private static function postControllerHook($config)
     {
         if (ci()->route->is404) {
             return;
@@ -406,8 +404,8 @@ class Routing
         }
 
 //        if (!is_cli() && in_array('auth', $config['modules'])) {
-//            Auth::session('validated', false);
 //        }
+//            Auth::session('validated', false);
     }
 
     /**
