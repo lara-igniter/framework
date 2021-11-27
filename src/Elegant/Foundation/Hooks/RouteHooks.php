@@ -7,6 +7,7 @@ use Elegant\Routing\Middleware\Middleware;
 use Elegant\Routing\Middleware\RouteAjaxMiddleware;
 use Elegant\Routing\RouteBuilder as Route;
 use Elegant\Support\Utils;
+use Exception;
 
 class RouteHooks
 {
@@ -107,12 +108,12 @@ class RouteHooks
             );
         }
 
-        if (!file_exists(APPPATH . '/routes/cli.php')) {
-            copy(__DIR__ . '/Resources/CliRoutes.php', APPPATH . '/routes/cli.php');
+        if (!file_exists(APPPATH . '/routes/console.php')) {
+            copy(__DIR__ . '/Resources/ConsoleRoutes.php', APPPATH . '/routes/console.php');
         }
 
         if ($isCli) {
-            require_once(APPPATH . '/routes/cli.php');
+            require_once(APPPATH . '/routes/console.php');
             Route::set('default_controller', Route::DEFAULT_CONTROLLER);
         }
 
@@ -316,12 +317,12 @@ class RouteHooks
 //        if (!is_cli()) {
         // Auth module bootstrap
 //            if (in_array('auth', $config['modules']) || in_array('debug', $config['modules'])) {
-//                ci()->load->library('session');
+//                app()->load->library('session');
 //            }
 //
 //            if (in_array('auth', $config['modules'])) {
 //                if (file_exists(APPPATH . '/config/auth.php')) {
-//                    ci()->load->config('auth');
+//                    app()->load->config('auth');
 //                }
 //                Auth::init();
 //                Auth::user(true);
@@ -329,7 +330,7 @@ class RouteHooks
 
         // Restoring flash debug messages
 //            if (ENVIRONMENT != 'production' && in_array('debug', $config['modules'])) {
-//                $debugBarFlashMessages = ci()->session->flashdata('_debug_bar_flash');
+//                $debugBarFlashMessages = app()->session->flashdata('_debug_bar_flash');
 //
 //                if (!empty($debugBarFlashMessages) && is_array($debugBarFlashMessages)) {
 //                    foreach ($debugBarFlashMessages as $message) {
@@ -348,41 +349,41 @@ class RouteHooks
 //        }
 
         // Current route configuration and dispatch
-        ci()->route = Route::getCurrentRoute();
+        app()->route = Route::getCurrentRoute();
 
-        if (!ci()->route->is404) {
-            ci()->load->helper('url');
+        if (!app()->route->is404) {
+            app()->load->helper('url');
 
-            ci()->middleware = new Middleware();
+            app()->middleware = new Middleware();
 
-            if (method_exists(ci(), 'preMiddleware')) {
-                call_user_func([ci(), 'preMiddleware']);
+            if (method_exists(app(), 'preMiddleware')) {
+                call_user_func([app(), 'preMiddleware']);
             }
 
             foreach (Route::getGlobalMiddleware()['pre_controller'] as $middleware) {
-                ci()->middleware->run($middleware);
+                app()->middleware->run($middleware);
             }
 
             // Setting "sticky" route parameters values as default for current route
-            foreach (ci()->route->params as &$param) {
+            foreach (app()->route->params as &$param) {
                 if (substr($param->getName(), 0, 1) == '_') {
-                    Route::setDefaultParam($param->getName(), ci()->route->param($param->getName()));
+                    Route::setDefaultParam($param->getName(), app()->route->param($param->getName()));
                 }
             }
 
-            foreach (ci()->route->getMiddleware() as $middleware) {
+            foreach (app()->route->getMiddleware() as $middleware) {
                 if (is_string($middleware)) {
                     $middleware = [$middleware];
                 }
 
                 foreach ($middleware as $_middleware) {
-                    ci()->middleware->run($_middleware);
+                    app()->middleware->run($_middleware);
                 }
             }
         }
 
-        if (is_callable(ci()->route->getAction())) {
-            call_user_func_array(ci()->route->getAction(), $params);
+        if (is_callable(app()->route->getAction())) {
+            call_user_func_array(app()->route->getAction(), $params);
         }
     }
 
@@ -395,12 +396,12 @@ class RouteHooks
      */
     private static function postControllerHook($config)
     {
-        if (ci()->route->is404) {
+        if (app()->route->is404) {
             return;
         }
 
         foreach (Route::getGlobalMiddleware()['post_controller'] as $middleware) {
-            ci()->middleware->run($middleware);
+            app()->middleware->run($middleware);
         }
 
 //        if (!is_cli() && in_array('auth', $config['modules'])) {
@@ -415,10 +416,10 @@ class RouteHooks
      */
     private static function displayOverrideHook()
     {
-        $output = ci()->output->get_output();
+        $output = app()->output->get_output();
 
-        if (isset(ci()->db)) {
-            $queries = ci()->db->queries;
+        if (isset(app()->db)) {
+            $queries = app()->db->queries;
 //            if (!empty($queries)) {
 //                Debug::addCollector(new MessagesCollector('database'));
 //                foreach ($queries as $query) {
@@ -428,6 +429,6 @@ class RouteHooks
         }
 
 //        Debug::prepareOutput($output);
-        ci()->output->_display($output);
+        app()->output->_display($output);
     }
 }

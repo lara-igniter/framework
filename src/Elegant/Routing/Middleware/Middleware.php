@@ -91,14 +91,14 @@ class Middleware
                 $args[] =& get_instance();
             }
 
-            if (isset(ci()->hooks->hooks[$hook]) && !is_array(ci()->hooks->hooks[$hook])) {
-                $_hook = ci()->hooks->hooks[$hook];
-                ci()->hooks->hooks[$hook] = [$_hook];
+            if (isset(app()->hooks->hooks[$hook]) && !is_array(app()->hooks->hooks[$hook])) {
+                $_hook = app()->hooks->hooks[$hook];
+                app()->hooks->hooks[$hook] = [$_hook];
             }
 
-            ci()->hooks->hooks[$hook][] = call_user_func_array($middleware, $args);
+            app()->hooks->hooks[$hook][] = call_user_func_array($middleware, $args);
         } else {
-            ci()->hooks->hooks[$hook][] = call_user_function_array([$this, 'run'], [$middleware, $args]);
+            app()->hooks->hooks[$hook][] = call_user_function_array([$this, 'run'], [$middleware, $args]);
         }
     }
 }

@@ -1,5 +1,10 @@
 <?php
 
-class Route extends Elegant\Routing\RouteBuilder
+namespace Elegant\Support\Facades;
+
+use Elegant\Routing\RouteBuilder;
+
+class Route extends RouteBuilder
 {
+
 }

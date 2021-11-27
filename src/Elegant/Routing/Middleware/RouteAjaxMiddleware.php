@@ -10,7 +10,7 @@ class RouteAjaxMiddleware
      */
     public function run($args = [])
     {
-        if (!ci()->input->is_ajax_request()) {
+        if (!app()->input->is_ajax_request()) {
             trigger_404();
         }
     }

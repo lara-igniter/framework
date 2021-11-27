@@ -1,25 +1,19 @@
 <?php
 
-/**
- * Welcome to Laraigniter Web Routes!
- *
- * This is your main route file. Put all your HTTP-Based routes here using the static
- * Route class methods
- *
- * Examples:
- *
- *    Route::get('foo', 'bar@baz');
- *      -> $route['foo']['GET'] = 'bar/baz';
- *
- *    Route::post('bar', 'baz@fobie', [ 'namespace' => 'cats' ]);
- *      -> $route['bar']['POST'] = 'cats/baz/foobie';
- *
- *    Route::get('blog/{slug}', 'blog@post');
- *      -> $route['blog/(:any)'] = 'blog/post/$1'
- */
+use Elegant\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded in your application. Now create something great!
+|
+*/
 
 Route::get('/', function () {
-    ci()->blade->view('welcome');
+    app()->blade->view('welcome');
 });
 
 Route::set('404_override', function () {

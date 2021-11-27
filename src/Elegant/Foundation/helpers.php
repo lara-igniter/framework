@@ -1,6 +1,6 @@
 <?php
 
-use Elegant\Routing\Facades\Route;
+use Elegant\Support\Facades\Route;
 
 if (!function_exists('route')) {
     /**
@@ -38,7 +38,7 @@ if (!function_exists('route_exists')) {
     }
 }
 
-if (!function_exists('ci')) {
+if (!function_exists('app')) {
     /**
      * Returns the framework singleton
      *
@@ -46,7 +46,7 @@ if (!function_exists('ci')) {
      *
      * @return object
      */
-    function &ci(): object
+    function &app(): object
     {
         return get_instance();
     }
@@ -87,10 +87,10 @@ if (!function_exists('route_redirect')) {
     function route_redirect(string $name, array $params = [], array $messages = [])
     {
         if (!empty($messages) && is_array($messages)) {
-            ci()->load->library('session');
+            app()->load->library('session');
 
             foreach ($messages as $_name => $_value) {
-                ci()->session->set_flashdata($_name, $_value);
+                app()->session->set_flashdata($_name, $_value);
             }
         }
 
