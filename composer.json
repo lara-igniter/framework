@@ -20,6 +20,7 @@
         "codeigniter/framework": "3.1.*",
         "maximebf/debugbar": "^1.17.2",
         "nesbot/carbon": "^2.31",
+        "symfony/debug": "4.2",
         "symfony/var-dumper": "^5.0",
         "vlucas/phpdotenv": "^4.0"
     },
@@ -28,10 +29,12 @@
         "lara-elegant/contracts": "self.version",
         "lara-elegant/database": "self.version",
         "lara-elegant/debug": "self.version",
+        "lara-elegant/filesystem": "self.version",
         "lara-elegant/hooks": "self.version",
         "lara-elegant/macroable": "self.version",
         "lara-elegant/routing": "self.version",
-        "lara-elegant/support": "self.version"
+        "lara-elegant/support": "self.version",
+        "lara-elegant/view": "self.version"
     },
     "require-dev": {
         "guzzlehttp/guzzle": "^6.3.1|^7.0.1",
