@@ -9,16 +9,16 @@ use Elegant\Routing\RouteBuilder as Route;
 use Elegant\Support\Utils;
 use Exception;
 
-class RouteHooks
+class TempRouteHooks
 {
     /**
      * Gets the Routing hooks
      *
-     * @param string|null $config Routing CI configuration
+     * @param array|null $config Routing CI configuration
      *
      * @return array
      */
-    public static function load($config = null): array
+    public static function load($config = []): array
     {
         if (empty($config)) {
             $config = [
@@ -64,6 +64,7 @@ class RouteHooks
      */
     private static function preSystemHook($config)
     {
+//        dd($config);
 //        define('LUTHIER_CI_VERSION', '1.0.5');
 //        define('LUTHIER_CI_DIR', __DIR__);
 

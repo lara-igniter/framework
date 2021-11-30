@@ -28,6 +28,7 @@
         "lara-elegant/contracts": "self.version",
         "lara-elegant/database": "self.version",
         "lara-elegant/debug": "self.version",
+        "lara-elegant/hooks": "self.version",
         "lara-elegant/macroable": "self.version",
         "lara-elegant/routing": "self.version",
         "lara-elegant/support": "self.version"
