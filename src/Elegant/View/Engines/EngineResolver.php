@@ -4,6 +4,7 @@ namespace Elegant\View\Engines;
 
 use Closure;
 use InvalidArgumentException;
+use Elegant\Contracts\View\Engine as EngineInterface;
 
 class EngineResolver
 {

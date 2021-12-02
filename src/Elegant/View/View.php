@@ -6,12 +6,13 @@ use Exception;
 use Throwable;
 use ArrayAccess;
 use BadMethodCallException;
-use Elegant\View\Engines\EngineInterface;
+use Elegant\Contracts\View\Engine;
+use Elegant\Contracts\View\View as ViewContract;
 use Elegant\Contracts\Support\Arrayable;
 use Elegant\Contracts\Support\Renderable;
 use Elegant\Support\Str;
 
-class View implements ArrayAccess
+class View implements ArrayAccess, ViewContract
 {
     /**
      * The view factory instance.
@@ -23,7 +24,7 @@ class View implements ArrayAccess
     /**
      * The engine implementation.
      *
-     * @var EngineInterface
+     * @var Engine
      */
     protected $engine;
 
@@ -52,13 +53,13 @@ class View implements ArrayAccess
      * Create a new view instance.
      *
      * @param  Factory  $factory
-     * @param  EngineInterface  $engine
+     * @param  Engine  $engine
      * @param  string  $view
      * @param  string  $path
      * @param  mixed  $data
      * @return void
      */
-    public function __construct(Factory $factory, EngineInterface $engine, $view, $path, $data = [])
+    public function __construct(Factory $factory, Engine $engine, $view, $path, $data = [])
     {
         $this->view = $view;
         $this->path = $path;
@@ -74,7 +75,7 @@ class View implements ArrayAccess
      * @param  callable|null  $callback
      * @return string
      *
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function render(callable $callback = null)
     {
@@ -89,11 +90,7 @@ class View implements ArrayAccess
             $this->factory->flushStateIfDoneRendering();
 
             return ! is_null($response) ? $response : $contents;
-        } catch (Exception $e) {
-            $this->factory->flushState();
-
-            throw $e;
-        } catch (Throwable $e) {
+        } catch (Exception | Throwable $e) {
             $this->factory->flushState();
 
             throw $e;
@@ -257,7 +254,7 @@ class View implements ArrayAccess
     /**
      * Get the view's rendering engine.
      *
-     * @return EngineInterface
+     * @return Engine
      */
     public function getEngine()
     {
@@ -347,7 +344,7 @@ class View implements ArrayAccess
      * Remove a piece of bound data from the view.
      *
      * @param  string  $key
-     * @return bool
+     * @return void
      */
     public function __unset($key)
     {
@@ -376,6 +373,7 @@ class View implements ArrayAccess
      * Get the string contents of the view.
      *
      * @return string
+     * @throws Throwable
      */
     public function __toString()
     {

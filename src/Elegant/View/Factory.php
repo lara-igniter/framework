@@ -2,14 +2,14 @@
 
 namespace Elegant\View;
 
-use ArrayAccess;
+use Closure;
 use InvalidArgumentException;
 use Elegant\Support\Arr;
 use Elegant\Support\Str;
-use Elegant\View\Engines\EngineInterface;
 use Elegant\View\Engines\EngineResolver;
 use Elegant\Contracts\Support\Arrayable;
 use Elegant\Contracts\View\Factory as FactoryContract;
+use Elegant\Contracts\View\Engine as EngineInterface;
 
 class Factory implements FactoryContract
 {
@@ -355,7 +355,7 @@ class Factory implements FactoryContract
      *
      * @param  string    $extension
      * @param  string    $engine
-     * @param  \Closure  $resolver
+     * @param  Closure  $resolver
      * @return void
      */
     public function addExtension($extension, $engine, $resolver = null)

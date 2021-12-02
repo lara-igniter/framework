@@ -2,6 +2,8 @@
 
 namespace Elegant\Contracts\View;
 
+use Elegant\Contracts\Support\Arrayable;
+
 interface Factory
 {
     /**
@@ -16,9 +18,9 @@ interface Factory
      * Get the evaluated view contents for the given path.
      *
      * @param  string  $path
-     * @param  \Illuminate\Contracts\Support\Arrayable|array  $data
+     * @param  Arrayable|array  $data
      * @param  array  $mergeData
-     * @return \Illuminate\Contracts\View\View
+     * @return View
      */
     public function file($path, $data = [], $mergeData = []);
 
@@ -26,9 +28,9 @@ interface Factory
      * Get the evaluated view contents for the given view.
      *
      * @param  string  $view
-     * @param  \Illuminate\Contracts\Support\Arrayable|array  $data
+     * @param  Arrayable|array  $data
      * @param  array  $mergeData
-     * @return \Illuminate\Contracts\View\View
+     * @return View
      */
     public function make($view, $data = [], $mergeData = []);
 

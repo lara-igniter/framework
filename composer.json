@@ -22,7 +22,7 @@
         "nesbot/carbon": "^2.31",
         "symfony/debug": "4.2",
         "symfony/var-dumper": "^5.0",
-        "vlucas/phpdotenv": "^4.0"
+        "vlucas/phpdotenv": "^5.2"
     },
     "replace": {
         "lara-elegant/collections": "self.version",
@@ -47,7 +47,8 @@
     "autoload": {
         "files": [
             "src/Elegant/Collections/helpers.php",
-            "src/Elegant/Foundation/helpers.php"
+            "src/Elegant/Foundation/helpers.php",
+            "src/Elegant/Support/helpers.php"
         ],
         "psr-4": {
             "Elegant\\": "src/Elegant/",
