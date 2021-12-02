@@ -1,5 +1,7 @@
 <?php
 
+use Elegant\Support\Env;
+
 if (!function_exists('e')) {
     /**
      * Escape HTML entities in a string.
@@ -10,6 +12,20 @@ if (!function_exists('e')) {
     function e($value)
     {
         return htmlentities($value, ENT_QUOTES, 'UTF-8', false);
+    }
+}
+
+if (! function_exists('env')) {
+    /**
+     * Gets the value of an environment variable.
+     *
+     * @param  string  $key
+     * @param  mixed  $default
+     * @return mixed
+     */
+    function env($key, $default = null)
+    {
+        return Env::get($key, $default);
     }
 }
 
