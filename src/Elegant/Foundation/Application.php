@@ -78,6 +78,6 @@ class Application
             Env::getRepository(),
             $this->environmentPath(),
             $this->environmentFile()
-        );
+        )->load();
     }
 }
