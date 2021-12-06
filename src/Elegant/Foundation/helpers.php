@@ -1,6 +1,8 @@
 <?php
 
+use Elegant\Contracts\Support\Arrayable;
 use Elegant\Support\Facades\Route;
+use Elegant\Support\Facades\View;
 
 if (! function_exists('resource_path')) {
     /**
@@ -121,5 +123,19 @@ if (!function_exists('route_redirect')) {
         }
 
         redirect(route($name, $params));
+    }
+}
+
+if (! function_exists('view')) {
+    /**
+     * Get the evaluated view contents for the given view.
+     *
+     * @param  string|null  $view
+     * @param  Arrayable|array  $data
+     * @return void
+     */
+    function view($view = null, $data = [])
+    {
+        return View::make($view, $data);
     }
 }
