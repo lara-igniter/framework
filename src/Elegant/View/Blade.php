@@ -60,7 +60,7 @@ class Blade
      */
     protected function registerEngineResolver()
     {
-        $compiler = $this->compiled;
+        $compiler = $this->compiler;
 
         $resolver = new EngineResolver;
 
