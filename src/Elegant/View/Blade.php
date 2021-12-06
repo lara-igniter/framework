@@ -19,7 +19,7 @@ class Blade
 
     protected $resolver;
 
-    protected static $factory;
+    protected $factory;
 
     public function __construct()
     {
@@ -29,7 +29,6 @@ class Blade
         $this->registerBladeCompiler();
         $this->registerEngineResolver();
         $this->registerFactory();
-
     }
 
     /**
@@ -37,7 +36,7 @@ class Blade
      *
      * @return void
      */
-    public function registerFileSystem()
+    protected function registerFileSystem()
     {
         $this->file = new Filesystem();
     }
@@ -47,7 +46,7 @@ class Blade
      *
      * @return void
      */
-    public function registerBladeCompiler()
+    protected function registerBladeCompiler()
     {
         $this->compiled = app()->config->item('compiled', 'view');
 
@@ -59,7 +58,7 @@ class Blade
      *
      * @return void
      */
-    public function registerEngineResolver()
+    protected function registerEngineResolver()
     {
         $compiler = $this->compiled;
 
@@ -77,7 +76,7 @@ class Blade
      *
      * @return void
      */
-    public function registerFactory()
+    protected function registerFactory()
     {
         $this->paths = app()->config->item('paths', 'view');
 
@@ -85,26 +84,26 @@ class Blade
 
         $factory->addExtension('tpl', 'blade');
 
-        self::$factory = $factory;
+        $this->factory = $factory;
     }
 
-    public static function make($view, $data = [])
+    public function make($view, $data = [])
     {
-        echo self::$factory->make($view, $data);
+        echo $this->factory->make($view, $data);
     }
 
-    public static function exists($view)
+    public function exists($view)
     {
-        return self::$factory->exists($view);
+        return $this->factory->exists($view);
     }
 
     public function share($key, $value)
     {
-        return self::$factory->share($key, $value);
+        return $this->factory->share($key, $value);
     }
 
     public function render($path, $vars = [])
     {
-        return self::$factory->make($path, $vars)->render();
+        return $this->factory->make($path, $vars)->render();
     }
 }

@@ -132,10 +132,16 @@ if (! function_exists('view')) {
      *
      * @param  string|null  $view
      * @param  Arrayable|array  $data
-     * @return void
+     * @return View|void
      */
     function view($view = null, $data = [])
     {
-        return View::make($view, $data);
+        $factory = new View();
+
+        if (func_num_args() === 0) {
+            return $factory;
+        }
+
+        return $factory->make($view, $data);
     }
 }
