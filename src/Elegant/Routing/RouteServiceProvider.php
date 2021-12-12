@@ -1,73 +1,26 @@
 <?php
 
-namespace Elegant\Foundation\Hooks;
+namespace Elegant\Routing;
 
+use Elegant\Foundation\Hooks\Contracts\DisplayOverrideHookInterface;
+use Elegant\Foundation\Hooks\Contracts\PostControllerConstructorHookInterface;
+use Elegant\Foundation\Hooks\Contracts\PostControllerHookInterface;
+use Elegant\Foundation\Hooks\Contracts\PreControllerHookInterface;
+use Elegant\Foundation\Hooks\Contracts\PreSystemHookInterface;
 use Elegant\Routing\Exceptions\RouteNotFoundException;
 use Elegant\Routing\Middleware\Middleware;
 use Elegant\Routing\Middleware\RouteAjaxMiddleware;
 use Elegant\Routing\RouteBuilder as Route;
 use Elegant\Support\Utils;
-use Exception;
 
-class TempRouteHooks
+class RouteServiceProvider implements PreSystemHookInterface,
+    PreControllerHookInterface,
+    PostControllerConstructorHookInterface,
+    PostControllerHookInterface,
+    DisplayOverrideHookInterface
 {
-    /**
-     * Gets the Routing hooks
-     *
-     * @param array|null $config Routing CI configuration
-     *
-     * @return array
-     */
-    public static function load($config = []): array
+    public function preSystemHook()
     {
-        if (empty($config)) {
-            $config = [
-                'modules' => [],
-            ];
-        }
-
-        $hooks = [];
-
-        $hooks['pre_system'][] = function () use ($config) {
-            self::preSystemHook($config);
-        };
-
-        $hooks['pre_controller'][] = function () {
-            global $params, $URI, $class, $method;
-
-            self::preControllerHook($params, $URI, $class, $method);
-        };
-
-        $hooks['post_controller_constructor'][] = function () use ($config) {
-            global $params;
-            self::postControllerConstructorHook($config, $params);
-        };
-
-        $hooks['post_controller'][] = function () use ($config) {
-            self::postControllerHook($config);
-        };
-
-        $hooks['display_override'][] = function () {
-            self::displayOverrideHook();
-        };
-
-        return $hooks;
-    }
-
-    /**
-     * "pre_system" hook
-     *
-     * @param array $config
-     *
-     * @return void
-     * @throws Exception
-     */
-    private static function preSystemHook($config)
-    {
-//        dd($config);
-//        define('LUTHIER_CI_VERSION', '1.0.5');
-//        define('LUTHIER_CI_DIR', __DIR__);
-
         $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH'])
             && (!empty($_SERVER['HTTP_X_REQUESTED_WITH'])
                 && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest');
@@ -75,14 +28,7 @@ class TempRouteHooks
         $isCli = is_cli();
         $isWeb = !is_cli();
 
-
-//echo realpath(dirname(__DIR__) . '../../Support/Facades/Route.php'); die();
-        require_once realpath(dirname(__DIR__) . '../../Support/Facades/Route.php');
-//        require_once __DIR__ . '/Facades/Route.php';
-
-//        if (in_array('auth', $config['modules'])) {
-//            require_once __DIR__ . '/Facades/Auth.php';
-//        }
+        require_once realpath(dirname(__DIR__) . '../Support/Facades/Route.php');
 
         if (!file_exists(APPPATH . '/routes')) {
             mkdir(APPPATH . '/routes');
@@ -93,7 +39,7 @@ class TempRouteHooks
         }
 
         if (!file_exists(APPPATH . '/routes/web.php')) {
-            copy(realpath(dirname(__DIR__) . '../../Routing/Resources/WebRoutes.php'), APPPATH . '/routes/web.php');
+            copy(realpath(dirname(__DIR__) . './Resources/WebRoutes.php'), APPPATH . '/routes/web.php');
         }
 
         if ($isWeb) {
@@ -101,7 +47,7 @@ class TempRouteHooks
         }
 
         if (!file_exists(APPPATH . '/routes/api.php')) {
-            copy(realpath(dirname(__DIR__) . '../../Routing/Resources/ApiRoutes.php'), APPPATH . '/routes/api.php');
+            copy(realpath(dirname(__DIR__) . './Resources/ApiRoutes.php'), APPPATH . '/routes/api.php');
         }
 
         if ($isAjax || $isWeb) {
@@ -113,7 +59,7 @@ class TempRouteHooks
         }
 
         if (!file_exists(APPPATH . '/routes/console.php')) {
-            copy(realpath(dirname(__DIR__) . '../../Routing/Resources/ConsoleRoutes.php'), APPPATH . '/routes/console.php');
+            copy(realpath(dirname(__DIR__) . './Resources/ConsoleRoutes.php'), APPPATH . '/routes/console.php');
         }
 
         if ($isCli) {
@@ -122,24 +68,10 @@ class TempRouteHooks
         }
 
         if (!file_exists(APPPATH . '/controllers/' . Route::DEFAULT_CONTROLLER . '.php')) {
-            copy(realpath(dirname(__DIR__) . '../../Routing/Resources/Controller.php'), APPPATH . '/controllers/' . Route::DEFAULT_CONTROLLER . '.php');
+            copy(realpath(dirname(__DIR__) . './Resources/Controller.php'), APPPATH . '/controllers/' . Route::DEFAULT_CONTROLLER . '.php');
         }
 
-        require_once(realpath(dirname(__DIR__) . '../../Foundation/helpers.php'));
-//        require_once(__DIR__ . '/helpers.php');
-
-        // Auth module
-//        if (in_array('auth', $config['modules'])) {
-//            Route::middleware(new AuthDispatcher());
-//        }
-
-        // Debug module
-//        if (ENVIRONMENT != 'production' && !$isCli && !$isAjax && in_array('debug', $config['modules'])) {
-//            Debug::init();
-//            Debug::addCollector(new MessagesCollector('auth'));
-//            Debug::addCollector(new MessagesCollector('routing'));
-//            Debug::log('Welcome to Luthier-CI ' . LUTHIER_CI_VERSION . '!');
-//        }
+        require_once(realpath(dirname(__DIR__) . '../Foundation/helpers.php'));
 
         // Compiling all routes
         Route::compileAll();
@@ -179,25 +111,10 @@ class TempRouteHooks
 
         $currentRoute->requestMethod = $requestMethod;
 
-//        Debug::log('>>> CURRENT ROUTE:', 'info', 'routing');
-//        Debug::log($currentRoute, 'info', 'routing');
-//        Debug::log('>>> RAW ROUTING:', 'info', 'routing');
-//        Debug::log(Route::$compiled['routes'], 'info', 'routing');
-
         Route::setCurrentRoute($currentRoute);
     }
 
-    /**
-     * "pre_controller" hook
-     *
-     * @param array $params
-     * @param string $URI
-     * @param string $class
-     * @param string $method
-     *
-     * @return void
-     */
-    private static function preControllerHook(&$params, &$URI, &$class, &$method)
+    public function preControllerHook(&$params, &$URI, &$class, &$method)
     {
         $route = Route::getCurrentRoute();
 
@@ -309,50 +226,8 @@ class TempRouteHooks
         }
     }
 
-    /**
-     * "post_controller" hook
-     *
-     * @param array $config
-     * @param array $params
-     *
-     * @return void
-     */
-    private static function postControllerConstructorHook($config, &$params)
+    public function postControllerConstructorHook(&$params)
     {
-//        if (!is_cli()) {
-        // Auth module bootstrap
-//            if (in_array('auth', $config['modules']) || in_array('debug', $config['modules'])) {
-//                app()->load->library('session');
-//            }
-//
-//            if (in_array('auth', $config['modules'])) {
-//                if (file_exists(APPPATH . '/config/auth.php')) {
-//                    app()->load->config('auth');
-//                }
-//                Auth::init();
-//                Auth::user(true);
-//            }
-
-        // Restoring flash debug messages
-//            if (ENVIRONMENT != 'production' && in_array('debug', $config['modules'])) {
-//                $debugBarFlashMessages = app()->session->flashdata('_debug_bar_flash');
-//
-//                if (!empty($debugBarFlashMessages) && is_array($debugBarFlashMessages)) {
-//                    foreach ($debugBarFlashMessages as $message) {
-//                        list($message, $type, $collector) = $message;
-//                        Debug::log($message, $type, $collector);
-//                    }
-//                }
-//            }
-//
-//            if (in_array('auth', $config['modules'])) {
-//                Debug::log('>>> CURRENT AUTH SESSION:', 'info', 'auth');
-//                Debug::log(Auth::session(), 'info', 'auth');
-//                Debug::log('>>> CURRENT USER:', 'info', 'auth');
-//                Debug::log(Auth::user(), 'info', 'auth');
-//            }
-//        }
-
         // Current route configuration and dispatch
         app()->route = Route::getCurrentRoute();
 
@@ -392,14 +267,7 @@ class TempRouteHooks
         }
     }
 
-    /**
-     * "post_controller" hook
-     *
-     * @param array $config
-     *
-     * @return void
-     */
-    private static function postControllerHook($config)
+    public function postControllerHook()
     {
         if (app()->route->is404) {
             return;
@@ -408,32 +276,16 @@ class TempRouteHooks
         foreach (Route::getGlobalMiddleware()['post_controller'] as $middleware) {
             app()->middleware->run($middleware);
         }
-
-//        if (!is_cli() && in_array('auth', $config['modules'])) {
-//        }
-//            Auth::session('validated', false);
     }
 
-    /**
-     * "display_override" hook
-     *
-     * @return void
-     */
-    private static function displayOverrideHook()
+    public function displayOverrideHook()
     {
         $output = app()->output->get_output();
 
         if (isset(app()->db)) {
             $queries = app()->db->queries;
-//            if (!empty($queries)) {
-//                Debug::addCollector(new MessagesCollector('database'));
-//                foreach ($queries as $query) {
-//                    Debug::log($query, 'info', 'database');
-//                }
-//            }
         }
 
-//        Debug::prepareOutput($output);
         app()->output->_display($output);
     }
 }

@@ -7,6 +7,7 @@ use Elegant\Foundation\Hooks\Contracts\PostControllerConstructorHookInterface;
 use Elegant\Foundation\Hooks\Contracts\PostControllerHookInterface;
 use Elegant\Foundation\Hooks\Contracts\PreControllerHookInterface;
 use Elegant\Foundation\Hooks\Contracts\PreSystemHookInterface;
+use Exception;
 
 class Hook
 {
@@ -45,13 +46,13 @@ class Hook
             self::displayOverrideHook($config);
         };
 
-//        $hooks['cache_override'][] = function () {
-//            self::cacheOverrideHook();
-//        };
+        $hooks['cache_override'][] =  function () use ($config) {
+            self::cacheOverrideHook($config);
+        };
 
-//        $hooks['post_system'][] = function () {
-//            self::postSystemHook();
-//        };
+        $hooks['post_system'][] = function () use ($config) {
+            self::postSystemHook($config);
+        };
 
         return $hooks;
     }
@@ -66,8 +67,8 @@ class Hook
      */
     private static function preSystemHook($hooks)
     {
-//        if(array_key_exists('whoops', $hooks)) {
-            foreach($hooks as $hook) {
+        if(array_key_exists('providers', $hooks)) {
+            foreach($hooks['providers'] as $hook) {
                 $hookInstance = new $hook();
 
                 if(method_exists($hookInstance, 'preSystemHook')
@@ -75,7 +76,7 @@ class Hook
                     $hookInstance->preSystemHook();
                 }
             }
-//        }
+        }
     }
 
     /**
@@ -91,12 +92,14 @@ class Hook
      */
     private static function preControllerHook($hooks, &$params, &$URI, &$class, &$method)
     {
-        foreach($hooks as $hook) {
-            $hookInstance = new $hook();
+        if(array_key_exists('providers', $hooks)) {
+            foreach ($hooks['providers'] as $hook) {
+                $hookInstance = new $hook();
 
-            if(method_exists($hookInstance, 'preControllerHook')
-                && $hookInstance instanceof PreControllerHookInterface) {
-                $hookInstance->preControllerHook($params,$URI,$class,$method);
+                if (method_exists($hookInstance, 'preControllerHook')
+                    && $hookInstance instanceof PreControllerHookInterface) {
+                    $hookInstance->preControllerHook($params, $URI, $class, $method);
+                }
             }
         }
     }
@@ -111,12 +114,14 @@ class Hook
      */
     private static function postControllerConstructorHook($hooks, &$params)
     {
-        foreach($hooks as $hook) {
-            $hookInstance = new $hook();
+        if(array_key_exists('providers', $hooks)) {
+            foreach ($hooks['providers'] as $hook) {
+                $hookInstance = new $hook();
 
-            if(method_exists($hookInstance, 'postControllerConstructorHook')
-                && $hookInstance instanceof PostControllerConstructorHookInterface) {
-                $hookInstance->postControllerConstructorHook($params);
+                if (method_exists($hookInstance, 'postControllerConstructorHook')
+                    && $hookInstance instanceof PostControllerConstructorHookInterface) {
+                    $hookInstance->postControllerConstructorHook($params);
+                }
             }
         }
     }
@@ -130,12 +135,14 @@ class Hook
      */
     private static function postControllerHook($hooks)
     {
-        foreach($hooks as $hook) {
-            $hookInstance = new $hook();
+        if(array_key_exists('providers', $hooks)) {
+            foreach ($hooks['providers'] as $hook) {
+                $hookInstance = new $hook();
 
-            if(method_exists($hookInstance, 'postControllerHook')
-                && $hookInstance instanceof PostControllerHookInterface) {
-                $hookInstance->postControllerHook();
+                if (method_exists($hookInstance, 'postControllerHook')
+                    && $hookInstance instanceof PostControllerHookInterface) {
+                    $hookInstance->postControllerHook();
+                }
             }
         }
     }
@@ -149,12 +156,56 @@ class Hook
      */
     private static function displayOverrideHook($hooks)
     {
-        foreach($hooks as $hook) {
-            $hookInstance = new $hook();
+        if(array_key_exists('providers', $hooks)) {
+            foreach ($hooks['providers'] as $hook) {
+                $hookInstance = new $hook();
 
-            if(method_exists($hookInstance, 'displayOverrideHook')
-                && $hookInstance instanceof DisplayOverrideHookInterface) {
-                $hookInstance->displayOverrideHook();
+                if (method_exists($hookInstance, 'displayOverrideHook')
+                    && $hookInstance instanceof DisplayOverrideHookInterface) {
+                    $hookInstance->displayOverrideHook();
+                }
+            }
+        }
+    }
+
+    /**
+     * "cache_override" hook
+     *
+     * @param array $hooks
+     *
+     * @return void
+     */
+    private static function cacheOverrideHook($hooks)
+    {
+        if(array_key_exists('providers', $hooks)) {
+            foreach ($hooks['providers'] as $hook) {
+                $hookInstance = new $hook();
+
+                if (method_exists($hookInstance, 'cacheOverrideHook')
+                    && $hookInstance instanceof CacheOverrideHookInterface) {
+                    $hookInstance->displayOverrideHook();
+                }
+            }
+        }
+    }
+
+    /**
+     * "post_system" hook
+     *
+     * @param array $hooks
+     *
+     * @return void
+     */
+    private static function postSystemHook($hooks)
+    {
+        if(array_key_exists('providers', $hooks)) {
+            foreach ($hooks['providers'] as $hook) {
+                $hookInstance = new $hook();
+
+                if (method_exists($hookInstance, 'postSystemHook')
+                    && $hookInstance instanceof PostSystemHookInterface) {
+                    $hookInstance->displayOverrideHook();
+                }
             }
         }
     }
