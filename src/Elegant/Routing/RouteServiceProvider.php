@@ -28,7 +28,7 @@ class RouteServiceProvider implements PreSystemHookInterface,
         $isCli = is_cli();
         $isWeb = !is_cli();
 
-        require_once realpath(dirname(__DIR__) . '../Support/Facades/Route.php');
+        require_once realpath(dirname(__DIR__) . './Support/Facades/Route.php');
 
         if (!file_exists(APPPATH . '/routes')) {
             mkdir(APPPATH . '/routes');
@@ -71,7 +71,7 @@ class RouteServiceProvider implements PreSystemHookInterface,
             copy(realpath(dirname(__DIR__) . './Resources/Controller.php'), APPPATH . '/controllers/' . Route::DEFAULT_CONTROLLER . '.php');
         }
 
-        require_once(realpath(dirname(__DIR__) . '../Foundation/helpers.php'));
+        require_once(realpath(dirname(__DIR__) . './Foundation/helpers.php'));
 
         // Compiling all routes
         Route::compileAll();
