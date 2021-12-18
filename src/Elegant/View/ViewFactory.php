@@ -7,7 +7,7 @@ use Elegant\View\Compilers\BladeCompiler;
 use Elegant\View\Engines\CompilerEngine;
 use Elegant\View\Engines\EngineResolver;
 
-class Blade
+class ViewFactory
 {
     protected $compiled;
 
@@ -15,7 +15,7 @@ class Blade
 
     protected $file;
 
-    protected $compiler;
+    public $compiler;
 
     protected $resolver;
 
@@ -24,6 +24,10 @@ class Blade
     public function __construct()
     {
         app()->config->load('view', TRUE);
+
+        $this->compiled = app()->config->item('compiled', 'view');
+
+        $this->paths = app()->config->item('paths', 'view');
 
         $this->registerFileSystem();
         $this->registerBladeCompiler();
@@ -48,8 +52,6 @@ class Blade
      */
     protected function registerBladeCompiler()
     {
-        $this->compiled = app()->config->item('compiled', 'view');
-
         $this->compiler = new BladeCompiler($this->file, $this->compiled);
     }
 
@@ -78,8 +80,6 @@ class Blade
      */
     protected function registerFactory()
     {
-        $this->paths = app()->config->item('paths', 'view');
-
         $factory = new Factory($this->resolver, new FileViewFinder($this->file, $this->paths));
 
         $factory->addExtension('tpl', 'blade');

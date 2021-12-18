@@ -2,9 +2,9 @@
 
 namespace Elegant\Support\Facades;
 
-use Elegant\View\Blade;
+use Elegant\View\ViewFactory;
 
-class View extends Blade
+class View extends ViewFactory
 {
 
 }

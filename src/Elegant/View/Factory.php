@@ -9,7 +9,7 @@ use Elegant\Support\Str;
 use Elegant\View\Engines\EngineResolver;
 use Elegant\Contracts\Support\Arrayable;
 use Elegant\Contracts\View\Factory as FactoryContract;
-use Elegant\Contracts\View\Engine as EngineInterface;
+use Elegant\Contracts\View\Engine;
 
 class Factory implements FactoryContract
 {
@@ -48,6 +48,7 @@ class Factory implements FactoryContract
         'blade.php' => 'blade',
         'php' => 'php',
         'css' => 'file',
+        'html' => 'file',
     ];
 
     /**
@@ -107,6 +108,19 @@ class Factory implements FactoryContract
         $data = array_merge($mergeData, $this->parseData($data));
 
         return $this->viewInstance($view, $path, $data);
+    }
+
+    public function first(array $views, $data = [], $mergeData = [])
+    {
+        $view = Arr::first($views, function ($view) {
+            return $this->exists($view);
+        });
+
+        if (! $view) {
+            throw new InvalidArgumentException('None of the views in the given array exist.');
+        }
+
+        return $this->make($view, $data, $mergeData);
     }
 
     /**
@@ -219,7 +233,7 @@ class Factory implements FactoryContract
      * Get the appropriate view engine for the given path.
      *
      * @param  string  $path
-     * @return EngineInterface
+     * @return Engine
      *
      * @throws InvalidArgumentException
      */

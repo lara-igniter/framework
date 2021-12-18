@@ -136,7 +136,7 @@ if (! function_exists('view')) {
      */
     function view($view = null, $data = [])
     {
-        $factory = new View();
+        $factory = app()->view;
 
         if (func_num_args() === 0) {
             return $factory;
