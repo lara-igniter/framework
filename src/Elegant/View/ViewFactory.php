@@ -52,7 +52,7 @@ class ViewFactory
      */
     protected function registerBladeCompiler()
     {
-        $this->compiler = new BladeCompiler($this->file, $this->compiled);
+        app()->{'blade.compiler'} = new BladeCompiler($this->file, $this->compiled);
     }
 
     /**
@@ -62,7 +62,7 @@ class ViewFactory
      */
     protected function registerEngineResolver()
     {
-        $compiler = $this->compiler;
+        $compiler = app()->{'blade.compiler'};
 
         $resolver = new EngineResolver;
 

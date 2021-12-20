@@ -10,7 +10,7 @@ abstract class Facade
      * The application instance being facaded.
      *
      */
-    protected static $app;
+    protected static $app = [];
 
     /**
      * The resolved object instances.
@@ -58,7 +58,7 @@ abstract class Facade
         }
 
         if (static::$app) {
-            return static::$resolvedInstance[$name] = static::$app[$name];
+            return static::$resolvedInstance[$name] = static::$app->$name;
         }
     }
 
