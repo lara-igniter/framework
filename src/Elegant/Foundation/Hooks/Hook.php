@@ -2,11 +2,13 @@
 
 namespace Elegant\Foundation\Hooks;
 
+use Elegant\Foundation\AliasLoader;
 use Elegant\Foundation\Hooks\Contracts\DisplayOverrideHookInterface;
 use Elegant\Foundation\Hooks\Contracts\PostControllerConstructorHookInterface;
 use Elegant\Foundation\Hooks\Contracts\PostControllerHookInterface;
 use Elegant\Foundation\Hooks\Contracts\PreControllerHookInterface;
 use Elegant\Foundation\Hooks\Contracts\PreSystemHookInterface;
+use Elegant\Support\Facades\Facade;
 use Exception;
 
 class Hook
@@ -114,6 +116,12 @@ class Hook
      */
     private static function postControllerConstructorHook($hooks, &$params)
     {
+        Facade::setFacadeApplication(app());
+
+        if(array_key_exists('aliases', $hooks)) {
+            AliasLoader::getInstance($hooks['aliases'])->register();
+        }
+
         if(array_key_exists('providers', $hooks)) {
             foreach ($hooks['providers'] as $hook) {
                 $hookInstance = new $hook();

@@ -2,9 +2,15 @@
 
 namespace Elegant\Support\Facades;
 
-use Elegant\View\BladeFactory;
-
-class Blade extends BladeFactory
+class Blade extends Facade
 {
-
+    /**
+     * Get the registered name of the component.
+     *
+     * @return string
+     */
+    protected static function getFacadeAccessor()
+    {
+        return 'blade.compiler';
+    }
 }
