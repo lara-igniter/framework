@@ -39,48 +39,13 @@ class Application extends Container implements ApplicationContract
      */
     protected $environmentFile = '.env';
 
-    /**
-     * @throws BindingResolutionException
-     */
     public function __construct($basePath = null)
     {
         if ($basePath) {
             $this->setBasePath($basePath);
         }
 
-        $this->registerBaseBindings();
-        $this->registerCoreContainerAliases();
-
         $this->createDotenv();
-    }
-
-    /**
-     * Get the version number of the application.
-     *
-     * @return string
-     */
-    public function version()
-    {
-        return static::VERSION;
-    }
-
-    /**
-     * Register the basic bindings into the container.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     */
-    protected function registerBaseBindings()
-    {
-        static::setInstance($this);
-
-        $this->instance('app', $this);
-
-        $this->instance(Container::class, $this);
-
-        $this->instance(PackageManifest::class, new PackageManifest(
-            new Filesystem, $this->basePath(), $this->getCachedPackagesPath()
-        ));
     }
 
     /**
@@ -118,24 +83,5 @@ class Application extends Container implements ApplicationContract
             $this->environmentPath(),
             $this->environmentFile()
         )->load();
-    }
-
-    /**
-     * Register the core class aliases in the container.
-     *
-     * @return void
-     */
-    public function registerCoreContainerAliases()
-    {
-        foreach ([
-                     'app'                  => [self::class, \Elegant\Contracts\Container\Container::class, \Elegant\Contracts\Foundation\Application::class, \Psr\Container\ContainerInterface::class],
-                     'blade.compiler'       => [\Elegant\View\Compilers\BladeCompiler::class],
-                     'files'                => [\Elegant\Filesystem\Filesystem::class],
-                     'view'                 => [\Elegant\View\Factory::class, \Elegant\Contracts\View\Factory::class],
-                 ] as $key => $aliases) {
-            foreach ($aliases as $alias) {
-                $this->alias($key, $alias);
-            }
-        }
     }
 }
