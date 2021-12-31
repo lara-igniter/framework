@@ -3,13 +3,9 @@
 namespace Elegant\Foundation;
 
 use Dotenv\Dotenv;
-use Elegant\Container\Container;
-use Elegant\Contracts\Container\BindingResolutionException;
-use Elegant\Filesystem\Filesystem;
 use Elegant\Support\Env;
-use Elegant\Contracts\Foundation\Application as ApplicationContract;
 
-class Application extends Container implements ApplicationContract
+class Application
 {
     /**
      * The Laraigniter framework version.
