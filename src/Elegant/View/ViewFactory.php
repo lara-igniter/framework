@@ -2,57 +2,37 @@
 
 namespace Elegant\View;
 
-use Elegant\Filesystem\Filesystem;
 use Elegant\View\Compilers\BladeCompiler;
 use Elegant\View\Engines\CompilerEngine;
 use Elegant\View\Engines\EngineResolver;
+use Elegant\View\Engines\FileEngine;
+use Elegant\View\Engines\PhpEngine;
 
 class ViewFactory
 {
-    protected $compiled;
-
-    protected $paths = [];
-
-    protected $file;
-
-    public $compiler;
-
-    protected $resolver;
-
     protected $factory;
 
     public function __construct()
     {
         app()->config->load('view', TRUE);
 
-        $this->compiled = app()->config->item('compiled', 'view');
+        $app['view.compiled'] = app()->config->item('compiled', 'view');
 
-        $this->paths = app()->config->item('paths', 'view');
+        $app['view.paths'] = app()->config->item('paths', 'view');
 
-        $this->registerFileSystem();
-        $this->registerBladeCompiler();
-        $this->registerEngineResolver();
+        $this->registerViewFinder($app);
+        $this->registerEngineResolver($app);
         $this->registerFactory();
     }
 
     /**
-     * Register the File system implementation.
+     * Register the view finder implementation.
      *
      * @return void
      */
-    protected function registerFileSystem()
+    public function registerViewFinder($app)
     {
-        $this->file = new Filesystem();
-    }
-
-    /**
-     * Register the Blade compiler implementation.
-     *
-     * @return void
-     */
-    protected function registerBladeCompiler()
-    {
-        app()->{'blade.compiler'} = new BladeCompiler($this->file, $this->compiled);
+        app()->{'view.finder'} = new FileViewFinder(app()->files, $app['view.paths']);
     }
 
     /**
@@ -60,17 +40,56 @@ class ViewFactory
      *
      * @return void
      */
-    protected function registerEngineResolver()
+    public function registerEngineResolver($app)
     {
-        $compiler = app()->{'blade.compiler'};
-
         $resolver = new EngineResolver;
 
-        $resolver->register('blade', function () use ($compiler) {
-            return new CompilerEngine($compiler);
-        });
+        app()->{'blade.compiler'} = new BladeCompiler(app()->files, $app['view.compiled']);
 
-        $this->resolver = $resolver;
+        foreach (['file', 'php', 'blade'] as $engine) {
+            $this->{'register'.ucfirst($engine).'Engine'}($resolver);
+        }
+
+        app()->{'view.engine.resolver'} = $resolver;
+    }
+
+    /**
+     * Register the file engine implementation.
+     *
+     * @param EngineResolver $resolver
+     * @return void
+     */
+    public function registerFileEngine($resolver)
+    {
+        $resolver->register('file', function () {
+            return new FileEngine;
+        });
+    }
+
+    /**
+     * Register the PHP engine implementation.
+     *
+     * @param EngineResolver $resolver
+     * @return void
+     */
+    public function registerPhpEngine($resolver)
+    {
+        $resolver->register('php', function () {
+            return new PhpEngine;
+        });
+    }
+
+    /**
+     * Register the Blade engine implementation.
+     *
+     * @param EngineResolver $resolver
+     * @return void
+     */
+    public function registerBladeEngine($resolver)
+    {
+        $resolver->register('blade', function () {
+            return new CompilerEngine(app()->{'blade.compiler'});
+        });
     }
 
     /**
@@ -78,13 +97,25 @@ class ViewFactory
      *
      * @return void
      */
-    protected function registerFactory()
+    public function registerFactory()
     {
-        $factory = new Factory($this->resolver, new FileViewFinder($this->file, $this->paths));
+        $resolver = app()->{'view.engine.resolver'};
 
-        $factory->addExtension('tpl', 'blade');
+        $finder = app()->{'view.finder'};
 
-        $this->factory = $factory;
+        $this->factory = $this->createFactory($resolver, $finder);
+    }
+
+    /**
+     * Create a new Factory Instance.
+     *
+     * @param EngineResolver $resolver
+     * @param ViewFinderInterface $finder
+     * @return Factory
+     */
+    public function createFactory($resolver, $finder)
+    {
+        return new Factory($resolver, $finder);
     }
 
     public function make($view, $data = [])

@@ -118,9 +118,10 @@ class Hook
     {
         Facade::setFacadeApplication(app());
 
-        if(array_key_exists('aliases', $hooks)) {
-            AliasLoader::getInstance($hooks['aliases'])->register();
-        }
+        // Comment for now!!
+//        if(array_key_exists('aliases', $hooks)) {
+//            AliasLoader::getInstance($hooks['aliases'])->register();
+//        }
 
         if(array_key_exists('providers', $hooks)) {
             foreach ($hooks['providers'] as $hook) {

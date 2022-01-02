@@ -4,7 +4,6 @@ namespace Elegant\View;
 
 use Elegant\Foundation\Hooks\Contracts\PostControllerConstructorHookInterface;
 use Elegant\Foundation\Hooks\Contracts\PreSystemHookInterface;
-use Elegant\Support\Facades\View;
 
 class ViewServiceProvider implements PreSystemHookInterface, PostControllerConstructorHookInterface
 {
@@ -17,6 +16,6 @@ class ViewServiceProvider implements PreSystemHookInterface, PostControllerConst
 
     public function postControllerConstructorHook(&$params)
     {
-        app()->view = new View();
+        app()->view = new ViewFactory();
     }
 }

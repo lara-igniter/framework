@@ -2,9 +2,15 @@
 
 namespace Elegant\Support\Facades;
 
-use Elegant\View\ViewFactory;
-
-class View extends ViewFactory
+class View extends Facade
 {
-
+    /**
+     * Get the registered name of the component.
+     *
+     * @return string
+     */
+    protected static function getFacadeAccessor()
+    {
+        return 'view';
+    }
 }
