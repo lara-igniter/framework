@@ -3,9 +3,11 @@
 namespace Elegant\Foundation\Hooks;
 
 use Elegant\Foundation\AliasLoader;
+use Elegant\Foundation\Hooks\Contracts\CacheOverrideHookInterface;
 use Elegant\Foundation\Hooks\Contracts\DisplayOverrideHookInterface;
 use Elegant\Foundation\Hooks\Contracts\PostControllerConstructorHookInterface;
 use Elegant\Foundation\Hooks\Contracts\PostControllerHookInterface;
+use Elegant\Foundation\Hooks\Contracts\PostSystemHookInterface;
 use Elegant\Foundation\Hooks\Contracts\PreControllerHookInterface;
 use Elegant\Foundation\Hooks\Contracts\PreSystemHookInterface;
 use Elegant\Support\Facades\Facade;
@@ -192,7 +194,7 @@ class Hook
 
                 if (method_exists($hookInstance, 'cacheOverrideHook')
                     && $hookInstance instanceof CacheOverrideHookInterface) {
-                    $hookInstance->displayOverrideHook();
+                    $hookInstance->cacheOverrideHook();
                 }
             }
         }
@@ -213,7 +215,7 @@ class Hook
 
                 if (method_exists($hookInstance, 'postSystemHook')
                     && $hookInstance instanceof PostSystemHookInterface) {
-                    $hookInstance->displayOverrideHook();
+                    $hookInstance->postSystemHook();
                 }
             }
         }
