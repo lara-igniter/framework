@@ -142,6 +142,6 @@ if (! function_exists('view')) {
             return $factory;
         }
 
-        return $factory->make($view, $data);
+        echo $factory->make($view, $data);
     }
 }
