@@ -3,6 +3,7 @@
 namespace Elegant\Filesystem;
 
 use Elegant\Contracts\Filesystem\FileNotFoundException;
+use ErrorException;
 use Exception;
 
 class Filesystem
@@ -90,6 +91,31 @@ class Filesystem
     }
 
     /**
+     * Delete the file at a given path.
+     *
+     * @param  string|array  $paths
+     * @return bool
+     */
+    public function delete($paths)
+    {
+        $paths = is_array($paths) ? $paths : func_get_args();
+
+        $success = true;
+
+        foreach ($paths as $path) {
+            try {
+                if (! @unlink($path)) {
+                    $success = false;
+                }
+            } catch (ErrorException $e) {
+                $success = false;
+            }
+        }
+
+        return $success;
+    }
+
+    /**
      * Get the file's last modification time.
      *
      * @param  string  $path
@@ -109,5 +135,17 @@ class Filesystem
     public function isFile($file)
     {
         return is_file($file);
+    }
+
+    /**
+     * Find path names matching a given pattern.
+     *
+     * @param  string  $pattern
+     * @param  int     $flags
+     * @return array
+     */
+    public function glob($pattern, $flags = 0)
+    {
+        return glob($pattern, $flags);
     }
 }

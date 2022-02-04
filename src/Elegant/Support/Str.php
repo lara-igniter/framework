@@ -14,6 +14,18 @@ class Str
     protected static $snakeCache = [];
 
     /**
+     * Return the remainder of a string after the first occurrence of a given value.
+     *
+     * @param  string  $subject
+     * @param  string  $search
+     * @return string
+     */
+    public static function after($subject, $search)
+    {
+        return $search === '' ? $subject : array_reverse(explode($search, $subject, 2))[0];
+    }
+
+    /**
      * Determine if a given string contains a given substring.
      *
      * @param  string  $haystack
@@ -89,6 +101,22 @@ class Str
         }
 
         return false;
+    }
+
+    /**
+     * Return the length of the given string.
+     *
+     * @param  string  $value
+     * @param  string|null  $encoding
+     * @return int
+     */
+    public static function length($value, $encoding = null)
+    {
+        if ($encoding) {
+            return mb_strlen($value, $encoding);
+        }
+
+        return mb_strlen($value);
     }
 
     /**

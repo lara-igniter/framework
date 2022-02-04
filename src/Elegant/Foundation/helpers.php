@@ -30,6 +30,19 @@ if (! function_exists('storage_path')) {
     }
 }
 
+if (! function_exists('app_path')) {
+    /**
+     * Get the path to the storage folder.
+     *
+     * @param  string  $path
+     * @return string
+     */
+    function app_path($path = '')
+    {
+        return APPPATH . ($path ? DIRECTORY_SEPARATOR.$path : $path);
+    }
+}
+
 if (!function_exists('route')) {
     /**
      * Gets a route URL by its name
