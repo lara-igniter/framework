@@ -38,16 +38,8 @@ class RouteServiceProvider implements PreSystemHookInterface,
             mkdir(APPPATH . '/middleware');
         }
 
-        if (!file_exists(APPPATH . '/routes/web.php')) {
-            copy(realpath(dirname(__DIR__) . './Resources/WebRoutes.php'), APPPATH . '/routes/web.php');
-        }
-
         if ($isWeb) {
             require_once(APPPATH . '/routes/web.php');
-        }
-
-        if (!file_exists(APPPATH . '/routes/api.php')) {
-            copy(realpath(dirname(__DIR__) . './Resources/ApiRoutes.php'), APPPATH . '/routes/api.php');
         }
 
         if ($isAjax || $isWeb) {
@@ -58,17 +50,9 @@ class RouteServiceProvider implements PreSystemHookInterface,
             );
         }
 
-        if (!file_exists(APPPATH . '/routes/console.php')) {
-            copy(realpath(dirname(__DIR__) . './Resources/ConsoleRoutes.php'), APPPATH . '/routes/console.php');
-        }
-
         if ($isCli) {
             require_once(APPPATH . '/routes/console.php');
             Route::set('default_controller', Route::DEFAULT_CONTROLLER);
-        }
-
-        if (!file_exists(APPPATH . '/controllers/' . Route::DEFAULT_CONTROLLER . '.php')) {
-            copy(realpath(dirname(__DIR__) . './Resources/Controller.php'), APPPATH . '/controllers/' . Route::DEFAULT_CONTROLLER . '.php');
         }
 
         require_once(realpath(dirname(__DIR__) . './Foundation/helpers.php'));
