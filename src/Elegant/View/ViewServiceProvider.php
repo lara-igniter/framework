@@ -66,7 +66,7 @@ class ViewServiceProvider implements PreSystem, PostControllerConstructor
      * @param EngineResolver $resolver
      * @return void
      */
-    public function registerFileEngine($resolver)
+    public function registerFileEngine(EngineResolver $resolver)
     {
         $resolver->register('file', function () {
             return new FileEngine;
@@ -79,7 +79,7 @@ class ViewServiceProvider implements PreSystem, PostControllerConstructor
      * @param EngineResolver $resolver
      * @return void
      */
-    public function registerPhpEngine($resolver)
+    public function registerPhpEngine(EngineResolver $resolver)
     {
         $resolver->register('php', function () {
             return new PhpEngine;
@@ -92,7 +92,7 @@ class ViewServiceProvider implements PreSystem, PostControllerConstructor
      * @param EngineResolver $resolver
      * @return void
      */
-    public function registerBladeEngine($resolver)
+    public function registerBladeEngine(EngineResolver $resolver)
     {
         $resolver->register('blade', function () {
             return new CompilerEngine(app()->{'blade.compiler'});
@@ -104,17 +104,13 @@ class ViewServiceProvider implements PreSystem, PostControllerConstructor
      *
      * @return Factory
      */
-    public function registerFactory()
+    public function registerFactory(): Factory
     {
         $resolver = app()->{'view.engine.resolver'};
 
         $finder = app()->{'view.finder'};
 
-        $factory = $this->createFactory($resolver, $finder);
-
-//        $factory->share('app', 'test_data');
-
-        return $factory;
+        return $this->createFactory($resolver, $finder);
     }
 
     /**
@@ -124,7 +120,7 @@ class ViewServiceProvider implements PreSystem, PostControllerConstructor
      * @param ViewFinderInterface $finder
      * @return Factory
      */
-    public function createFactory($resolver, $finder)
+    public function createFactory($resolver, $finder): Factory
     {
         return new Factory($resolver, $finder);
     }
