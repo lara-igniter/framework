@@ -1,18 +1,18 @@
 <?php
 
-namespace Elegant\Foundation\Hooks;
+namespace Elegant\Foundation;
 
-use Elegant\Contracts\Hook\CacheOverrideHookInterface;
-use Elegant\Contracts\Hook\DisplayOverrideHookInterface;
-use Elegant\Contracts\Hook\PostControllerConstructorHookInterface;
-use Elegant\Contracts\Hook\PostControllerHookInterface;
-use Elegant\Contracts\Hook\PostSystemHookInterface;
+use Elegant\Contracts\Hook\CacheOverride;
+use Elegant\Contracts\Hook\DisplayOverride;
+use Elegant\Contracts\Hook\PostControllerConstructor;
+use Elegant\Contracts\Hook\PostController;
+use Elegant\Contracts\Hook\PostSystem;
 use Elegant\Contracts\Hook\PreController;
 use Elegant\Contracts\Hook\PreSystem;
 use Elegant\Support\Facades\Facade;
 use Exception;
 
-class Hook
+class Hooks
 {
     /**
      * Gets the Routing hooks
@@ -129,7 +129,7 @@ class Hook
                 $hookInstance = new $hook();
 
                 if (method_exists($hookInstance, 'postControllerConstructorHook')
-                    && $hookInstance instanceof PostControllerConstructorHookInterface) {
+                    && $hookInstance instanceof PostControllerConstructor) {
                     $hookInstance->postControllerConstructorHook($params);
                 }
             }
@@ -150,7 +150,7 @@ class Hook
                 $hookInstance = new $hook();
 
                 if (method_exists($hookInstance, 'postControllerHook')
-                    && $hookInstance instanceof PostControllerHookInterface) {
+                    && $hookInstance instanceof PostController) {
                     $hookInstance->postControllerHook();
                 }
             }
@@ -171,7 +171,7 @@ class Hook
                 $hookInstance = new $hook();
 
                 if (method_exists($hookInstance, 'displayOverrideHook')
-                    && $hookInstance instanceof DisplayOverrideHookInterface) {
+                    && $hookInstance instanceof DisplayOverride) {
                     $hookInstance->displayOverrideHook();
                 }
             }
@@ -192,7 +192,7 @@ class Hook
                 $hookInstance = new $hook();
 
                 if (method_exists($hookInstance, 'cacheOverrideHook')
-                    && $hookInstance instanceof CacheOverrideHookInterface) {
+                    && $hookInstance instanceof CacheOverride) {
                     $hookInstance->cacheOverrideHook();
                 }
             }
@@ -213,7 +213,7 @@ class Hook
                 $hookInstance = new $hook();
 
                 if (method_exists($hookInstance, 'postSystemHook')
-                    && $hookInstance instanceof PostSystemHookInterface) {
+                    && $hookInstance instanceof PostSystem) {
                     $hookInstance->postSystemHook();
                 }
             }
