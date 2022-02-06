@@ -2,10 +2,10 @@
 
 namespace Elegant\Foundation;
 
+use Elegant\Contracts\Hook\PostControllerConstructor;
 use Elegant\Filesystem\Filesystem;
-use Elegant\Foundation\Hooks\Contracts\PostControllerConstructorHookInterface;
 
-class AppServiceProvider implements PostControllerConstructorHookInterface
+class AppServiceProvider implements PostControllerConstructor
 {
     public function postControllerConstructorHook(&$params)
     {

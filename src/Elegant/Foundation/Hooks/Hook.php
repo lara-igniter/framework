@@ -2,14 +2,13 @@
 
 namespace Elegant\Foundation\Hooks;
 
-use Elegant\Foundation\AliasLoader;
-use Elegant\Foundation\Hooks\Contracts\CacheOverrideHookInterface;
-use Elegant\Foundation\Hooks\Contracts\DisplayOverrideHookInterface;
-use Elegant\Foundation\Hooks\Contracts\PostControllerConstructorHookInterface;
-use Elegant\Foundation\Hooks\Contracts\PostControllerHookInterface;
-use Elegant\Foundation\Hooks\Contracts\PostSystemHookInterface;
-use Elegant\Foundation\Hooks\Contracts\PreControllerHookInterface;
-use Elegant\Foundation\Hooks\Contracts\PreSystemHookInterface;
+use Elegant\Contracts\Hook\CacheOverrideHookInterface;
+use Elegant\Contracts\Hook\DisplayOverrideHookInterface;
+use Elegant\Contracts\Hook\PostControllerConstructorHookInterface;
+use Elegant\Contracts\Hook\PostControllerHookInterface;
+use Elegant\Contracts\Hook\PostSystemHookInterface;
+use Elegant\Contracts\Hook\PreController;
+use Elegant\Contracts\Hook\PreSystem;
 use Elegant\Support\Facades\Facade;
 use Exception;
 
@@ -76,7 +75,7 @@ class Hook
                 $hookInstance = new $hook();
 
                 if(method_exists($hookInstance, 'preSystemHook')
-                    && $hookInstance instanceof PreSystemHookInterface) {
+                    && $hookInstance instanceof PreSystem) {
                     $hookInstance->preSystemHook();
                 }
             }
@@ -101,7 +100,7 @@ class Hook
                 $hookInstance = new $hook();
 
                 if (method_exists($hookInstance, 'preControllerHook')
-                    && $hookInstance instanceof PreControllerHookInterface) {
+                    && $hookInstance instanceof PreController) {
                     $hookInstance->preControllerHook($params, $URI, $class, $method);
                 }
             }

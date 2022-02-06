@@ -2,15 +2,15 @@
 
 namespace Elegant\View;
 
-use Elegant\Foundation\Hooks\Contracts\PostControllerConstructorHookInterface;
-use Elegant\Foundation\Hooks\Contracts\PreSystemHookInterface;
+use Elegant\Contracts\Hook\PostControllerConstructor;
+use Elegant\Contracts\Hook\PreSystem;
 use Elegant\View\Compilers\BladeCompiler;
 use Elegant\View\Engines\CompilerEngine;
 use Elegant\View\Engines\EngineResolver;
 use Elegant\View\Engines\FileEngine;
 use Elegant\View\Engines\PhpEngine;
 
-class ViewServiceProvider implements PreSystemHookInterface, PostControllerConstructorHookInterface
+class ViewServiceProvider implements PreSystem, PostControllerConstructor
 {
     public function preSystemHook()
     {

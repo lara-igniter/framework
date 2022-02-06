@@ -2,11 +2,11 @@
 
 namespace Elegant\Foundation\Exceptions;
 
-use Whoops\Run as WhoopsRun;
+use Elegant\Contracts\Hook\PreSystem;
 use Whoops\Handler\PrettyPageHandler;
-use Elegant\Foundation\Hooks\Contracts\PreSystemHookInterface;
+use Whoops\Run as WhoopsRun;
 
-class WhoopsServiceProvider implements PreSystemHookInterface
+class WhoopsServiceProvider implements PreSystem
 {
     public function preSystemHook()
     {

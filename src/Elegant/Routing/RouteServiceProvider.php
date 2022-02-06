@@ -2,22 +2,22 @@
 
 namespace Elegant\Routing;
 
-use Elegant\Foundation\Hooks\Contracts\DisplayOverrideHookInterface;
-use Elegant\Foundation\Hooks\Contracts\PostControllerConstructorHookInterface;
-use Elegant\Foundation\Hooks\Contracts\PostControllerHookInterface;
-use Elegant\Foundation\Hooks\Contracts\PreControllerHookInterface;
-use Elegant\Foundation\Hooks\Contracts\PreSystemHookInterface;
+use Elegant\Contracts\Hook\DisplayOverride;
+use Elegant\Contracts\Hook\PostControllerConstructor;
+use Elegant\Contracts\Hook\PostController;
+use Elegant\Contracts\Hook\PreController;
+use Elegant\Contracts\Hook\PreSystem;
 use Elegant\Routing\Exceptions\RouteNotFoundException;
 use Elegant\Routing\Middleware\Middleware;
 use Elegant\Routing\Middleware\RouteAjaxMiddleware;
 use Elegant\Routing\RouteBuilder as Route;
 use Elegant\Support\Utils;
 
-class RouteServiceProvider implements PreSystemHookInterface,
-    PreControllerHookInterface,
-    PostControllerConstructorHookInterface,
-    PostControllerHookInterface,
-    DisplayOverrideHookInterface
+class RouteServiceProvider implements PreSystem,
+    PreController,
+    PostControllerConstructor,
+    PostController,
+    DisplayOverride
 {
     public function preSystemHook()
     {
