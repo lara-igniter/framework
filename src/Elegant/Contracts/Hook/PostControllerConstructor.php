@@ -11,5 +11,5 @@ interface PostControllerConstructor
      *
      * @return void
      */
-    public function postControllerConstructorHook(&$params);
+    public function postControllerConstructor(&$params);
 }

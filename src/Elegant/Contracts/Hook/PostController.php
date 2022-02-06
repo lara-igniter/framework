@@ -9,5 +9,5 @@ interface PostController
      *
      * @return void
      */
-    public function postControllerHook();
+    public function postController();
 }

@@ -9,5 +9,5 @@ interface PostSystem
      *
      * @return void
      */
-    public function postSystemHook();
+    public function postSystem();
 }

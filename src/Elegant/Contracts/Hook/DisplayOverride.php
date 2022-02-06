@@ -9,5 +9,5 @@ interface DisplayOverride
      *
      * @return void
      */
-    public function displayOverrideHook();
+    public function displayOverride();
 }

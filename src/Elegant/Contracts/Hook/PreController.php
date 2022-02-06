@@ -13,5 +13,5 @@ interface PreController
      * @param string $method
      * @return void
      */
-    public function preControllerHook(&$params, &$URI, &$class, &$method);
+    public function preController(&$params, &$URI, &$class, &$method);
 }

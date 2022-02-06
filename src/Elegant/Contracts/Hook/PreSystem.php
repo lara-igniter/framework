@@ -9,5 +9,5 @@ interface PreSystem
      *
      * @return void
      */
-    public function preSystemHook();
+    public function preSystem();
 }

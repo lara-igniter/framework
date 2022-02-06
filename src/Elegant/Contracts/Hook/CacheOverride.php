@@ -9,5 +9,5 @@ interface CacheOverride
      *
      * @return void
      */
-    public function cacheOverrideHook();
+    public function cacheOverride();
 }
