@@ -8,7 +8,7 @@ use Whoops\Run as WhoopsRun;
 
 class WhoopsServiceProvider implements PreSystem
 {
-    public function preSystemHook()
+    public function preSystem()
     {
         $whoops = new WhoopsRun;
         $whoops->pushHandler(new PrettyPageHandler());

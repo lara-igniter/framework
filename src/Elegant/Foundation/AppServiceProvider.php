@@ -7,7 +7,7 @@ use Elegant\Filesystem\Filesystem;
 
 class AppServiceProvider implements PostControllerConstructor
 {
-    public function postControllerConstructorHook(&$params)
+    public function postControllerConstructor(&$params)
     {
         app()->files = new Filesystem();
     }

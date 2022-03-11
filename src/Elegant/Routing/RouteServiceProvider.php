@@ -19,7 +19,7 @@ class RouteServiceProvider implements PreSystem,
     PostController,
     DisplayOverride
 {
-    public function preSystemHook()
+    public function preSystem()
     {
         $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH'])
             && (!empty($_SERVER['HTTP_X_REQUESTED_WITH'])
@@ -98,7 +98,7 @@ class RouteServiceProvider implements PreSystem,
         Route::setCurrentRoute($currentRoute);
     }
 
-    public function preControllerHook(&$params, &$URI, &$class, &$method)
+    public function preController(&$params, &$URI, &$class, &$method)
     {
         $route = Route::getCurrentRoute();
 
@@ -210,7 +210,7 @@ class RouteServiceProvider implements PreSystem,
         }
     }
 
-    public function postControllerConstructorHook(&$params)
+    public function postControllerConstructor(&$params)
     {
         // Current route configuration and dispatch
         app()->route = Route::getCurrentRoute();
@@ -251,7 +251,7 @@ class RouteServiceProvider implements PreSystem,
         }
     }
 
-    public function postControllerHook()
+    public function postController()
     {
         if (app()->route->is404) {
             return;
@@ -262,7 +262,7 @@ class RouteServiceProvider implements PreSystem,
         }
     }
 
-    public function displayOverrideHook()
+    public function displayOverride()
     {
         $output = app()->output->get_output();
 

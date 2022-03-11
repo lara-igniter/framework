@@ -12,14 +12,14 @@ use Elegant\View\Engines\PhpEngine;
 
 class ViewServiceProvider implements PreSystem, PostControllerConstructor
 {
-    public function preSystemHook()
+    public function preSystem()
     {
         if (!file_exists(APPPATH . '/config/view.php')) {
             copy(realpath(dirname(__DIR__) . './Resources/ConfigView.php'), APPPATH . '/config/view.php');
         }
     }
 
-    public function postControllerConstructorHook(&$params)
+    public function postControllerConstructor(&$params)
     {
         app()->config->load('view', TRUE);
 

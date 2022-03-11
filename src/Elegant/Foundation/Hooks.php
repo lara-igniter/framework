@@ -74,9 +74,9 @@ class Hooks
             foreach($hooks['providers'] as $hook) {
                 $hookInstance = new $hook();
 
-                if(method_exists($hookInstance, 'preSystemHook')
+                if (method_exists($hookInstance, 'preSystem')
                     && $hookInstance instanceof PreSystem) {
-                    $hookInstance->preSystemHook();
+                    $hookInstance->preSystem();
                 }
             }
         }
@@ -99,9 +99,9 @@ class Hooks
             foreach ($hooks['providers'] as $hook) {
                 $hookInstance = new $hook();
 
-                if (method_exists($hookInstance, 'preControllerHook')
+                if (method_exists($hookInstance, 'preController')
                     && $hookInstance instanceof PreController) {
-                    $hookInstance->preControllerHook($params, $URI, $class, $method);
+                    $hookInstance->preController($params, $URI, $class, $method);
                 }
             }
         }
@@ -128,9 +128,9 @@ class Hooks
             foreach ($hooks['providers'] as $hook) {
                 $hookInstance = new $hook();
 
-                if (method_exists($hookInstance, 'postControllerConstructorHook')
+                if (method_exists($hookInstance, 'postControllerConstructor')
                     && $hookInstance instanceof PostControllerConstructor) {
-                    $hookInstance->postControllerConstructorHook($params);
+                    $hookInstance->postControllerConstructor($params);
                 }
             }
         }
@@ -149,9 +149,9 @@ class Hooks
             foreach ($hooks['providers'] as $hook) {
                 $hookInstance = new $hook();
 
-                if (method_exists($hookInstance, 'postControllerHook')
+                if (method_exists($hookInstance, 'postController')
                     && $hookInstance instanceof PostController) {
-                    $hookInstance->postControllerHook();
+                    $hookInstance->postController();
                 }
             }
         }
@@ -170,9 +170,9 @@ class Hooks
             foreach ($hooks['providers'] as $hook) {
                 $hookInstance = new $hook();
 
-                if (method_exists($hookInstance, 'displayOverrideHook')
+                if (method_exists($hookInstance, 'displayOverride')
                     && $hookInstance instanceof DisplayOverride) {
-                    $hookInstance->displayOverrideHook();
+                    $hookInstance->displayOverride();
                 }
             }
         }
@@ -191,9 +191,9 @@ class Hooks
             foreach ($hooks['providers'] as $hook) {
                 $hookInstance = new $hook();
 
-                if (method_exists($hookInstance, 'cacheOverrideHook')
+                if (method_exists($hookInstance, 'cacheOverride')
                     && $hookInstance instanceof CacheOverride) {
-                    $hookInstance->cacheOverrideHook();
+                    $hookInstance->cacheOverride();
                 }
             }
         }
@@ -212,9 +212,9 @@ class Hooks
             foreach ($hooks['providers'] as $hook) {
                 $hookInstance = new $hook();
 
-                if (method_exists($hookInstance, 'postSystemHook')
+                if (method_exists($hookInstance, 'postSystem')
                     && $hookInstance instanceof PostSystem) {
-                    $hookInstance->postSystemHook();
+                    $hookInstance->postSystem();
                 }
             }
         }
