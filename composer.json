@@ -25,6 +25,7 @@
         "vlucas/phpdotenv": "^5.2"
     },
     "replace": {
+        "lara-elegant/collections": "self.version",
         "lara-elegant/contracts": "self.version",
         "lara-elegant/filesystem": "self.version",
         "illuminate/macroable": "self.version"
