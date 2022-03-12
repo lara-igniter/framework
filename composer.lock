@@ -1,0 +1,115 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "34a504d8c920314d527c311baf3b6b04",
+    "packages": [
+        {
+            "name": "lara-elegant/contracts",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/lara-elegant/contracts.git",
+                "reference": "9ee14748eb1f87afed6d3ecefda4e0daada522f3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/lara-elegant/contracts/zipball/9ee14748eb1f87afed6d3ecefda4e0daada522f3",
+                "reference": "9ee14748eb1f87afed6d3ecefda4e0daada522f3",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.3|^8.0"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Elegant\\Contracts\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "George Tsachrelias",
+                    "email": "giorgosstab@laraigniter.com"
+                }
+            ],
+            "description": "The Elegant Contracts package.",
+            "homepage": "https://laraigniter.com",
+            "support": {
+                "issues": "https://github.com/lara-igniter/framework/issues",
+                "source": "https://github.com/lara-igniter/framework"
+            },
+            "time": "2022-02-07T23:33:36+00:00"
+        },
+        {
+            "name": "lara-elegant/macroable",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/lara-elegant/macroable.git",
+                "reference": "90bb6998bc48dd7c01170a8be08d02d943a2b5e0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/lara-elegant/macroable/zipball/90bb6998bc48dd7c01170a8be08d02d943a2b5e0",
+                "reference": "90bb6998bc48dd7c01170a8be08d02d943a2b5e0",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.3|^8.0"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Elegant\\Support\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "George Tsachrelias",
+                    "email": "giorgosstab@laraigniter.com"
+                }
+            ],
+            "description": "The Elegant Macroable package.",
+            "homepage": "https://laraigniter.com",
+            "support": {
+                "issues": "https://github.com/lara-igniter/framework/issues",
+                "source": "https://github.com/lara-igniter/framework"
+            },
+            "time": "2022-03-12T14:12:28+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {
+        "php": "^7.3|^8.0"
+    },
+    "platform-dev": [],
+    "plugin-api-version": "2.2.0"
+}

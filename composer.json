@@ -1,0 +1,41 @@
+{
+    "name": "lara-elegant/collections",
+    "description": "The Elegant Collections package.",
+    "license": "MIT",
+    "homepage": "https://laraigniter.com",
+    "support": {
+        "issues": "https://github.com/lara-igniter/framework/issues",
+        "source": "https://github.com/lara-igniter/framework"
+    },
+    "authors": [
+        {
+            "name": "George Tsachrelias",
+            "email": "giorgosstab@laraigniter.com"
+        }
+    ],
+    "require": {
+        "php": "^7.3|^8.0",
+        "lara-elegant/contracts": "^1.0",
+        "lara-elegant/macroable": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Elegant\\Support\\": ""
+        },
+        "files": [
+            "helpers.php"
+        ]
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.x-dev"
+        }
+    },
+    "suggest": {
+        "symfony/var-dumper": "Required to use the dump method (^6.1)."
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev"
+}
