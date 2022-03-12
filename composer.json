@@ -26,7 +26,8 @@
     },
     "replace": {
         "lara-elegant/contracts": "self.version",
-        "lara-elegant/filesystem": "self.version"
+        "lara-elegant/filesystem": "self.version",
+        "illuminate/macroable": "self.version"
     },
     "require-dev": {
         "filp/whoops": "2.14.4",
