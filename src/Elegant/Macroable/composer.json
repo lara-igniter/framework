@@ -1,0 +1,33 @@
+{
+    "name": "lara-elegant/macroable",
+    "description": "The Elegant Macroable package.",
+    "license": "MIT",
+    "homepage": "https://laraigniter.com",
+    "support": {
+        "issues": "https://github.com/lara-igniter/framework/issues",
+        "source": "https://github.com/lara-igniter/framework"
+    },
+    "authors": [
+        {
+            "name": "George Tsachrelias",
+            "email": "giorgosstab@laraigniter.com"
+        }
+    ],
+    "require": {
+        "php": "^7.3|^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Elegant\\Support\\": ""
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.x-dev"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev"
+}
