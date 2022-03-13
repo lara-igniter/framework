@@ -29,6 +29,7 @@
         "lara-elegant/contracts": "self.version",
         "lara-elegant/filesystem": "self.version",
         "lara-elegant/macroable": "self.version",
+        "lara-elegant/routing": "self.version",
         "lara-elegant/support": "self.version"
     },
     "require-dev": {
