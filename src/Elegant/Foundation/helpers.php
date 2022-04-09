@@ -4,11 +4,26 @@ use Elegant\Contracts\Support\Arrayable;
 use Elegant\Support\Facades\Route;
 use Elegant\Support\Facades\View;
 
-if (! function_exists('resource_path')) {
+if (!function_exists('public_path')) {
+    /**
+     * Get the path to the public folder.
+     *
+     * @param  string  $path
+     *
+     * @return string
+     */
+    function public_path(string $path = ''): string
+    {
+        return FCPATH.'public'.($path ? DIRECTORY_SEPARATOR.$path : $path);
+    }
+}
+
+if (!function_exists('resource_path')) {
     /**
      * Get the path to the resources folder.
      *
      * @param  string  $path
+     *
      * @return string
      */
     function resource_path($path = '')
