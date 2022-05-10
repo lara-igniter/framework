@@ -30,7 +30,8 @@
         "lara-elegant/filesystem": "self.version",
         "lara-elegant/macroable": "self.version",
         "lara-elegant/routing": "self.version",
-        "lara-elegant/support": "self.version"
+        "lara-elegant/support": "self.version",
+        "lara-elegant/view": "self.version"
     },
     "require-dev": {
         "filp/whoops": "2.14.4",
