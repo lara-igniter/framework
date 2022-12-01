@@ -123,6 +123,23 @@ class Arr
     }
 
     /**
+     * Convert a flatten "dot" notation array into an expanded array.
+     *
+     * @param  iterable  $array
+     * @return array
+     */
+    public static function undot($array)
+    {
+        $results = [];
+
+        foreach ($array as $key => $value) {
+            static::set($results, $key, $value);
+        }
+
+        return $results;
+    }
+
+    /**
      * Get all of the given array except for a specified array of keys.
      *
      * @param array $array
@@ -395,6 +412,72 @@ class Arr
     }
 
     /**
+     * Determines if an array is a list.
+     *
+     * An array is a "list" if all array keys are sequential integers starting from 0 with no gaps in between.
+     *
+     * @param  array  $array
+     * @return bool
+     */
+    public static function isList($array)
+    {
+        return ! self::isAssoc($array);
+    }
+
+    /**
+     * Join all items using a string. The final items can use a separate glue string.
+     *
+     * @param  array  $array
+     * @param  string  $glue
+     * @param  string  $finalGlue
+     * @return string
+     */
+    public static function join($array, $glue, $finalGlue = '')
+    {
+        if ($finalGlue === '') {
+            return implode($glue, $array);
+        }
+
+        if (count($array) === 0) {
+            return '';
+        }
+
+        if (count($array) === 1) {
+            return end($array);
+        }
+
+        $finalItem = array_pop($array);
+
+        return implode($glue, $array).$finalGlue.$finalItem;
+    }
+
+    /**
+     * Key an associative array by a field or using a callback.
+     *
+     * @param  array  $array
+     * @param  callable|array|string  $keyBy
+     * @return array
+     */
+    public static function keyBy($array, $keyBy)
+    {
+        return Collection::make($array)->keyBy($keyBy)->all();
+    }
+
+    /**
+     * Prepend the key names of an associative array.
+     *
+     * @param  array  $array
+     * @param  string  $prependWith
+     * @return array
+     */
+    public static function prependKeysWith($array, $prependWith)
+    {
+        return Collection::make($array)->mapWithKeys(function ($item, $key) use ($prependWith) {
+            return [$prependWith.$key => $item];
+        })->all();
+    }
+
+    /**
      * Get a subset of the items from the given array.
      *
      * @param array $array
@@ -459,6 +542,22 @@ class Arr
     }
 
     /**
+     * Run a map over each of the items in the array.
+     *
+     * @param  array  $array
+     * @param  callable  $callback
+     * @return array
+     */
+    public static function map(array $array, callable $callback)
+    {
+        $keys = array_keys($array);
+
+        $items = array_map($callback, $array, $keys);
+
+        return array_combine($keys, $items);
+    }
+
+    /**
      * Push an item onto the beginning of an array.
      *
      * @param array $array
@@ -492,6 +591,17 @@ class Arr
         static::forget($array, $key);
 
         return $value;
+    }
+
+    /**
+     * Convert the array into a query string.
+     *
+     * @param  array  $array
+     * @return string
+     */
+    public static function query($array)
+    {
+        return http_build_query($array, '', '&', PHP_QUERY_RFC3986);
     }
 
     /**
@@ -643,14 +753,26 @@ class Arr
     }
 
     /**
-     * Convert the array into a query string.
+     * Conditionally compile classes from an array into a CSS class list.
      *
-     * @param array $array
+     * @param  array  $array
      * @return string
      */
-    public static function query($array)
+    public static function toCssClasses($array)
     {
-        return http_build_query($array, '', '&', PHP_QUERY_RFC3986);
+        $classList = static::wrap($array);
+
+        $classes = [];
+
+        foreach ($classList as $class => $constraint) {
+            if (is_numeric($class)) {
+                $classes[] = $constraint;
+            } elseif ($constraint) {
+                $classes[] = $class;
+            }
+        }
+
+        return implode(' ', $classes);
     }
 
     /**
@@ -663,6 +785,19 @@ class Arr
     public static function where($array, callable $callback)
     {
         return array_filter($array, $callback, ARRAY_FILTER_USE_BOTH);
+    }
+
+    /**
+     * Filter items where the value is not null.
+     *
+     * @param  array  $array
+     * @return array
+     */
+    public static function whereNotNull($array)
+    {
+        return static::where($array, function ($value) {
+            return ! is_null($value);
+        });
     }
 
     /**
