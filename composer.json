@@ -14,7 +14,7 @@
         }
     ],
     "require": {
-        "php": "^7.3|^8.0",
+        "php": "^7.4|^8.0",
         "lara-elegant/contracts": "^1.0",
         "lara-elegant/macroable": "^1.0"
     },
