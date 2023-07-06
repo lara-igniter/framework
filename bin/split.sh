@@ -14,6 +14,13 @@ function split()
 function remote()
 {
     git remote add $1 $2 || true
+#    git ls-remote -q "$1" &> /dev/null
+#
+#    if [[ "$?" -eq 0 ]]; then
+#        echo "Repository '$1' already exists!"
+#    else
+#       git remote add $1 $2 || true
+#    fi
 }
 
 git pull origin $CURRENT_BRANCH
