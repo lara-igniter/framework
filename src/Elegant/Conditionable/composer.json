@@ -1,6 +1,6 @@
 {
-    "name": "lara-elegant/macroable",
-    "description": "The Elegant Macroable package.",
+    "name": "lara-elegant/conditionable",
+    "description": "The Elegant Conditionable package.",
     "license": "MIT",
     "homepage": "https://laraigniter.com",
     "support": {
@@ -14,7 +14,7 @@
         }
     ],
     "require": {
-        "php": "^7.3|^8.0"
+        "php": "^7.4|^8.0"
     },
     "autoload": {
         "psr-4": {
