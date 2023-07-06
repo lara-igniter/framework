@@ -45,6 +45,8 @@ use Traversable;
  */
 trait EnumeratesValues
 {
+    use Conditionable;
+
     /**
      * The methods that can be proxied.
      *
@@ -454,34 +456,13 @@ trait EnumeratesValues
     }
 
     /**
-     * Apply the callback if the value is truthy.
-     *
-     * @param bool|mixed $value
-     * @param callable|null $callback
-     * @param callable|null $default
-     * @return static|mixed
-     */
-    public function when($value, callable $callback = null, callable $default = null)
-    {
-        if (!$callback) {
-            return new HigherOrderWhenProxy($this, $value);
-        }
-
-        if ($value) {
-            return $callback($this, $value);
-        } elseif ($default) {
-            return $default($this, $value);
-        }
-
-        return $this;
-    }
-
-    /**
      * Apply the callback if the collection is empty.
      *
-     * @param callable $callback
-     * @param callable|null $default
-     * @return static|mixed
+     * @template TWhenEmptyReturnType
+     *
+     * @param  (callable($this): TWhenEmptyReturnType)  $callback
+     * @param  (callable($this): TWhenEmptyReturnType)|null  $default
+     * @return $this|TWhenEmptyReturnType
      */
     public function whenEmpty(callable $callback, callable $default = null)
     {
@@ -491,9 +472,11 @@ trait EnumeratesValues
     /**
      * Apply the callback if the collection is not empty.
      *
-     * @param callable $callback
-     * @param callable|null $default
-     * @return static|mixed
+     * @template TWhenNotEmptyReturnType
+     *
+     * @param  callable($this): TWhenNotEmptyReturnType  $callback
+     * @param  (callable($this): TWhenNotEmptyReturnType)|null  $default
+     * @return $this|TWhenNotEmptyReturnType
      */
     public function whenNotEmpty(callable $callback, callable $default = null)
     {
@@ -501,24 +484,13 @@ trait EnumeratesValues
     }
 
     /**
-     * Apply the callback if the value is falsy.
-     *
-     * @param bool $value
-     * @param callable $callback
-     * @param callable|null $default
-     * @return static|mixed
-     */
-    public function unless($value, callable $callback, callable $default = null)
-    {
-        return $this->when(!$value, $callback, $default);
-    }
-
-    /**
      * Apply the callback unless the collection is empty.
      *
-     * @param callable $callback
-     * @param callable|null $default
-     * @return static|mixed
+     * @template TUnlessEmptyReturnType
+     *
+     * @param  callable($this): TUnlessEmptyReturnType  $callback
+     * @param  (callable($this): TUnlessEmptyReturnType)|null  $default
+     * @return $this|TUnlessEmptyReturnType
      */
     public function unlessEmpty(callable $callback, callable $default = null)
     {
@@ -528,9 +500,11 @@ trait EnumeratesValues
     /**
      * Apply the callback unless the collection is not empty.
      *
-     * @param callable $callback
-     * @param callable|null $default
-     * @return static|mixed
+     * @template TUnlessNotEmptyReturnType
+     *
+     * @param  callable($this): TUnlessNotEmptyReturnType  $callback
+     * @param  (callable($this): TUnlessNotEmptyReturnType)|null  $default
+     * @return $this|TUnlessNotEmptyReturnType
      */
     public function unlessNotEmpty(callable $callback, callable $default = null)
     {

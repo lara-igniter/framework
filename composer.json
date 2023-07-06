@@ -25,13 +25,16 @@
         "vlucas/phpdotenv": "^5.2"
     },
     "replace": {
+        "lara-elegant/auth": "self.version",
         "lara-elegant/collections": "self.version",
+        "lara-elegant/console": "self.version",
         "lara-elegant/contracts": "self.version",
+        "lara-elegant/database": "self.version",
         "lara-elegant/filesystem": "self.version",
+        "lara-elegant/foundation": "self.version",
+        "lara-elegant/http": "self.version",
         "lara-elegant/macroable": "self.version",
-        "lara-elegant/routing": "self.version",
-        "lara-elegant/support": "self.version",
-        "lara-elegant/view": "self.version"
+        "lara-elegant/support": "self.version"
     },
     "require-dev": {
         "filp/whoops": "2.14.4",

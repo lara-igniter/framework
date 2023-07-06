@@ -10,11 +10,11 @@
     "authors": [
         {
             "name": "George Tsachrelias",
-            "email": "giorgosstab@laraigniter.com"
+            "email": "tsachrelias@laraigniter.com"
         }
     ],
     "require": {
-        "php": "^7.3|^8.0"
+        "php": "^8.1"
     },
     "autoload": {
         "psr-4": {
@@ -23,7 +23,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "1.x-dev"
+            "dev-master": "2.x-dev"
         }
     },
     "config": {

@@ -44,7 +44,7 @@ abstract class Facade
     /**
      * Resolve the facade root instance from the container.
      *
-     * @param object|string $name
+     * @param  object|string  $name
      * @return mixed
      */
     protected static function resolveFacadeInstance($name)
@@ -65,7 +65,7 @@ abstract class Facade
     /**
      * Clear a resolved facade instance.
      *
-     * @param string $name
+     * @param  string  $name
      * @return void
      */
     public static function clearResolvedInstance($name)
@@ -97,8 +97,8 @@ abstract class Facade
     /**
      * Handle dynamic, static calls to the object.
      *
-     * @param string $method
-     * @param array $args
+     * @param  string  $method
+     * @param  array  $args
      * @return mixed
      *
      * @throws RuntimeException
@@ -107,7 +107,7 @@ abstract class Facade
     {
         $instance = static::getFacadeRoot();
 
-        if (!$instance) {
+        if (! $instance) {
             throw new RuntimeException('A facade root has not been set.');
         }
 

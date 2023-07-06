@@ -14,8 +14,20 @@
         }
     ],
     "require": {
-        "php": "^7.3|^8.0",
-        "lara-elegant/contracts": "^1.0"
+        "php": "^8.1",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "ext-ctype": "*",
+        "doctrine/inflector": "^2.0",
+        "lara-elegant/collections": "^2.0",
+        "lara-elegant/conditionable": "^2.0",
+        "lara-elegant/contracts": "^2.0",
+        "lara-elegant/macroable": "^2.0",
+        "league/commonmark": "^2.0.2",
+        "symfony/uid": "^6.0",
+        "ramsey/uuid": "^4.7",
+        "vlucas/phpdotenv": "^5.4.1",
+        "voku/portable-ascii": "^2.0"
     },
     "conflict": {
         "tightenco/collect": "<5.5.33"
@@ -23,14 +35,20 @@
     "autoload": {
         "psr-4": {
             "Elegant\\Support\\": ""
-        }
+        },
+        "files": [
+            "helpers.php"
+        ]
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "1.x-dev"
+            "dev-master": "2.x-dev"
         }
     },
     "suggest": {
+        "league/commonmark": "Required to use Str::markdown() and Stringable::markdown() (^2.0.2).",
+        "ramsey/uuid": "Required to use Str::uuid() (^4.7).",
+        "symfony/uid": "Required to use Str::ulid() (^6.0).",
         "vlucas/phpdotenv": "Required to use the Env class and env helper (^5.4.1)."
     },
     "config": {

@@ -4,7 +4,6 @@ namespace Elegant\Support;
 
 use Dotenv\Repository\Adapter\PutenvAdapter;
 use Dotenv\Repository\RepositoryBuilder;
-use Dotenv\Repository\RepositoryInterface;
 use PhpOption\Option;
 
 class Env
@@ -19,7 +18,7 @@ class Env
     /**
      * The environment repository instance.
      *
-     * @var RepositoryInterface|null
+     * @var \Dotenv\Repository\RepositoryInterface|null
      */
     protected static $repository;
 
@@ -48,7 +47,7 @@ class Env
     /**
      * Get the environment repository instance.
      *
-     * @return RepositoryInterface
+     * @return \Dotenv\Repository\RepositoryInterface
      */
     public static function getRepository()
     {
@@ -68,8 +67,8 @@ class Env
     /**
      * Gets the value of an environment variable.
      *
-     * @param string $key
-     * @param mixed $default
+     * @param  string  $key
+     * @param  mixed  $default
      * @return mixed
      */
     public static function get($key, $default = null)
@@ -97,8 +96,6 @@ class Env
 
                 return $value;
             })
-            ->getOrCall(function () use ($default) {
-                return value($default);
-            });
+            ->getOrCall(fn () => value($default));
     }
 }
