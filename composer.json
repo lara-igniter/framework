@@ -15,12 +15,13 @@
         }
     ],
     "require": {
-        "php": "^7.2.5|^8.0",
+        "php": "^7.4|^8.0",
         "ext-json": "*",
         "codeigniter/framework": "3.1.*",
         "maximebf/debugbar": "^1.17.2",
-        "nesbot/carbon": "^2.31",
+        "nesbot/carbon": "^2.59",
         "symfony/debug": "4.2",
+        "symfony/finder": "5.1.4",
         "symfony/var-dumper": "^5.0",
         "vlucas/phpdotenv": "^5.2"
     },
