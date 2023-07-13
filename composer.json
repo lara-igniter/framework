@@ -68,7 +68,11 @@
         ],
         "psr-4": {
             "Elegant\\": "src/Elegant/",
-            "Elegant\\Support\\": ["src/Elegant/Macroable/", "src/Elegant/Collections/"]
+            "Elegant\\Support\\": [
+                "src/Elegant/Macroable/",
+                "src/Elegant/Collections/",
+                "src/Elegant/Conditionable/"
+            ]
         }
     },
     "autoload-dev": {
