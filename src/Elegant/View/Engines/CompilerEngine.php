@@ -82,10 +82,10 @@ class CompilerEngine extends PhpEngine
     /**
      * Get the exception message for an exception.
      *
-     * @param \Exception $e
+     * @param \Throwable $e
      * @return string
      */
-    protected function getMessage(\Exception $e)
+    protected function getMessage(\Throwable $e)
     {
         return $e->getMessage().' (View: '.realpath(Arr::last($this->lastCompiled)).')';
     }
