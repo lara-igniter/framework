@@ -32,7 +32,7 @@ class PhpEngine implements Engine
      * @param string $path
      * @param array $data
      * @return string
-     * @throws \Exception
+     * @throws \Throwable
      */
     public function get($path, array $data = [])
     {
@@ -45,6 +45,7 @@ class PhpEngine implements Engine
      * @param string $path
      * @param array $data
      * @return string
+     *
      * @throws \Throwable
      */
     protected function evaluatePath($path, $data)
@@ -69,12 +70,12 @@ class PhpEngine implements Engine
      * Handle a view exception.
      *
      * @param  \Throwable  $e
-     * @param  int  $obLevel
+     * @param int $obLevel
      * @return void
      *
      * @throws \Throwable
      */
-    protected function handleViewException(Throwable $e, $obLevel)
+    protected function handleViewException(Throwable $e, int $obLevel)
     {
         while (ob_get_level() > $obLevel) {
             ob_end_clean();

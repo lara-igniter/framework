@@ -70,9 +70,9 @@ class CompilerEngine extends PhpEngine
      * @param int $obLevel
      * @return void
      *
-     * @throws \Exception
+     * @throws \Throwable
      */
-    protected function handleViewException(\Exception $e, $obLevel)
+    protected function handleViewException(\Throwable $e, int $obLevel)
     {
         $e = new \ErrorException($this->getMessage($e), 0, 1, $e->getFile(), $e->getLine(), $e);
 
