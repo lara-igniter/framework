@@ -63,7 +63,6 @@
     "autoload": {
         "files": [
             "src/Elegant/Collections/helpers.php",
-            "src/Elegant/Foundation/helpers.php",
             "src/Elegant/Support/helpers.php"
         ],
         "psr-4": {
