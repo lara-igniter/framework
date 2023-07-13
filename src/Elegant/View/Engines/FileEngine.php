@@ -2,6 +2,7 @@
 
 namespace Elegant\View\Engines;
 
+use Elegant\Contracts\Filesystem\FileNotFoundException;
 use Elegant\Contracts\View\Engine;
 use Elegant\Filesystem\Filesystem;
 
@@ -28,9 +29,11 @@ class FileEngine implements Engine
     /**
      * Get the evaluated contents of the view.
      *
-     * @param  string  $path
-     * @param  array   $data
+     * @param string $path
+     * @param array $data
      * @return string
+     *
+     * @throws FileNotFoundException
      */
     public function get($path, array $data = [])
     {

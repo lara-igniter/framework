@@ -4,6 +4,8 @@ namespace Elegant\View\Engines;
 
 use Elegant\Support\Arr;
 use Elegant\View\Compilers\CompilerInterface;
+use ErrorException;
+use Exception;
 
 class CompilerEngine extends PhpEngine
 {
@@ -66,15 +68,15 @@ class CompilerEngine extends PhpEngine
     /**
      * Handle a view exception.
      *
-     * @param \Throwable $e
+     * @param \Exception $e
      * @param int $obLevel
      * @return void
      *
-     * @throws \Throwable
+     * @throws \Exception
      */
-    protected function handleViewException(\Throwable $e, int $obLevel)
+    protected function handleViewException(Exception $e, $obLevel)
     {
-        $e = new \ErrorException($this->getMessage($e), 0, 1, $e->getFile(), $e->getLine(), $e);
+        $e = new ErrorException($this->getMessage($e), 0, 1, $e->getFile(), $e->getLine(), $e);
 
         parent::handleViewException($e, $obLevel);
     }
@@ -82,10 +84,10 @@ class CompilerEngine extends PhpEngine
     /**
      * Get the exception message for an exception.
      *
-     * @param \Throwable $e
+     * @param \Exception $e
      * @return string
      */
-    protected function getMessage(\Throwable $e)
+    protected function getMessage(Exception $e)
     {
         return $e->getMessage().' (View: '.realpath(Arr::last($this->lastCompiled)).')';
     }
