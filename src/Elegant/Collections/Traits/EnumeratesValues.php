@@ -11,6 +11,7 @@ use Elegant\Support\Arr;
 use Elegant\Support\Collection;
 use Elegant\Support\Enumerable;
 use Elegant\Support\HigherOrderCollectionProxy;
+use Elegant\Support\HigherOrderWhenProxy;
 use JsonSerializable;
 use Symfony\Component\VarDumper\VarDumper;
 use Traversable;
@@ -44,7 +45,7 @@ use Traversable;
  */
 trait EnumeratesValues
 {
-//    use Conditionable;
+    use Conditionable;
 
     /**
      * The methods that can be proxied.

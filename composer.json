@@ -1,9 +1,9 @@
 {
     "name": "lara-igniter/framework",
-    "description": "The Extended Codeigniter 3 Framework.",
-    "keywords": ["framework", "codeigniter", "extend"],
+    "description": "The Laraigniter Framework.",
+    "keywords": ["framework", "laraigniter"],
     "license": "MIT",
-    "homepage": "https://g-tsachrelias.com",
+    "homepage": "https://laraigniter.com",
     "support": {
         "issues": "https://github.com/lara-igniter/framework/issues",
         "source": "https://github.com/lara-igniter/framework"
@@ -11,7 +11,7 @@
     "authors": [
         {
             "name": "George Tsachrelias",
-            "email": "info@g-tsachrelias.com"
+            "email": "giorgosstab@laraigniter.com"
         }
     ],
     "require": {
@@ -35,6 +35,21 @@
         "ramsey/uuid": "^4.0",
         "vlucas/phpdotenv": "^5.2",
         "voku/portable-ascii": "^1.4.8"
+    },
+    "replace": {
+        "lara-elegant/auth": "self.version",
+        "lara-elegant/collections": "self.version",
+        "lara-elegant/conditionable": "self.version",
+        "lara-elegant/console": "self.version",
+        "lara-elegant/contracts": "self.version",
+        "lara-elegant/database": "self.version",
+        "lara-elegant/filesystem": "self.version",
+        "lara-elegant/fundation": "self.version",
+        "lara-elegant/http": "self.version",
+        "lara-elegant/macroable": "self.version",
+        "lara-elegant/routing": "self.version",
+        "lara-elegant/support": "self.version",
+        "lara-elegant/view": "self.version"
     },
     "require-dev": {
         "filp/whoops": "2.14.4",
