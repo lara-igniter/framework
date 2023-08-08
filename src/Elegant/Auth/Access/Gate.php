@@ -4,6 +4,8 @@ namespace Elegant\Auth\Access;
 
 use Exception;
 use Elegant\Contracts\Auth\Access\Gate as GateContract;
+use Elegant\Support\Arr;
+use Elegant\Support\Str;
 
 class Gate implements GateContract
 {
@@ -109,12 +111,10 @@ class Gate implements GateContract
      */
     public function raw($ability, $arguments = [])
     {
+        $arguments = Arr::wrap($arguments);
+
         // if (class_exists(is_array($arguments) ? $arguments[0] : $arguments)) {
-        if (is_array($arguments)) {
-            $className = 'App\\Policies\\' . $arguments[0] . 'Policy';
-        } else {
-            $className = 'App\\Policies\\' . $arguments . 'Policy';
-        }
+        $className = 'App\\Policies\\' . Str::studly($arguments[0]) . 'Policy';
 
         if (class_exists($className)) {
             $policy = new $className();
@@ -122,12 +122,10 @@ class Gate implements GateContract
             throw new Exception('Policy with name ' . $className . ' does not exist!');
         }
 
-        $args = is_array($arguments) ? $arguments : [];
-
-        $args[0] = $this->resolveUser();
+        $arguments[0] = $this->resolveUser();
 
         return method_exists($policy, $ability)
-            ? call_user_func_array([$policy, $ability], $args)
+            ? call_user_func_array([$policy, $ability], $arguments)
             : false;
         // } else {
         //     throw new Exception('Model with name ' . $arguments . ' does not exist!');

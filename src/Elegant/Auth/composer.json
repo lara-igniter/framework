@@ -15,7 +15,8 @@
     ],
     "require": {
         "php": "^7.4|^8.0",
-        "lara-elegant/contracts": "^1.0"
+        "lara-elegant/contracts": "^1.0",
+        "lara-elegant/support": "^1.0"
     },
     "autoload": {
         "psr-4": {
