@@ -123,8 +123,48 @@ class BladeCompiler extends Compiler implements CompilerInterface
         if (! is_null($this->cachePath)) {
             $contents = $this->compileString($this->files->get($this->getPath()));
 
-            $this->files->put($this->getCompiledPath($this->getPath()), $contents);
+            if (! empty($this->getPath())) {
+                $contents = $this->appendFilePath($contents);
+            }
+
+            $this->ensureCompiledDirectoryExists(
+                $compiledPath = $this->getCompiledPath($this->getPath())
+            );
+
+            $this->files->put($compiledPath, $contents);
         }
+    }
+
+    /**
+     * Append the file path to the compiled string.
+     *
+     * @param  string  $contents
+     * @return string
+     */
+    protected function appendFilePath($contents)
+    {
+        $tokens = $this->getOpenAndClosingPhpTokens($contents);
+
+        if ($tokens->isNotEmpty() && $tokens->last() !== T_CLOSE_TAG) {
+            $contents .= ' ?>';
+        }
+
+        return $contents."<?php /**PATH {$this->getPath()} ENDPATH**/ ?>";
+    }
+
+    /**
+     * Get the open and closing PHP tag tokens from the given string.
+     *
+     * @param  string  $contents
+     * @return \Elegant\Support\Collection
+     */
+    protected function getOpenAndClosingPhpTokens($contents)
+    {
+        return collect(token_get_all($contents))
+            ->pluck(0)
+            ->filter(function ($token) {
+                return in_array($token, [T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_CLOSE_TAG]);
+            });
     }
 
     /**

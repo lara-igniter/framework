@@ -13,7 +13,7 @@ trait CompilesAuthorizations
     protected function compileCan($expression)
     {
         [$ability, $arguments] = explode(',', $expression);
-        return '<?php if (ci()->gate->check(' . $ability . ', ' . $arguments . ')): ?>';
+        return '<?php if (ci()->gate->check' . $ability . ', ' . $arguments . '): ?>';
     }
 
     /**
@@ -25,7 +25,7 @@ trait CompilesAuthorizations
     protected function compileCannot($expression)
     {
         [$ability, $arguments] = explode(',', $expression);
-        return '<?php if (ci()->gate->denies(' . $ability . ', ' . $arguments . ')): ?>';
+        return '<?php if (ci()->gate->denies' . $ability . ', ' . $arguments . '): ?>';
     }
 
     /**
@@ -37,7 +37,7 @@ trait CompilesAuthorizations
     protected function compileCanany($expression)
     {
         [$ability, $arguments] = explode(',', $expression);
-        return '<?php if (ci()->gate->any(' . $ability . ', ' . $arguments . ')): ?>';
+        return '<?php if (ci()->gate->any' . $ability . ', ' . $arguments . '): ?>';
     }
 
     /**
@@ -49,7 +49,7 @@ trait CompilesAuthorizations
     protected function compileElsecan($expression)
     {
         [$ability, $arguments] = explode(',', $expression);
-        return '<?php elseif (ci()->gate->check(' . $ability . ', ' . $arguments . ')): ?>';
+        return '<?php elseif (ci()->gate->check' . $ability . ', ' . $arguments . '): ?>';
     }
 
     /**
@@ -61,7 +61,7 @@ trait CompilesAuthorizations
     protected function compileElsecannot($expression)
     {
         [$ability, $arguments] = explode(',', $expression);
-        return '<?php elseif (ci()->gate->denies(' . $ability . ', ' . $arguments . ')): ?>';
+        return '<?php elseif (ci()->gate->denies' . $ability . ', ' . $arguments . '): ?>';
     }
 
     /**
@@ -73,7 +73,7 @@ trait CompilesAuthorizations
     protected function compileElsecanany($expression)
     {
         [$ability, $arguments] = explode(',', $expression);
-        return '<?php elseif (ci()->gate->any(' . $ability . ', ' . $arguments . ')): ?>';
+        return '<?php elseif (ci()->gate->any' . $ability . ', ' . $arguments . '): ?>';
     }
 
     /**
