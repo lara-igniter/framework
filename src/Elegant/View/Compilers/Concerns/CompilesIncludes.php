@@ -25,8 +25,7 @@ trait CompilesIncludes
     {
         $expression = $this->stripParentheses($expression);
 
-        return "<?php echo \$__env->make({$expression}, array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>";
-        /*        return "<?php echo \$__env->make({$expression}, \Elegant\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>";*/
+        return "<?php echo \$__env->make({$expression}, \Elegant\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>";
     }
 
     /**

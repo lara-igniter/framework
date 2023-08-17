@@ -330,6 +330,17 @@ trait CompilesConditionals
     }
 
     /**
+     * Compile a required block into valid PHP.
+     *
+     * @param  string  $condition
+     * @return string
+     */
+    protected function compileRequired($condition)
+    {
+        return "<?php if{$condition}: echo 'required'; endif; ?>";
+    }
+
+    /**
      * Compile a readonly block into valid PHP.
      *
      * @param  string  $expression
@@ -338,5 +349,28 @@ trait CompilesConditionals
     protected function compileReadonly($expression)
     {
         return "<?php if{$expression}: echo 'readonly'; endif; ?>";
+    }
+
+    /**
+     * Compile the push statements into valid PHP.
+     *
+     * @param  string  $expression
+     * @return string
+     */
+    protected function compilePushIf($expression)
+    {
+        $parts = explode(',', $this->stripParentheses($expression), 2);
+
+        return "<?php if({$parts[0]}): \$__env->startPush({$parts[1]}); ?>";
+    }
+
+    /**
+     * Compile the end-push statements into valid PHP.
+     *
+     * @return string
+     */
+    protected function compileEndPushIf()
+    {
+        return '<?php $__env->stopPush(); endif; ?>';
     }
 }
