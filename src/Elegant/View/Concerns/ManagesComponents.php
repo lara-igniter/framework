@@ -192,7 +192,7 @@ trait ManagesComponents
 
         [$currentName, $currentAttributes] = $currentSlot;
 
-        $this->slots[$this->currentComponent()][$currentSlot] = new HtmlString(trim(ob_get_clean()));
+        $this->slots[$this->currentComponent()][$currentName] = new HtmlString(trim(ob_get_clean()));
 //        $this->slots[$this->currentComponent()][$currentName] = new ComponentSlot(
 //            trim(ob_get_clean()), $currentAttributes
 //        );
