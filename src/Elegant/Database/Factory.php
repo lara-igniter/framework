@@ -16,28 +16,28 @@ abstract class Factory
      *
      * @var string
      */
-    protected string $model;
+    protected $model;
 
     /**
      * The number of models that should be generated.
      *
      * @var int|null
      */
-    protected ?int $count;
+    protected $count;
 
     /**
      * The state transformations that will be applied to the model.
      *
      * @var \Elegant\Support\Collection
      */
-    protected Collection $states;
+    protected $states;
 
     /**
      * The current Faker instance.
      *
      * @var \Faker\Generator
      */
-    protected Generator $faker;
+    protected $faker;
 
     /**
      * Create a new factory instance.
@@ -158,7 +158,7 @@ abstract class Factory
      * @param callable|array $state
      * @return static
      */
-    public function state($state): Factory
+    public function state($state)
     {
         return $this->newInstance([
             'states' => $this->states->concat([
@@ -175,7 +175,7 @@ abstract class Factory
      * @param int|null $count
      * @return static
      */
-    public function count(?int $count): Factory
+    public function count(?int $count)
     {
         return $this->newInstance(['count' => $count]);
     }
@@ -186,7 +186,7 @@ abstract class Factory
      * @param array $arguments
      * @return static
      */
-    protected function newInstance(array $arguments = []): Factory
+    protected function newInstance(array $arguments = [])
     {
         return new static(...array_values(array_merge([
             'count' => $this->count,
@@ -222,7 +222,7 @@ abstract class Factory
      *
      * @return \Faker\Generator
      */
-    protected function withFaker(): \Faker\Generator
+    protected function withFaker()
     {
         return ci()->faker = \Faker\Factory::create(config_item('faker_locale'));
     }
