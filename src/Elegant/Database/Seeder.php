@@ -31,9 +31,9 @@ class Seeder
 
         $seeder->__invoke();
 
-        $runTime = number_format((microtime(true) - $startTime) * 1000, 2);
+        $runTime = number_format((microtime(true) - $startTime), 2);
 
-        echo "Seeded: {$name} ({$runTime}ms) \n";
+        echo "Seeded: {$name} ({$runTime} seconds) \n";
     }
 
     /**
