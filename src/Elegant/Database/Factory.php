@@ -37,7 +37,7 @@ abstract class Factory
      *
      * @var \Faker\Generator
      */
-    protected enerator $faker;
+    protected Generator $faker;
 
     /**
      * Create a new factory instance.
