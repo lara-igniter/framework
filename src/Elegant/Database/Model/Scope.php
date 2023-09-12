@@ -2,7 +2,7 @@
 
 namespace Elegant\Database\Model;
 
-use \CI_DB_mysqli_driver;
+use CI_DB_mysqli_driver;
 
 interface Scope
 {
