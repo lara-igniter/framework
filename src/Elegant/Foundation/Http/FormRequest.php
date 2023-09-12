@@ -76,7 +76,7 @@ class FormRequest
      *
      * @return array
      */
-    public function rules() : array
+    public function rules(): array
     {
         return [];
     }
@@ -86,7 +86,7 @@ class FormRequest
      *
      * @return array
      */
-    public function messages() : array
+    public function messages(): array
     {
         return $this->messages;
     }
@@ -96,7 +96,7 @@ class FormRequest
      *
      * @return array
      */
-    public function attributes() : array
+    public function attributes(): array
     {
         return $this->attributes;
     }
@@ -108,21 +108,21 @@ class FormRequest
      *
      * @return bool
      */
-    public function valid() : bool
+    public function valid(): bool
     {
-        foreach($this->rules() as $index => $rules) {
+        foreach ($this->rules() as $index => $rules) {
             $string_rules = $this->rulesToString($rules);
 
             $attributes = '';
 
-            if(method_exists($this, 'attributes') && !empty($this->attributes())) {
+            if (method_exists($this, 'attributes') && !empty($this->attributes())) {
                 $attributes = isset($this->attributes()[$index]) ? mb_strtolower($this->attributes()[$index], 'UTF-8') : '';
             }
 
             $this->form_validation->set_rules($index, $attributes, $string_rules);
 
-            if(method_exists($this, 'messages') && !empty($this->messages())) {
-                foreach($this->rules() as $filed_name => $_rules) {
+            if (method_exists($this, 'messages') && !empty($this->messages())) {
+                foreach ($this->rules() as $filed_name => $_rules) {
                     foreach ($_rules as $rule) {
                         $rule_clear = $rule;
 
@@ -137,7 +137,7 @@ class FormRequest
                                 $rule_clear = substr($rule_clear, 9);
                             }
 
-                            if(Str::contains($this->messages()[$message_index], ':attribute')) {
+                            if (Str::contains($this->messages()[$message_index], ':attribute')) {
                                 $string_message = str_replace(
                                     [':attribute'],
                                     [$this->attributes()[$filed_name], strtoupper($this->attributes()[$filed_name]), ucfirst($this->attributes()[$filed_name])],
@@ -158,21 +158,14 @@ class FormRequest
         if($this->form_validation->run()) {
             foreach ($this->input->post() as $key => $input) {
                 $check_key = is_array($input) ? $key . '[]' : $key;
+
                 if (array_key_exists($check_key, $this->rules())) {
-                    $this->valid_data[$key] = $this->input->post($key);
-//                    if ($key == 'description') {
-//                        $this->valid_data[$key] = $this->input->post($key);
-//                    } else {
-//                        $this->valid_data[$key] = $this->input->post($key, true);
-//                    }
+                    $this->valid_data[$key] = $this->input->post($key) !== '' ? $this->input->post($key) : null;
                 }
-                $this->all_data[$key] = $this->input->post($key);
-//                if ($key == 'description') {
-//                    $this->all_data[$key] = $this->input->post($key);
-//                } else {
-//                    $this->all_data[$key] = $this->input->post($key, true);
-//                }
+
+                $this->all_data[$key] = $this->input->post($key) !== '' ? $this->input->post($key) : null;
             }
+
             if (isset($_FILES)) {
                 foreach ($_FILES as $key => $input) {
                     if (array_key_exists($key, $this->rules())) {
@@ -226,7 +219,7 @@ class FormRequest
      *
      * @return array
      */
-    public function all() : array
+    public function all(): array
     {
         return $this->all_data;
     }
@@ -241,7 +234,7 @@ class FormRequest
      *
      * @return array
      */
-    public function validated() : array
+    public function validated(): array
     {
         return $this->valid_data;
     }
