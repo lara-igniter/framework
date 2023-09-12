@@ -12,5 +12,5 @@ interface Scope
      * @param \CI_DB_mysqli_driver $builder
      * @return void
      */
-    public function apply(CI_DB_mysqli_driver $builder);
+    public static function apply(CI_DB_mysqli_driver $builder);
 }
