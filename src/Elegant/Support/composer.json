@@ -23,6 +23,7 @@
         "lara-elegant/conditionable": "^1.0",
         "lara-elegant/contracts": "^1.0",
         "lara-elegant/macroable": "^1.0",
+        "nesbot/carbon": "^2.68",
         "ramsey/uuid": "^4.0",
         "vlucas/phpdotenv": "^5.4.1",
         "voku/portable-ascii": "^1.4.8"

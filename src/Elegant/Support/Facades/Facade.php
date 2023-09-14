@@ -20,6 +20,21 @@ abstract class Facade
     protected static $resolvedInstance;
 
     /**
+     * Hotswap the underlying instance behind the facade.
+     *
+     * @param  mixed  $instance
+     * @return void
+     */
+    public static function swap($instance)
+    {
+        static::$resolvedInstance[static::getFacadeAccessor()] = $instance;
+
+        if (isset(static::$app)) {
+            static::$app[static::getFacadeAccessor()] = $instance;
+        }
+    }
+
+    /**
      * Get the root object behind the facade.
      *
      * @return mixed
