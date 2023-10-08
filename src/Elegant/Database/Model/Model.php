@@ -10,6 +10,7 @@ use Elegant\Support\Arr;
 use Elegant\Support\Collection;
 use Elegant\Support\Str;
 use InvalidArgumentException;
+use stdClass;
 
 abstract class Model extends \CI_Model
 {
