@@ -307,7 +307,7 @@ abstract class Model extends \CI_Model
      *
      * @throws \App\Exceptions\MassAssignmentException;
      */
-    public function fill(): MY_Model
+    public function fill(): Model
     {
 //        if (is_null($this->fillable)) {
 //            $table_fields = $this->database->list_fields($this->table);
@@ -356,9 +356,9 @@ abstract class Model extends \CI_Model
      * Begin querying the model on a given connection.
      *
      * @param  string  $name
-     * @return MY_Model
+     * @return Model
      */
-    public function on(string $name = 'default'): MY_Model
+    public function on(string $name = 'default'): Model
     {
         $this->database->close();
 
@@ -914,7 +914,7 @@ abstract class Model extends \CI_Model
      * @param $group
      * @return $this
      */
-    public function groupBy($group): MY_Model
+    public function groupBy($group): Model
     {
         $this->database->group_by($group);
 
@@ -1230,7 +1230,7 @@ abstract class Model extends \CI_Model
         return $number_rows;
     }
 
-    public function whereNull($key): MY_Model
+    public function whereNull($key): Model
     {
         $this->where($key . ' IS NULL', NULL, FALSE, FALSE, FALSE, TRUE);
 
@@ -1272,7 +1272,7 @@ abstract class Model extends \CI_Model
      * @param string $column
      * @return $this
      */
-    public function latest(string $column = 'created_at'): MY_Model
+    public function latest(string $column = 'created_at'): Model
     {
         return $this->orderBy($column, 'desc');
     }
@@ -1283,7 +1283,7 @@ abstract class Model extends \CI_Model
      * @param string $column
      * @return $this
      */
-    public function oldest(string $column = 'created_at'): MY_Model
+    public function oldest(string $column = 'created_at'): Model
     {
         return $this->orderBy($column, 'asc');
     }
@@ -1297,7 +1297,7 @@ abstract class Model extends \CI_Model
      * @param array $arguments
      * @return $this
      */
-    public function with($request, array $arguments = []): MY_Model
+    public function with($request, array $arguments = []): Model
     {
         if (is_array($request)) {
             foreach ($request as $item) {
@@ -1325,7 +1325,7 @@ abstract class Model extends \CI_Model
                             if (sizeof($elements) == 2) {
                                 $parameters[$elements[0]] = $elements[1];
                             } else {
-                                show_error('MY_Model: Parameters for with_*() method must be of the form: "...->with_*(\'where:...|fields:...\')"');
+                                show_error('Model: Parameters for with_*() method must be of the form: "...->with_*(\'where:...|fields:...\')"');
                             }
                         }
                     }
@@ -1710,7 +1710,7 @@ abstract class Model extends \CI_Model
      *
      * @return $this
      */
-    public function resetConnection(): MY_Model
+    public function resetConnection(): Model
     {
         $this->database->close();
 
@@ -1777,7 +1777,7 @@ abstract class Model extends \CI_Model
         return $this;
     }
 
-    private function _where_trashed(): MY_Model
+    private function _where_trashed(): Model
     {
         switch ($this->_trashed) {
             case 'only':
@@ -1884,7 +1884,7 @@ abstract class Model extends \CI_Model
      * @param string|null $name
      * @return $this
      */
-    public function setConnection(string $name = null): MY_Model
+    public function setConnection(string $name = null): Model
     {
         if (!is_null($name)) {
             $this->database = $this->load->database($name, true);
@@ -2085,7 +2085,7 @@ abstract class Model extends \CI_Model
     }
 
     /**
-     * Extend paginate method of MY_Model
+     * Extend paginate method of Model
      *
      * @param $pagination
      * @param array $options
@@ -2322,7 +2322,7 @@ abstract class Model extends \CI_Model
         }
         $parent_class = get_parent_class($this);
         if ($parent_class !== false && !method_exists($parent_class, $method) && !method_exists($this, $method)) {
-            $msg = 'The method "' . $method . '" does not exist in ' . get_class($this) . ' or MY_Model or CI_Model.';
+            $msg = 'The method "' . $method . '" does not exist in ' . get_class($this) . ' or Model or CI_Model.';
             show_error($msg, EXIT_UNKNOWN_METHOD, 'Method Not Found');
         }
     }
@@ -2422,7 +2422,7 @@ abstract class Model extends \CI_Model
      * Random Order database items.
      * @return $this
      */
-    protected function random(): MY_Model
+    protected function random(): Model
     {
         $this->order_by('rand()');
 

@@ -5,7 +5,7 @@ namespace Elegant\Database\Model\Concerns;
 use Elegant\Support\Carbon;
 use Elegant\Support\Facades\Date;
 use InvalidArgumentException;
-use MY_Model;
+use Elegant\Database\Model\Model;
 
 trait HasAttributes
 {
@@ -261,9 +261,9 @@ trait HasAttributes
      * Set the date format used by the model.
      *
      * @param string $format
-     * @return MY_Model
+     * @return Model
      */
-    public function setDateFormat(string $format): MY_Model
+    public function setDateFormat(string $format): Model
     {
         $this->dateFormat = $format;
 
