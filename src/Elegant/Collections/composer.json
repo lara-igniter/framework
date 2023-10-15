@@ -27,13 +27,13 @@
             "helpers.php"
         ]
     },
+    "suggest": {
+        "symfony/var-dumper": "Required to use the dump method (^6.1)."
+    },
     "extra": {
         "branch-alias": {
             "dev-master": "1.x-dev"
         }
-    },
-    "suggest": {
-        "symfony/var-dumper": "Required to use the dump method (^6.1)."
     },
     "config": {
         "sort-packages": true
