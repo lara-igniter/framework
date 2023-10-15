@@ -27,7 +27,7 @@
         }
     },
     "suggest": {
-        "guzzlehttp/guzzle": "Required to use the HTTP Client (^6.5.5|^7.0.1).",
+        "guzzlehttp/guzzle": "Required to use the HTTP Client (^6.5.5|^7.0.1)."
     },
     "extra": {
         "branch-alias": {
