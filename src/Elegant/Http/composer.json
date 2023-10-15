@@ -17,6 +17,7 @@
         "php": "^7.4|^8.0",
         "ext-json": "*",
         "lara-elegant/collections": "^1.0",
+        "lara-elegant/macroable": "^1.0",
         "lara-elegant/contracts": "^1.0",
         "lara-elegant/support": "^1.0"
     },
@@ -24,6 +25,9 @@
         "psr-4": {
             "Elegant\\Http\\": ""
         }
+    },
+    "suggest": {
+        "guzzlehttp/guzzle": "Required to use the HTTP Client (^6.5.5|^7.0.1).",
     },
     "extra": {
         "branch-alias": {
