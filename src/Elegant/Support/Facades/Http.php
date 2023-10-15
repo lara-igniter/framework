@@ -2,8 +2,6 @@
 
 namespace Elegant\Support\Facades;
 
-use Elegant\Http\Client\Factory;
-
 /**
  * @method static \GuzzleHttp\Promise\PromiseInterface response($body = null, $status = 200, $headers = [])
  * @method static \Elegant\Http\Client\Factory fake($callback = null)
@@ -61,6 +59,6 @@ class Http extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return Factory::class;
+        return 'http';
     }
 }
