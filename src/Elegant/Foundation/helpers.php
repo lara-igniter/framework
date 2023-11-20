@@ -150,7 +150,7 @@ if (!function_exists('core_path')) {
      */
     function core_path(string $path = ''): string
     {
-        return app_path('config' . ($path ? DIRECTORY_SEPARATOR . $path : $path));
+        return app_path('core' . ($path ? DIRECTORY_SEPARATOR . $path : $path));
     }
 }
 
