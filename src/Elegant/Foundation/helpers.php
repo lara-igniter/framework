@@ -135,12 +135,14 @@ if (!function_exists('route_redirect')) {
      *
      * @param string $name Route name
      * @param array $params Route parameters
-     * @param array $messages Array with flashdata messages
-     *
+     * @param array $messages Array with flash data messages
+     * @param string $query
+     * @param string $fragment
      * @return void
-     * @throws Exception
+     *
+     * @throws \Exception
      */
-    function route_redirect(string $name, array $params = [], array $messages = [])
+    function route_redirect(string $name, array $params = [], array $messages = [], string $query = '', string $fragment = '')
     {
         if (!empty($messages) && is_array($messages)) {
             app()->load->library('session');
@@ -150,7 +152,17 @@ if (!function_exists('route_redirect')) {
             }
         }
 
-        redirect(route($name, $params));
+        if($fragment !== '') {
+            $fragment = '#' . $fragment;
+
+            $query = $query !== '' ? query_string('', $query) : query_string();
+
+            redirect(route($name, $params) . $query . $fragment, 'refresh');
+        }
+
+        $query = $query !== '' ? query_string('', $query) : query_string();
+
+        redirect(route($name, $params) . $query, 'refresh');
     }
 }
 
