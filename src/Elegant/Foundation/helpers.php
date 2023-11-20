@@ -14,10 +14,10 @@ if (!function_exists('app')) {
     function &app($abstract = null): object
     {
         if (is_null($abstract)) {
-            return CI_Controller::get_instance();
+            return get_instance();
         }
 
-        return CI_Controller::get_instance()->{$abstract};
+        return get_instance()->{$abstract};
     }
 }
 
