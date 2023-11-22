@@ -537,7 +537,7 @@ if (!function_exists('trans')) {
      * @param array $replace
      * @return string
      */
-    function trans(string $key, array $replace = []): string
+    function trans(string $key, array $replace = [])
     {
         $explode = explode('.', $key);
 
@@ -555,7 +555,7 @@ if (!function_exists('__')) {
      * @param array $replace
      * @return string|null
      */
-    function __(string $key = null, array $replace = []): ?string
+    function __(string $key = null, array $replace = [])
     {
         if (is_null($key)) {
             return $key;
