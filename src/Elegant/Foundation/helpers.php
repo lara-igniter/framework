@@ -93,9 +93,9 @@ if (!function_exists('config')) {
      * Get the specified configuration value.
      *
      * @param string $field
-     * @return string
+     * @return string|array
      */
-    function config(string $field): string
+    function config(string $field)
     {
         if (empty($field)) {
             return '';
