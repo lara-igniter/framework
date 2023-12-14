@@ -12,7 +12,7 @@ class Application
      *
      * @var string
      */
-    const VERSION = '1.0.0';
+    const VERSION = '1.18.6';
 
     /**
      * The base path for the Laraigniter installation.
@@ -42,6 +42,16 @@ class Application
         }
 
         $this->createDotenv();
+    }
+
+    /**
+     * Get the version number of the application.
+     *
+     * @return string
+     */
+    public function version(): string
+    {
+        return static::VERSION;
     }
 
     /**
