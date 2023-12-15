@@ -203,6 +203,25 @@ if (!function_exists('database_path')) {
     }
 }
 
+if (! function_exists('fake') && class_exists(\Faker\Factory::class)) {
+    /**
+     * Get a faker instance.
+     *
+     * @param  string|null  $locale
+     * @return \Faker\Generator
+     */
+    function fake(string $locale = null): \Faker\Generator
+    {
+        if (app('config')) {
+            $locale ??= app('config')->config['faker_locale'];
+        }
+
+        $locale ??= 'en_US';
+
+        return app()->faker = \Faker\Factory::create($locale);
+    }
+}
+
 if (!function_exists('info')) {
     /**
      * Write some information to the log.
