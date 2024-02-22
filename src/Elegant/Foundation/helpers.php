@@ -9,12 +9,17 @@ if (!function_exists('app')) {
      * (Alias of framework controller instance)
      *
      * @param null $abstract
+     * @param null $instance
      * @return object
      */
-    function &app($abstract = null): object
+    function &app($abstract = null, $instance = null): object
     {
         if (is_null($abstract)) {
             return get_instance();
+        }
+
+        if (!is_null($instance)) {
+            get_instance()->{$abstract} = $instance;
         }
 
         return get_instance()->{$abstract};

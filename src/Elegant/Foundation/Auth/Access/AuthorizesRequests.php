@@ -6,6 +6,6 @@ trait AuthorizesRequests
 {
     public function authorize($ability, $modelName)
     {
-        return ci()->gate->authorize($ability, $modelName);
+        return app('gate')->authorize($ability, $modelName);
     }
 }

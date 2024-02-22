@@ -20,7 +20,7 @@ trait CompilesConditionals
      */
     protected function compileAuth()
     {
-        return "<?php if(ci()->ion_auth->logged_in()): ?>";
+        return "<?php if(app('ion_auth')->logged_in()): ?>";
     }
 
     /**
@@ -31,7 +31,7 @@ trait CompilesConditionals
      */
     protected function compileElseAuth()
     {
-        return "<?php elseif(!ci()->ion_auth->logged_in()): ?>";
+        return "<?php elseif(!app('ion_auth')->logged_in()): ?>";
     }
 
     /**
@@ -93,7 +93,7 @@ trait CompilesConditionals
      */
     protected function compileGuest()
     {
-        return "<?php if(!ci()->ion_auth->logged_in()): ?>";
+        return "<?php if(!app('ion_auth')->logged_in()): ?>";
     }
 
     /**
@@ -104,7 +104,7 @@ trait CompilesConditionals
      */
     protected function compileElseGuest()
     {
-        return "<?php elseif(ci()->ion_auth->logged_in()): ?>";
+        return "<?php elseif(app('ion_auth')->logged_in()): ?>";
     }
 
     /**

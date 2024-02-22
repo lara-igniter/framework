@@ -60,9 +60,11 @@ class FormRequest
     public function __construct(CI_Form_validation $form_validation = null, CI_Input $input = null)
     {
         if (!isset($form_validation)) {
-            ci()->load->library('form_validation');
-            $input = ci()->input;
-            $form_validation = ci()->form_validation;
+            app('load')->library('form_validation');
+
+            $input = app('input');
+
+            $form_validation = app('form_validation');
         }
 
         $form_validation->set_error_delimiters('<span class="invalid-feedback" role="alert"><strong>', '</strong></span>');
@@ -187,7 +189,7 @@ class FormRequest
 
         $this->error_data = $errors;
 
-        ci()->view->share('errors', $errors);
+        app('view')->share('errors', $errors);
 
         return $this->form_validation->run();
     }

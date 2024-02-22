@@ -224,6 +224,6 @@ abstract class Factory
      */
     protected function withFaker()
     {
-        return ci()->faker = \Faker\Factory::create(config_item('faker_locale'));
+        return app('faker', \Faker\Factory::create(config_item('faker_locale')));
     }
 }
