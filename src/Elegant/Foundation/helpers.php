@@ -334,9 +334,9 @@ if (!function_exists('old')) {
      *
      * @param string $field
      * @param null $data_value
-     * @return string
+     * @return array|string
      */
-    function old(string $field, $data_value = null): string
+    function old(string $field, $data_value = null)
     {
         if (is_null($data_value)) {
             return set_value($field);
