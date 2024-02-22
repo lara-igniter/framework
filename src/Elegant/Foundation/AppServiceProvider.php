@@ -9,6 +9,6 @@ class AppServiceProvider implements PostControllerConstructor
 {
     public function postControllerConstructor(&$params)
     {
-        app()->files = new Filesystem();
+        app('files', new Filesystem());
     }
 }

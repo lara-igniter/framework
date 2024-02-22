@@ -21,15 +21,16 @@ class ViewServiceProvider implements PreSystem, PostControllerConstructor
 
     public function postControllerConstructor(&$params)
     {
-        app()->config->load('view', TRUE);
+        app('config')->load('view', TRUE);
 
-        $app['view.compiled'] = app()->config->item('compiled', 'view');
+        $app['view.compiled'] = app('config')->item('compiled', 'view');
 
-        $app['view.paths'] = app()->config->item('paths', 'view');
+        $app['view.paths'] = app('config')->item('paths', 'view');
 
         $this->registerViewFinder($app);
         $this->registerEngineResolver($app);
-        app()->view = $this->registerFactory();
+
+        app('view', $this->registerFactory());
     }
 
     /**
@@ -39,7 +40,7 @@ class ViewServiceProvider implements PreSystem, PostControllerConstructor
      */
     public function registerViewFinder($app)
     {
-        app()->{'view.finder'} = new FileViewFinder(app()->files, $app['view.paths']);
+        app('view.finder', new FileViewFinder(app('files'), $app['view.paths']));
     }
 
     /**
@@ -51,13 +52,13 @@ class ViewServiceProvider implements PreSystem, PostControllerConstructor
     {
         $resolver = new EngineResolver;
 
-        app()->{'blade.compiler'} = new BladeCompiler(app()->files, $app['view.compiled']);
+        app('blade.compiler', new BladeCompiler(app('files'), $app['view.compiled']));
 
         foreach (['file', 'php', 'blade'] as $engine) {
             $this->{'register'.ucfirst($engine).'Engine'}($resolver);
         }
 
-        app()->{'view.engine.resolver'} = $resolver;
+        app('view.engine.resolver', $resolver);
     }
 
     /**
@@ -95,7 +96,7 @@ class ViewServiceProvider implements PreSystem, PostControllerConstructor
     public function registerBladeEngine(EngineResolver $resolver)
     {
         $resolver->register('blade', function () {
-            return new CompilerEngine(app()->{'blade.compiler'});
+            return new CompilerEngine(app('blade.compiler'));
         });
     }
 
@@ -106,9 +107,9 @@ class ViewServiceProvider implements PreSystem, PostControllerConstructor
      */
     public function registerFactory(): Factory
     {
-        $resolver = app()->{'view.engine.resolver'};
+        $resolver = app('view.engine.resolver');
 
-        $finder = app()->{'view.finder'};
+        $finder = app('view.finder');
 
         return $this->createFactory($resolver, $finder);
     }

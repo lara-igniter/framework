@@ -223,7 +223,7 @@ if (! function_exists('fake') && class_exists(\Faker\Factory::class)) {
 
         $locale ??= 'en_US';
 
-        return app()->faker = \Faker\Factory::create($locale);
+        return app('faker', \Faker\Factory::create($locale));
     }
 }
 
