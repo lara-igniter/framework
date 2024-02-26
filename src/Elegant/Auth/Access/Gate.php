@@ -114,7 +114,7 @@ class Gate implements GateContract
         $arguments = Arr::wrap($arguments);
 
         // if (class_exists(is_array($arguments) ? $arguments[0] : $arguments)) {
-        $className = 'App\\Policies\\' . Str::studly($arguments[0]) . 'Policy';
+        $className = 'App\\Policies\\' . Str::studly(Str::afterLast($arguments[0], '\\')) . 'Policy';
 
         if (class_exists($className)) {
             $policy = new $className();
