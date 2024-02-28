@@ -204,7 +204,7 @@ abstract class Factory
     {
         $model = $this->modelName();
 
-        return (new $model)->insert($attributes)->first();
+        return (new $model)->create($attributes)->first();
     }
 
     /**
