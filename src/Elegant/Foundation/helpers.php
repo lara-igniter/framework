@@ -292,7 +292,7 @@ if (!function_exists('mix')) {
             $manifestDirectory = "/{$manifestDirectory}";
         }
 
-        $manifestPath = public_path($manifestDirectory . '/mix-manifest.json');
+        $manifestPath = public_path($manifestDirectory . '/build/mix-manifest.json');
 
         if (!isset($manifests[$manifestPath])) {
             if (!is_file($manifestPath)) {
@@ -316,7 +316,7 @@ if (!function_exists('mix')) {
             }
         }
 
-        return asset($manifestDirectory . $manifest[$path]);
+        return asset($manifestDirectory . 'build' . $manifest[$path]);
     }
 }
 
