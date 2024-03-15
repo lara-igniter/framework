@@ -939,11 +939,28 @@ class Collection implements ArrayAccess, Enumerable
     /**
      * Get and remove the first item from the collection.
      *
+     * @param int $count
      * @return mixed
      */
-    public function shift()
+    public function shift(int $count = 1)
     {
-        return array_shift($this->items);
+        if ($count === 1) {
+            return array_shift($this->items);
+        }
+
+        if ($this->isEmpty()) {
+            return new static;
+        }
+
+        $results = [];
+
+        $collectionCount = $this->count();
+
+        foreach (range(1, min($count, $collectionCount)) as $item) {
+            $results[] = array_shift($this->items);
+        }
+
+        return new static($results);
     }
 
     /**
