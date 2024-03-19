@@ -175,6 +175,15 @@ class FormRequest
 
                 $this->all_data[$key] = $this->input->post($key) !== '' ? $this->input->post($key) : null;
             }
+
+            if (isset($_FILES)) {
+                foreach ($_FILES as $key => $input) {
+                    if (array_key_exists($key, $this->rules())) {
+                        $this->valid_data[$key] = $input;
+                    }
+                    $this->all_data[$key] = $input;
+                }
+            }
         }
 
         $error_array = $this->form_validation->error_array();
