@@ -112,6 +112,14 @@ class FormRequest
      */
     public function valid(): bool
     {
+        if (isset($_FILES)) {
+            foreach ($_FILES as $key => $input) {
+                if (array_key_exists($key, $this->rules())) {
+                    $_POST[$key] = $this->input->file($key);
+                }
+            }
+        }
+
         foreach ($this->rules() as $index => $rules) {
             $string_rules = $this->rulesToString($rules);
 
