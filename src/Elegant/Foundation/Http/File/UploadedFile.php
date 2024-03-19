@@ -3,11 +3,9 @@
 namespace Elegant\Foundation\Http\File;
 
 use RuntimeException;
-use SplFileInfo;
-use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Mime\MimeTypes;
 
-class UploadedFile extends SplFileInfo
+class UploadedFile extends File
 {
     protected string $originalName;
     protected ?string $mimeType;
@@ -27,11 +25,7 @@ class UploadedFile extends SplFileInfo
         $this->mimeType = $mimeType;
         $this->error = $error ?: \UPLOAD_ERR_OK;
 
-        if (\UPLOAD_ERR_OK === $this->error && !is_file($path)) {
-            throw new FileNotFoundException($path);
-        }
-
-        parent::__construct($path);
+        parent::__construct($path, \UPLOAD_ERR_OK === $this->error);
     }
 
     /**
@@ -77,6 +71,32 @@ class UploadedFile extends SplFileInfo
     }
 
     /**
+     * Returns the extension based on the client mime type.
+     *
+     * If the mime type is unknown, returns null.
+     *
+     * This method uses the mime type as guessed by getClientMimeType()
+     * to guess the file extension. As such, the extension returned
+     * by this method cannot be trusted.
+     *
+     * For a trusted extension, use guessExtension() instead (which guesses
+     * the extension based on the guessed mime type for the file).
+     *
+     * @return string|null
+     *
+     * @see guessExtension()
+     * @see getClientMimeType()
+     */
+    public function guessClientExtension()
+    {
+        if (!class_exists(MimeTypes::class)) {
+            throw new \LogicException('You cannot guess the extension as the Mime component is not installed. Try running "composer require symfony/mime".');
+        }
+
+        return MimeTypes::getDefault()->getExtensions($this->getClientMimeType())[0] ?? null;
+    }
+
+    /**
      * Returns the upload error.
      *
      * If the upload was successful, the constant UPLOAD_ERR_OK is returned.
@@ -106,10 +126,10 @@ class UploadedFile extends SplFileInfo
      *
      * @param string $directory
      * @param string|null $name
-     * @return \Elegant\Http\File\UploadedFile
+     * @return \Elegant\Foundation\Http\File\File
      *
      */
-    public function move(string $directory, string $name = null): UploadedFile
+    public function move(string $directory, string $name = null)
     {
         if ($this->isValid()) {
             $target = $this->getTargetFile($directory, $name);
@@ -222,94 +242,5 @@ class UploadedFile extends SplFileInfo
         $message = $errors[$errorCode] ?? 'The file "%s" was not uploaded due to an unknown error.';
 
         return sprintf($message, $this->getClientOriginalName(), $maxFilesize);
-    }
-
-    /**
-     * @return string
-     */
-    public function getContent(): string
-    {
-        $content = file_get_contents($this->getPathname());
-
-        if (false === $content) {
-            throw new RuntimeException(sprintf('Could not get the content of the file "%s".', $this->getPathname()));
-        }
-
-        return $content;
-    }
-
-    /**
-     * @param string $directory
-     * @param string|null $name
-     * @return self
-     */
-    protected function getTargetFile(string $directory, string $name = null): UploadedFile
-    {
-        if (!is_dir($directory)) {
-            if (false === @mkdir($directory, 0777, true) && !is_dir($directory)) {
-                throw new RuntimeException(sprintf('Unable to create the "%s" directory.', $directory));
-            }
-        } elseif (!is_writable($directory)) {
-            throw new RuntimeException(sprintf('Unable to write in the "%s" directory.', $directory));
-        }
-
-        $target = rtrim($directory, '/\\').\DIRECTORY_SEPARATOR.(null === $name ? $this->getBasename() : $this->getName($name));
-
-        return new self($target, false);
-    }
-
-    /**
-     * Returns locale independent base name of the given path.
-     *
-     * @param string $name
-     * @return string
-     */
-    protected function getName(string $name): string
-    {
-        $originalName = str_replace('\\', '/', $name);
-        $pos = strrpos($originalName, '/');
-        return false === $pos ? $originalName : substr($originalName, $pos + 1);
-    }
-
-    /**
-     * Returns the extension based on the mime type.
-     *
-     * If the mime type is unknown, returns null.
-     *
-     * This method uses the mime type as guessed by getMimeType()
-     * to guess the file extension.
-     *
-     * @return string|null
-     *
-     * @see MimeTypes
-     * @see getMimeType()
-     */
-    public function guessExtension(): ?string
-    {
-        if (!class_exists(MimeTypes::class)) {
-            throw new \LogicException('You cannot guess the extension as the Mime component is not installed. Try running "composer require symfony/mime".');
-        }
-
-        return MimeTypes::getDefault()->getExtensions($this->getMimeType())[0] ?? null;
-    }
-
-    /**
-     * Returns the mime type of the file.
-     *
-     * The mime type is guessed using a MimeTypeGuesserInterface instance,
-     * which uses finfo_file() then the "file" system binary,
-     * depending on which of those are available.
-     *
-     * @return string|null
-     *
-     * @see MimeTypes
-     */
-    public function getMimeType(): ?string
-    {
-        if (!class_exists(MimeTypes::class)) {
-            throw new \LogicException('You cannot guess the mime type as the Mime component is not installed. Try running "composer require symfony/mime".');
-        }
-
-        return MimeTypes::getDefault()->guessMimeType($this->getPathname());
     }
 }
