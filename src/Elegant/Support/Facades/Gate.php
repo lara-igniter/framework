@@ -2,8 +2,6 @@
 
 namespace Elegant\Support\Facades;
 
-use Elegant\Contracts\Auth\Access\Gate as GateContract;
-
 /**
  * @method static bool|void authorize(string $ability, array|mixed $arguments = [])
  * @method static bool allows(string $ability, array|mixed $arguments = [])
@@ -23,6 +21,6 @@ class Gate extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return GateContract::class;
+        return 'gate';
     }
 }
