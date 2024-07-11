@@ -2,6 +2,7 @@
 
 namespace Elegant\Database;
 
+use Elegant\Database\Model\Factories\Sequence;
 use Elegant\Support\Collection;
 use Elegant\Support\Traits\Macroable;
 
@@ -183,6 +184,17 @@ abstract class Factory
                 },
             ]),
         ]);
+    }
+
+    /**
+     * Add a new sequenced state transformation to the model definition.
+     *
+     * @param  mixed  ...$sequence
+     * @return static
+     */
+    public function sequence(...$sequence)
+    {
+        return $this->state(new Sequence(...$sequence));
     }
 
     /**
