@@ -1,5 +1,6 @@
 <?php
 
+use Elegant\Database\Factory;
 use Elegant\Support\Facades\Date;
 
 if (!function_exists('app')) {
@@ -205,6 +206,21 @@ if (!function_exists('database_path')) {
     function database_path(string $path = ''): string
     {
         return base_path('database' . ($path ? DIRECTORY_SEPARATOR . $path : $path));
+    }
+}
+
+if (!function_exists('factory')) {
+    /**
+     * Get factory class and make a model object.
+     *
+     * @param string $abstract
+     * @param int|null $count
+     *
+     * @return \Elegant\Database\Factory
+     */
+    function factory(string $abstract, int $count = null): Factory
+    {
+        return (new $abstract($count));
     }
 }
 

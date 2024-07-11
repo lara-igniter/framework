@@ -54,6 +54,22 @@ abstract class Factory
     }
 
     /**
+     * Create a collection of models.
+     *
+     * @param array $attributes
+     * @param array|null $parent
+     * @return object
+     */
+    public function create(array $attributes = [], array $parent = null): object
+    {
+        if (!empty($attributes)) {
+            return $this->state($attributes)->create([], $parent);
+        }
+
+        return $this->make($attributes, $parent);
+    }
+
+    /**
      * Define the model's default state.
      *
      * @return array
