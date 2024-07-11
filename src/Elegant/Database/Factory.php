@@ -4,6 +4,7 @@ namespace Elegant\Database;
 
 use Elegant\Database\Model\Factories\Sequence;
 use Elegant\Support\Collection;
+use Elegant\Support\Str;
 use Elegant\Support\Traits\Macroable;
 
 abstract class Factory
@@ -41,6 +42,19 @@ abstract class Factory
     protected $faker;
 
     /**
+     * The default namespace where factories reside.
+     *
+     * @var string
+     */
+    public static $namespace = 'Database\\Factories\\';
+
+    /**
+     * The factory name resolver.
+     *
+     * @var callable
+     */
+    protected static $factoryNameResolver;
+    /**
      * Create a new factory instance.
      *
      * @param int|null $count
@@ -76,6 +90,27 @@ abstract class Factory
      * @return array
      */
     abstract public function definition(): array;
+
+    /**
+     * Get a new factory instance for the given attributes.
+     *
+     * @param  (callable(array<string, mixed>): array<string, mixed>)|array<string, mixed>  $attributes
+     * @return static
+     */
+    public static function new($attributes = [])
+    {
+        return (new static)->state($attributes)->configure();
+    }
+
+    /**
+     * Configure the factory.
+     *
+     * @return static
+     */
+    public function configure()
+    {
+        return $this;
+    }
 
     /**
      * Create a collection of models.
@@ -246,6 +281,19 @@ abstract class Factory
     }
 
     /**
+     * Get a new factory instance for the given model name.
+     *
+     * @param class-string<\App\Core\MY_Model> $modelName
+     * @return \Elegant\Database\Factory>
+     */
+    public static function factoryForModel(string $modelName)
+    {
+        $factory = static::resolveFactoryName($modelName);
+
+        return $factory::new();
+    }
+
+    /**
      * Get a new Faker instance.
      *
      * @return \Faker\Generator
@@ -253,5 +301,26 @@ abstract class Factory
     protected function withFaker()
     {
         return app('faker', \Faker\Factory::create(config_item('faker_locale')));
+    }
+
+    /**
+     * Get the factory name for the given model name.
+     *
+     * @param  class-string<\App\Core\MY_Model>  $modelName
+     * @return class-string<\Elegant\Database\Factory>
+     */
+    public static function resolveFactoryName(string $modelName)
+    {
+        $resolver = static::$factoryNameResolver ?? function (string $modelName) {
+            $appNamespace = 'App\\';
+
+            $modelName = Str::startsWith($modelName, $appNamespace.'Models\\')
+                ? Str::after($modelName, $appNamespace.'Models\\')
+                : Str::after($modelName, $appNamespace);
+
+            return static::$namespace.$modelName.'Factory';
+        };
+
+        return $resolver($modelName);
     }
 }
