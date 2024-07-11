@@ -58,9 +58,9 @@ abstract class Factory
      *
      * @param array $attributes
      * @param array|null $parent
-     * @return object
+     * @return array
      */
-    public function create(array $attributes = [], array $parent = null): object
+    public function create(array $attributes = [], array $parent = null): array
     {
         if (!empty($attributes)) {
             return $this->state($attributes)->create([], $parent);
@@ -81,9 +81,9 @@ abstract class Factory
      *
      * @param array $attributes
      * @param array|null $parent
-     * @return mixed
+     * @return array
      */
-    public function make(array $attributes = [], array $parent = null)
+    public function make(array $attributes = [], array $parent = null): array
     {
         if (!empty($attributes)) {
             return $this->state($attributes)->make([], $parent);
