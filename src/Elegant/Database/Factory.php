@@ -69,7 +69,7 @@ abstract class Factory
     }
 
     /**
-     * Create a collection of models.
+     * Create a collection of models and persist them to the database.
      *
      * @param array $attributes
      * @param array|null $parent
@@ -81,7 +81,30 @@ abstract class Factory
             return $this->state($attributes)->create([], $parent);
         }
 
-        return $this->make($attributes, $parent);
+        $results = $this->make($attributes, $parent);
+
+        if(is_array($results)) {
+            $results = $this->store(collect($results));
+        }
+
+        return $results;
+    }
+
+    /**
+     * Set the connection name on the results and store them.
+     *
+     * @param  \Elegant\Support\Collection  $results
+     * @return mixed
+     */
+    protected function store(Collection $results)
+    {
+        $data = collect();
+
+        $results->each(function ($model) use ($data) {
+            $data->push($this->newModel($this->getExpandedAttributes($model)));
+        });
+
+        return $data;
     }
 
     /**
@@ -146,7 +169,7 @@ abstract class Factory
      */
     protected function makeInstance(?array $parent)
     {
-        return $this->newModel($this->getExpandedAttributes($parent));
+        return $this->getExpandedAttributes($parent);
     }
 
     /**
