@@ -84,7 +84,9 @@ abstract class Factory
         $results = $this->make($attributes, $parent);
 
         if(is_array($results)) {
-            $results = $this->store(collect($results));
+            $results = $this->store(
+                isset($results[0]) ? collect($results) : collect([$results])
+            );
         }
 
         return $results;
