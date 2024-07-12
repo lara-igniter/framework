@@ -1,8 +1,7 @@
 <?php
 
-namespace Elegant\Database;
+namespace Elegant\Database\Model\Factories;
 
-use Elegant\Database\Model\Factories\Sequence;
 use Elegant\Support\Collection;
 use Elegant\Support\Str;
 use Elegant\Support\Traits\Macroable;

@@ -1,6 +1,6 @@
 <?php
 
-use Elegant\Database\Factory;
+use Elegant\Database\Model\Factories\Factory;
 use Elegant\Support\Facades\Date;
 
 if (!function_exists('app')) {
@@ -216,7 +216,7 @@ if (!function_exists('factory')) {
      * @param string $abstract
      * @param int|null $count
      *
-     * @return \Elegant\Database\Factory
+     * @return \Elegant\Database\Model\Factories\Factory
      */
     function factory(string $abstract, int $count = null): Factory
     {
