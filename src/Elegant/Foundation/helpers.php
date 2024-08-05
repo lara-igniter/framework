@@ -345,6 +345,8 @@ if (!function_exists('now')) {
      */
     function now($tz = null)
     {
+        $tz ??= config_item('timezone');
+
         return Date::now($tz);
     }
 }
