@@ -15,14 +15,46 @@ if (!function_exists('app')) {
      */
     function &app($abstract = null, $instance = null): object
     {
+        /**
+         * Return current controller instance without pass arguments.
+         * Calling with app()
+         */
         if (is_null($abstract)) {
             return get_instance();
         }
 
+        /**
+         * Initial controller instance with new class.
+         * Calling with app('view', \Elegant\View\Factory)
+         */
         if (!is_null($instance)) {
             get_instance()->{$abstract} = $instance;
         }
 
+        /**
+         * Get controller instance with class argument.
+         * Calling with app(\Elegant\View\Factory)
+         */
+        if (class_exists($abstract)) {
+            $reflection = new ReflectionObject(get_instance());
+            $properties = $reflection->getProperties();
+
+            foreach ($properties as $property) {
+                $property->setAccessible(true);
+
+                $value = $property->getValue(get_instance());
+                $key = $property->getName();
+
+                if ($value instanceof $abstract) {
+                    return get_instance()->{$key};
+                }
+            }
+        }
+
+        /**
+         * Get controller instance with string argument.
+         * Calling with app('view')
+         */
         return get_instance()->{$abstract};
     }
 }
