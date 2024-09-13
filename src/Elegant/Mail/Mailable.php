@@ -151,11 +151,16 @@ class Mailable implements MailableContract
     /**
      * Send the message using the given mailer.
      *
-     * @param  \Elegant\Contracts\Mail\Factory|\Elegant\Contracts\Mail\Mailer  $mailer
+     * @param \Elegant\Contracts\Mail\Factory|\Elegant\Contracts\Mail\Mailer $mailer
      * @return void
+     * @throws \ReflectionException
      */
     public function send($mailer)
     {
+        if (method_exists($this, 'build')) {
+            call_user_func_array([$this, 'build'], []);
+        }
+
         $mailer = $mailer instanceof MailFactory
             ? $mailer->mailer($this->mailer)
             : $mailer;
@@ -178,6 +183,10 @@ class Mailable implements MailableContract
      */
     public function render()
     {
+        if (method_exists($this, 'build')) {
+            call_user_func_array([$this, 'build'], []);
+        }
+
         return app('mailer')->render(
             $this->buildView(), $this->buildViewData()
         );
