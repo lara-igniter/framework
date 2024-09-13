@@ -2,6 +2,8 @@
 
 namespace Elegant\Support\Facades;
 
+use Elegant\Mail\MailManager;
+
 /**
  * @method static \Elegant\Mail\Mailer mailer(string|null $name = null)
  * @method static \Elegant\Mail\PendingMail bcc($users)
@@ -20,10 +22,12 @@ class Mail extends Facade
     /**
      * Get the registered name of the component.
      *
-     * @return string
+     * @return MailManager
      */
     protected static function getFacadeAccessor()
     {
-        return 'mail.manager';
+        app('load')->config('mail', true);
+
+        return new MailManager(app('config'));
     }
 }

@@ -112,7 +112,7 @@ class MailManager implements FactoryContract
         // for maximum testability on said classes instead of passing Closures.
         $mailer = new Mailer(
             $name,
-            $this->app['view'],
+            app('view')->factory,
             $this->createSwiftMailer($config)
         );
 
@@ -366,7 +366,7 @@ class MailManager implements FactoryContract
      */
     protected function setGlobalAddress($mailer, array $config, string $type)
     {
-        $address = Arr::get($config, $type, $this->app['config']['mail.' . $type]);
+        $address = Arr::get($config, $type, $this->app['config']['mail.' . $type] ?? []);
 
         if (is_array($address) && isset($address['address'])) {
             $mailer->{'always' . Str::studly($type)}($address['address'], $address['name']);
