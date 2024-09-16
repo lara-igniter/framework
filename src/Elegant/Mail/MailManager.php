@@ -112,7 +112,7 @@ class MailManager implements FactoryContract
         // for maximum testability on said classes instead of passing Closures.
         $mailer = new Mailer(
             $name,
-            app('view')->factory,
+            $this->app->view->factory,
             $this->createSwiftMailer($config)
         );
 
@@ -154,7 +154,7 @@ class MailManager implements FactoryContract
         // Here we will check if the "transport" key exists and if it doesn't we will
         // assume an application is still using the legacy mail configuration file
         // format and use the "mail.driver" configuration option instead for BC.
-        $transport = $config['transport'] ?? $this->app->config['mail']['driver'];
+        $transport = $config['transport'] ?? $this->app->config->config['mail']['driver'];
 
         if (isset($this->customCreators[$transport])) {
             return call_user_func($this->customCreators[$transport], $config);
@@ -240,7 +240,7 @@ class MailManager implements FactoryContract
     protected function createSendmailTransport(array $config)
     {
         return new SendmailTransport(
-            $config['path'] ?? $this->app['config']->get('mail.sendmail')
+            $config['path'] ?? $this->app->config->config['mail']['sendmail']
         );
     }
 
@@ -253,7 +253,7 @@ class MailManager implements FactoryContract
     protected function createSesTransport(array $config)
     {
         if (!isset($config['secret'])) {
-            $config = array_merge($this->app['config']->get('services.ses', []), [
+            $config = array_merge($this->app->config->config['services']['ses'] ?? [], [
                 'version' => 'latest', 'service' => 'email',
             ]);
         }
@@ -300,7 +300,7 @@ class MailManager implements FactoryContract
     protected function createMailgunTransport(array $config)
     {
         if (!isset($config['secret'])) {
-            $config = $this->app->config['services']['mailgun'] ?? [];
+            $config = $this->app->config->config['services']['mailgun'] ?? [];
         }
 
         return new MailgunTransport(
@@ -324,7 +324,7 @@ class MailManager implements FactoryContract
         ] : [];
 
         return tap(new PostmarkTransport(
-            $config['token'] ?? $this->app->config['services']['postmark']['token'],
+            $config['token'] ?? $this->app->config->config['services']['postmark']['token'],
             $headers
         ), function ($transport) {
             $transport->registerPlugin(new ThrowExceptionOnFailurePlugin);
@@ -366,7 +366,7 @@ class MailManager implements FactoryContract
      */
     protected function setGlobalAddress($mailer, array $config, string $type)
     {
-        $address = Arr::get($config, $type, $this->app->config['mail'][$type] ?? []);
+        $address = Arr::get($config, $type, $this->app->config->config['mail'][$type] ?? []);
 
         if (is_array($address) && isset($address['address'])) {
             $mailer->{'always' . Str::studly($type)}($address['address'], $address['name']);
@@ -384,7 +384,7 @@ class MailManager implements FactoryContract
         // Here we will check if the "driver" key exists and if it does we will use
         // the entire mail configuration file as the "driver" config in order to
         // provide "BC" for any Laravel <= 6.x style mail configuration files.
-        return $this->app->config['mail']['mailers'][$name];
+        return $this->app->config->config['mail']['mailers'][$name];
     }
 
     /**
@@ -397,7 +397,7 @@ class MailManager implements FactoryContract
         // Here we will check if the "driver" key exists and if it does we will use
         // that as the default driver in order to provide support for old styles
         // of the Laravel mail configuration file for backwards compatibility.
-        return $this->app->config['mail']['default'];
+        return $this->app->config->config['mail']['default'];
     }
 
     /**
@@ -408,7 +408,7 @@ class MailManager implements FactoryContract
      */
     public function setDefaultDriver(string $name)
     {
-        $this->app->config['mail']['default'] = $name;
+        $this->app->config->config['mail']['default'] = $name;
     }
 
     /**
