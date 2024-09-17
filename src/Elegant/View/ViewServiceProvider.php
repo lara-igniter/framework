@@ -70,7 +70,7 @@ class ViewServiceProvider implements PreSystem, PostControllerConstructor
     public function registerFileEngine(EngineResolver $resolver)
     {
         $resolver->register('file', function () {
-            return new FileEngine;
+            return new FileEngine(app('files'));
         });
     }
 
@@ -83,7 +83,7 @@ class ViewServiceProvider implements PreSystem, PostControllerConstructor
     public function registerPhpEngine(EngineResolver $resolver)
     {
         $resolver->register('php', function () {
-            return new PhpEngine;
+            return new PhpEngine(app('files'));
         });
     }
 
@@ -121,7 +121,7 @@ class ViewServiceProvider implements PreSystem, PostControllerConstructor
      * @param ViewFinderInterface $finder
      * @return Factory
      */
-    public function createFactory($resolver, $finder): Factory
+    public function createFactory(EngineResolver $resolver, ViewFinderInterface $finder): Factory
     {
         return new Factory($resolver, $finder);
     }

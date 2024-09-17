@@ -12,7 +12,7 @@ if (!function_exists('app')) {
      *
      * @param $abstract
      * @param $instance
-     * @return object|array
+     * @return mixed
      */
     function &app($abstract = null, $instance = null)
     {
