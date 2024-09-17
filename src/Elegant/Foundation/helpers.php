@@ -9,11 +9,11 @@ if (!function_exists('app')) {
      *
      * (Alias of framework controller instance)
      *
-     * @param null $abstract
-     * @param null $instance
-     * @return object
+     * @param $abstract
+     * @param $instance
+     * @return object|array
      */
-    function &app($abstract = null, $instance = null): object
+    function &app($abstract = null, $instance = null)
     {
         /**
          * Return current controller instance without pass arguments.
