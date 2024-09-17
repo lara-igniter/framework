@@ -2,6 +2,7 @@
 
 namespace Elegant\Foundation;
 
+use Elegant\Contracts\Hook\Boot;
 use Elegant\Contracts\Hook\CacheOverride;
 use Elegant\Contracts\Hook\DisplayOverride;
 use Elegant\Contracts\Hook\PostControllerConstructor;
@@ -24,6 +25,10 @@ class Hooks
     public static function autoload($config = []): array
     {
         $hooks = [];
+
+        $hooks['boot'][] = function () use ($config) {
+            self::boot($config);
+        };
 
         $hooks['pre_system'][] = function () use ($config) {
             self::preSystemHook($config);
@@ -58,6 +63,28 @@ class Hooks
         };
 
         return $hooks;
+    }
+
+    /**
+     * "boot" hook
+     *
+     * @param array $hooks
+     *
+     * @return void
+     * @throws Exception
+     */
+    private static function boot($hooks)
+    {
+        if(array_key_exists('providers', $hooks)) {
+            foreach($hooks['providers'] as $hook) {
+                $hookInstance = new $hook();
+
+                if (method_exists($hookInstance, 'boot')
+                    && $hookInstance instanceof Boot) {
+                    $hookInstance->boot();
+                }
+            }
+        }
     }
 
     /**
