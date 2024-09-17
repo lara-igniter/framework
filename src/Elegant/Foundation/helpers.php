@@ -2,6 +2,7 @@
 
 use Elegant\Database\Model\Factories\Factory;
 use Elegant\Support\Facades\Date;
+use Elegant\Support\Facades\Route;
 
 if (!function_exists('app')) {
     /**
@@ -123,6 +124,18 @@ if (!function_exists('bcrypt')) {
         return password_hash($password, PASSWORD_BCRYPT, [
             'cost' => 12
         ]);
+    }
+}
+
+if (! function_exists('ci')) {
+    /**
+     * @deprecated Use app() instead
+     *
+     * @return object
+     */
+    function &ci()
+    {
+        return get_instance();
     }
 }
 
@@ -506,6 +519,81 @@ if (!function_exists('resource_path')) {
     }
 }
 
+if (! function_exists('route')) {
+    /**
+     * Generate the URL to a named route.
+     *
+     * @param array|string $name
+     * @param mixed $parameters
+     * @return string
+     *
+     * @throws \Elegant\Routing\Exceptions\RouteNotFoundException
+     * @throws Exception
+     */
+    function route($name = null, $parameters = []): string
+    {
+        if ($name === null) {
+            $route = Route::getCurrentRoute();
+        } else {
+            $route = Route::getByName($name);
+        }
+
+        return $route->buildUrl($parameters);
+    }
+}
+
+if (! function_exists('route_exists')) {
+    /**
+     * Checks if a route exists
+     *
+     * @param string $name
+     *
+     * @return bool
+     */
+    function route_exists(string $name): bool
+    {
+        return isset(Route::$compiled['names'][$name]);
+    }
+}
+
+if (! function_exists('route_redirect')) {
+    /**
+     * Redirects to a route URL by its name
+     *
+     * @param string $name Route name
+     * @param array $params Route parameters
+     * @param array $messages Array with flash data messages
+     * @param string $query query string data pass
+     * @param string $fragment fragment data pass
+     *
+     * @return void
+     *
+     * @throws \Elegant\Routing\Exceptions\RouteNotFoundException
+     */
+    function route_redirect(string $name, array $params = [], array $messages = [], string $query = '', string $fragment = '')
+    {
+        if (!empty($messages) && is_array($messages)) {
+            app('load')->library('session');
+
+            foreach ($messages as $_name => $_value) {
+                app('session')->set_flashdata($_name, $_value);
+            }
+        }
+
+        if($fragment !== '') {
+            $fragment = '#' . $fragment;
+
+            $query = $query !== '' ? query_string('', $query) : query_string();
+
+            redirect(route($name, $params) . $query . $fragment, 'refresh');
+        }
+
+        $query = $query !== '' ? query_string('', $query) : query_string();
+
+        redirect(route($name, $params) . $query, 'refresh');
+    }
+}
+
 if (!function_exists('routeIs')) {
     /**
      * Determine if the route name matches a given pattern.
@@ -618,6 +706,26 @@ if (!function_exists('trans')) {
         app('lang')->load($explode[0]);
 
         return empty($replace) ? lang($explode[1]) : lang($explode[1], $replace);
+    }
+}
+
+if (! function_exists('trigger_404')) {
+    /**
+     * Triggers the custom error page, with fallback to
+     * native show_404() function
+     *
+     * @return void
+     */
+    function trigger_404()
+    {
+        $_404 = Route::get404();
+
+        if (is_null($_404) || !is_callable($_404)) {
+            show_404();
+        }
+
+        call_user_func($_404);
+        exit;
     }
 }
 
