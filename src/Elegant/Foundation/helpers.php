@@ -752,8 +752,9 @@ if (!function_exists('view')) {
      * Get the evaluated view contents for the given view.
      *
      * @param string|null $view
-     * @param array $data
-     * @return \Elegant\Support\Facades\View|\Elegant\View\View
+     * @param \Elegant\Contracts\Support\Arrayable|array  $data
+     *
+     * @return \Elegant\Contracts\View\View|\Elegant\Contracts\View\Factory|void
      */
     function view(string $view = null, array $data = [])
     {
@@ -763,6 +764,11 @@ if (!function_exists('view')) {
             return $factory;
         }
 
-        return $factory->make($view, $data);
+        /**
+         * Add return when fixed based controller
+         * check return type if view instance
+         * then echo response
+         */
+        echo $factory->make($view, $data);
     }
 }
