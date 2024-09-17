@@ -14,8 +14,8 @@ class ViewServiceProvider implements PreSystem, PostControllerConstructor
 {
     public function preSystem()
     {
-        if (!file_exists(APPPATH . '/config/view.php')) {
-            copy(realpath(dirname(__DIR__) . './Resources/ConfigView.php'), APPPATH . '/config/view.php');
+        if (!file_exists(base_path('config/view.php'))) {
+            copy(realpath(dirname(__FILE__) . '\Resources\ConfigView.php'), base_path('config/view.php'));
         }
     }
 
