@@ -63,7 +63,7 @@ class RouteBuilder
     public static function __callStatic($callback, array $args)
     {
         if (is_cli() && $callback != 'cli' || !is_cli() && $callback == 'cli' || (!is_cli() && is_array($callback) && in_array('CLI', $callback))) {
-            show_error('You only can define CLI routes in CLI context. Please define this route using the Route::cli() method in your routes/cli.php file instead');
+            show_error('You only can define CLI routes in CLI context. Please define this route using the Route::cli() method in your routes/console.php file instead');
         }
 
         $methods = $callback === 'match' ? $args[0] : $callback;

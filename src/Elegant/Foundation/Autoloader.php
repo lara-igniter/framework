@@ -16,7 +16,7 @@ class Autoloader
      */
     public static function register(string $prefix = null)
     {
-        $prefix = ($prefix) ? (string)$prefix : self::DEFAULT_PREFIX;
+        $prefix = $prefix ?: self::DEFAULT_PREFIX;
 
         spl_autoload_register(function ($classname) use ($prefix) {
             if (strpos(strtolower($classname), "{$prefix}\\") === 0) {
