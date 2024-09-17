@@ -37,12 +37,12 @@ class RouteParameter
     /**
      * @var string
      */
-    public $segmentIndex;
+    public $segmentIndex = null;
 
     /**
      * @var string
      */
-    public $fullSegment;
+    public $fullSegment = null;
 
     /**
      * CodeIgniter placeholder conversion

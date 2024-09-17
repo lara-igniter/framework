@@ -4,7 +4,6 @@ namespace Elegant\Routing;
 
 use Elegant\Routing\Exceptions\RouteNotFoundException;
 use Elegant\Support\Str;
-use Exception;
 
 class RouteBuilder
 {
@@ -15,7 +14,7 @@ class RouteBuilder
      *
      * @var string[]
      */
-    const HTTP_VERBS = ['GET','POST','PUT','PATCH','DELETE','HEAD','OPTIONS','TRACE'];
+    const HTTP_VERBS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE'];
 
     /**
      * @var Route[]
@@ -67,13 +66,9 @@ class RouteBuilder
             show_error('You only can define CLI routes in CLI context. Please define this route using the Route::cli() method in your routes/cli.php file instead');
         }
 
-        if ($callback == 'match') {
-            $methods = $args[0];
-        } else {
-            $methods = $callback;
-        }
+        $methods = $callback === 'match' ? $args[0] : $callback;
 
-        if (!in_array(strtoupper($callback), self::$verbs, true) && !in_array($callback, ['any', 'match', true])) {
+        if (!in_array(strtoupper($callback), self::HTTP_VERBS, true) && !in_array($callback, ['any', 'match', true])) {
             show_error("Call to undefined RouteBuilder::{$callback()} method", 500, 'Route builder error');
         }
 
@@ -115,7 +110,7 @@ class RouteBuilder
                 }
             } else {
                 if (!is_array($attributes['middleware']) && !is_object($attributes['middleware'])) {
-                    show_error('Route group middleware must be an array o a string');
+                    show_error('Route group middleware must be an array or a string or a new instance');
                 }
             }
 
@@ -178,6 +173,7 @@ class RouteBuilder
      * Compiles all routes
      *
      * @return void
+     * @throws \Exception
      */
     public static function compileAll()
     {
@@ -208,48 +204,190 @@ class RouteBuilder
             }
         }
 
-        $routes['default_controller'] = self::$compiled['reserved']['default_controller'] ?? null;
+        $routes['default_controller'] = isset(self::$compiled['reserved']['default_controller']) ?
+            self::$compiled['reserved']['default_controller'] : null;
 
-        $routes['translate_uri_dashes'] = self::$compiled['reserved']['translate_uri_dashes'] ?? FALSE;
+        $routes['translate_uri_dashes'] = isset(self::$compiled['reserved']['translate_uri_dashes']) ?
+            self::$compiled['reserved']['translate_uri_dashes'] : FALSE;
 
-        $routes['404_override'] = self::$compiled['reserved']['404_override'] ?? '';
+        $routes['404_override'] = isset(self::$compiled['reserved']['404_override']) ?
+            self::$compiled['reserved']['404_override'] : '';
 
         self::$compiled['routes'] = $routes;
     }
 
     /**
-     * Creates a new resource route
+     * Register an array of resource controllers.
      *
-     * @param string $name Resource name
-     * @param string $controller Resource controller
-     * @param array $only Resource action filtering
+     * @param array $resources
+     * @param array $options
+     * @return void
+     */
+    public static function resources(array $resources, array $options = [])
+    {
+        foreach ($resources as $name => $controller) {
+            self::resource($name, $controller, $options);
+        }
+    }
+
+    /**
+     * Route a resource to a controller.
+     *
+     * @param string $name
+     * @param string|array $controller
+     * @param array $options
      *
      * @return void
      */
-    public static function resource($name, $controller, $only = [])
+    public static function resource(string $name, $controller, array $options = [])
     {
+        $only = ['index', 'create', 'store', 'show', 'edit', 'update', 'destroy', 'restore', 'limit'];
+
         $routes = [
-            'index' => ['/', ['GET']],
-            'create' => ['/create', ['GET']],
-            'store' => ['/', ['POST']],
-            'show' => ['/{id}', ['GET']],
-            'edit' => ['/{id}/edit', ['GET']],
-            'update' => ['/{id}', ['PUT', 'PATCH']],
-            'destroy' => ['/{id}', ['DELETE']]
+            'index' => [
+                '/', ['GET']
+            ],
+            'create' => [
+                '/create', ['GET']
+            ],
+            'store' => [
+                '/', ['POST']
+            ],
+            'show' => [
+                '/{num:' . Str::singular($name) . '_id}', ['GET']
+            ],
+            'edit' => [
+                '/{num:' . Str::singular($name) . '_id}/edit', ['GET']
+            ],
+            'update' => [
+                '/{num:' . Str::singular($name) . '_id}', ['POST', 'PUT', 'PATCH']
+            ],
+            'destroy' => [
+                '/{num:' . Str::singular($name) . '_id}', ['DELETE']
+            ],
+            'restore' => [
+                '/{num:' . Str::singular($name) . '_id}/restore', ['GET']
+            ],
+            'limit' => [
+                '/limit', ['POST']
+            ],
         ];
 
-        if (!is_array($only)) {
-            $only = [];
+        if (!is_array($options)) {
+            $options = [];
+        }
+
+        if (isset($options['except'])) {
+            $only = array_diff($only, (array)$options['except']);
         }
 
         foreach ($routes as $action => $props) {
-            if (!empty($only) && !in_array($action, $only)) {
+            if (!empty($options) && !empty($options['only']) && !in_array($action, $options['only'])) {
+                continue;
+            }
+
+            if (!in_array($action, $only)) {
+                continue;
+            }
+
+            if (!isset($options['pagination']) || !$options['pagination']) {
+                unset($routes['limit']);
+            }
+
+            [$path, $methods] = $props;
+
+            if (is_array($controller)) {
+                $nameArray = explode('\\', $controller[0]);
+                $controllerName = array_pop($nameArray);
+
+                $controller = $controllerName;
+            }
+
+            self::match($methods, $name . $path, $controller . '@' . $action)->name(
+                !empty($options['as']) ? $options['as'] . $name . '.' . $action : $name . '.' . $action
+            );
+        }
+    }
+
+
+    /**
+     * Register an array of API resource controllers.
+     *
+     * @param array $resources
+     * @param array $options
+     * @return void
+     */
+    public static function apiResources(array $resources, array $options = [])
+    {
+        foreach ($resources as $name => $controller) {
+            self::apiResource($name, $controller, $options);
+        }
+    }
+
+    /**
+     * Route an API resource to a controller.
+     *
+     * @param string $name
+     * @param string|array $controller
+     * @param array $options
+     *
+     * @return void
+     */
+    public static function apiResource(string $name, $controller, array $options = [])
+    {
+        $only = ['index', 'show', 'store', 'update', 'destroy'];
+
+        $routes = [
+            'index' => [
+                '/', ['GET']
+            ],
+            'show' => [
+                '/{num:' . Str::singular($name) . '_id}', ['GET']
+            ],
+            'store' => [
+                '/', ['POST']
+            ],
+            'update' => [
+                '/{num:' . Str::singular($name) . '_id}', ['POST', 'PUT', 'PATCH']
+            ],
+            'destroy' => [
+                '/{num:' . Str::singular($name) . '_id}', ['DELETE']
+            ]
+        ];
+
+        if (!is_array($options)) {
+            $options = [];
+        }
+
+        if (isset($options['except'])) {
+            $only = array_diff($only, (array)$options['except']);
+        }
+
+        if (isset($options['only'])) {
+            $only = $options['only'];
+        }
+
+        foreach ($routes as $action => $props) {
+            if (!empty($options) && !empty($options['only']) && !in_array($action, $options['only'])) {
+                continue;
+            }
+
+            if (!in_array($action, $only)) {
                 continue;
             }
 
             [$path, $methods] = $props;
 
-            self::match($methods, $name . $path, $controller . '@' . $action)->name($name . '.' . $action);
+            if (is_array($controller)) {
+                $nameArray = explode('\\', $controller[0]);
+                $controllerName = array_pop($nameArray);
+
+                $controller = $controllerName;
+            }
+
+            self::match($methods, $name . $path, $controller . '@' . $action)->name(
+                !empty($options['as']) ? $options['as'] . $name . '.' . $action : $name . '.' . $action
+            );
         }
     }
 
@@ -261,12 +399,12 @@ class RouteBuilder
      *
      * @return void
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public static function set($name, $value)
     {
         if (!in_array($name, ['404_override', 'default_controller', 'translate_uri_dashes'])) {
-            throw new Exception('Unknown reserved route "' . $name . '"');
+            throw new \Exception('Unknown reserved route "' . $name . '"');
         }
 
         if ($name == '404_override' && is_callable($value)) {
@@ -278,43 +416,19 @@ class RouteBuilder
     }
 
     /**
-     * Sets the SimpleAuth default routing
-     *
-     * @param boolean $secureLogout Disable logout with GET requests
-     *
-     * @return void
-     */
-//    public static function auth($secureLogout = true)
-//    {
-//        self::match(['get', 'post'], 'login', 'SimpleAuthController@login')->name('login');
-//
-//        self::match($secureLogout === true ? ['post'] : ['get', 'post'], 'logout', 'SimpleAuthController@logout')->name('logout');
-//
-//        self::get('email_verification/{token}', 'SimpleAuthController@emailVerification')->name('email_verification');
-//
-//        self::match(['get', 'post'], 'signup', 'SimpleAuthController@signup')->name('signup');
-//
-//        self::match(['get', 'post'], 'confirm_password', 'SimpleAuthController@confirmPassword')->name('confirm_password');
-//
-//        self::group('password-reset', function () {
-//            self::match(['get', 'post'], '/', 'SimpleAuthController@passwordReset')->name('password_reset');
-//            self::match(['get', 'post'], '{token}', 'SimpleAuthController@passwordResetForm')->name('password_reset_form');
-//        });
-//    }
-
-    /**
      * Gets the matching route of the provided URL
      *
      * @param string $url
-     * @param string|null $requestMethod
+     * @param string $requestMethod
      *
      * @return Route
+     *
      * @throws RouteNotFoundException
      *
      */
     public static function getByUrl($url, $requestMethod = null)
     {
-        if (empty($requestMethod)) {
+        if ($requestMethod === null || empty($requestMethod)) {
             $requestMethod = isset($_SERVER['REQUEST_METHOD']) ? strtoupper($_SERVER['REQUEST_METHOD']) : (!is_cli() ? 'GET' : 'CLI');
         } else {
             $requestMethod = strtoupper($requestMethod);
@@ -342,7 +456,7 @@ class RouteBuilder
             }
         }
 
-        throw new RouteNotFoundException;
+        throw new RouteNotFoundException("Route url [{$url}] does not exist.");
     }
 
     /**
@@ -351,6 +465,7 @@ class RouteBuilder
      * @param string $name Route name to search
      *
      * @return Route
+     *
      * @throws RouteNotFoundException
      *
      */
@@ -360,7 +475,7 @@ class RouteBuilder
             return self::$compiled['names'][$name];
         }
 
-        throw new RouteNotFoundException;
+        throw new RouteNotFoundException("Route [{$name}] not defined.");
     }
 
     /**
@@ -405,9 +520,43 @@ class RouteBuilder
     }
 
     /**
+     * Check if a route with the given name exists.
+     *
+     * @param string|array $name
+     * @return bool
+     */
+    public static function has($name): bool
+    {
+        $names = is_array($name) ? $name : func_get_args();
+
+        foreach ($names as $value) {
+            if (!self::hasNamedRoute($value)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Determine if the route collection contains a given named route.
+     *
+     * @param string $name
+     * @return bool
+     */
+    public static function hasNamedRoute(string $name): bool
+    {
+        try {
+            return (bool)self::getByName($name);
+        } catch (RouteNotFoundException $e) {
+            return false;
+        }
+    }
+
+    /**
      * Gets the global middleware
      *
-     * @return string
+     * @return array
      */
     public static function getGlobalMiddleware()
     {
@@ -425,7 +574,8 @@ class RouteBuilder
             return self:: $_404;
         }
 
-        return self::$compiled['reserved']['404_override'] ?? null;
+        return isset(self::$compiled['reserved']['404_override']) ?
+            self::$compiled['reserved']['404_override'] : null;
     }
 
     /**

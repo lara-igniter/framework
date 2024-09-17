@@ -2,6 +2,8 @@
 
 namespace Elegant\Routing;
 
+use Elegant\Support\Str;
+
 class Route
 {
     /**
@@ -96,9 +98,8 @@ class Route
     public function __construct($methods, $route)
     {
         if ($methods == 'any') {
-            $methods = RouteBuilder::$verbs;
+            $methods = RouteBuilder::HTTP_VERBS;
         } elseif (is_string($methods)) {
-
             $methods = [strtoupper($methods)];
         } else {
             array_shift($route);
@@ -112,6 +113,22 @@ class Route
         [$path, $action] = $route;
         $this->path = trim($path, '/') == '' ? '/' : trim($path, '/');
 
+        if (is_array($action)) {
+            $nameArray = explode('\\', $action[0]);
+            $controllerName = array_pop($nameArray);
+
+            $action[0] = $controllerName;
+
+            $action = implode('@', $action);
+        }
+
+        if (is_string($action) && !Str::contains($action, '@')) {
+            $nameArray = explode('\\', $action);
+            $controller = array_pop($nameArray);
+
+            $action = $controller . '@__invoke';
+        }
+
         if (!is_callable($action) && count(explode('@', $action)) != 2) {
             show_error('Route action must be in <strong>controller@method</strong> syntax or be a valid callback');
         }
@@ -122,22 +139,27 @@ class Route
         // Route group inherited attributes
         if (!empty(RouteBuilder::getContext('prefix'))) {
             $prefixes = RouteBuilder::getContext('prefix');
+
             foreach ($prefixes as $prefix) {
                 $this->prefix .= trim($prefix, '/') != '' ? '/' . trim($prefix, '/') : '';
             }
+
             $this->prefix = trim($this->prefix, '/');
         }
 
         if (!empty(RouteBuilder::getContext('namespace'))) {
             $namespaces = RouteBuilder::getContext('namespace');
+
             foreach ($namespaces as $namespace) {
                 $this->namespace .= trim($namespace, '/') != '' ? '/' . trim($namespace, '/') : '';
             }
+
             $this->namespace = trim($this->namespace, '/');
         }
 
         if (!empty(RouteBuilder::getContext('middleware')['route'])) {
             $middlewares = RouteBuilder::getContext('middleware')['route'];
+
             foreach ($middlewares as $middleware) {
                 if (!in_array($middleware, $this->middleware)) {
                     $this->middleware[] = $middleware;
@@ -172,45 +194,12 @@ class Route
         $this->fullPath = $fullPath;
 
         foreach (explode('/', $fullPath) as $i => $segment) {
-            //TODO: Old logic of route params same name
-//            if (preg_match_all('/\{(.*?)\}+/', $segment, $matches)) {
-//                if ($this->paramOffset === null) {
-//                    $this->paramOffset = $i;
-//                }
-//
-//                $params = [];
-//
-//                foreach ($matches[0] as $paramCode) {
-//                    $params[] = new RouteParameter($paramCode, $i, $segment);
-//                }
-//
-//                foreach ($params as $key => $param) {
-//                    if (in_array($param->getName(), $_names)) {
-//                        show_error('Duplicate route parameter <strong>' . $param->getName() . '</strong> in route <strong>"' . $this->path . '</strong>"');
-//                    }
-//
-//                    $_names[] = $param->getName();
-//
-//                    if ($param->isOptional()) {
-//                        $this->hasOptionalParams = true;
-//                        if ($this->optionalParamOffset === null) {
-//                            $this->optionalParamOffset = $i;
-//                        }
-//                    } else {
-//                        if ($this->hasOptionalParams) {
-//                            show_error('Required <strong>' . $param->getName() . '</strong> route parameter is not allowed at this position in <strong>"' . $this->path . '"</strong> route');
-//                        }
-//                    }
-//                    $this->params[] = $param;
-//                }
-//            }
-
             if (preg_match('/^\{(.*)\}$/', $segment)) {
                 if ($this->paramOffset === null) {
                     $this->paramOffset = $i;
                 }
 
-                $param = new RouteParameter($segment);
+                $param = new RouteParameter($segment, null, null);
 
                 if (in_array($param->getName(), $_names)) {
                     show_error('Duplicate route parameter <strong>' . $param->getName() . '</strong> in route <strong>"' . $this->path . '</strong>"');
@@ -220,6 +209,7 @@ class Route
 
                 if ($param->isOptional()) {
                     $this->hasOptionalParams = true;
+
                     if ($this->optionalParamOffset === null) {
                         $this->optionalParamOffset = $i;
                     }
@@ -228,6 +218,7 @@ class Route
                         show_error('Required <strong>' . $param->getName() . '</strong> route parameter is not allowed at this position in <strong>"' . $this->path . '"</strong> route');
                     }
                 }
+
                 $this->params[] = $param;
             }
         }
@@ -264,14 +255,6 @@ class Route
                 $target = RouteBuilder::DEFAULT_CONTROLLER;
                 $baseTarget = $target;
             } else {
-                $controller = explode('@', $this->action);
-
-                $targetController = (!empty($this->namespace) ? $this->namespace . '/' : '') . $controller[0];
-
-                if (!file_exists(APPPATH . '/controllers/' . $targetController . '.php')) {
-                    throw new \Exception("Call to undefined {$controller[0]}::{$controller[1]} method");
-                }
-
                 $baseTarget = (!empty($this->namespace) ? $this->namespace . '/' : '')
                     . str_ireplace('@', '/', $this->action);
 
@@ -295,9 +278,11 @@ class Route
 
                 for ($i = $this->optionalParamOffset; $i < $sCount; $i++) {
                     $basePath .= '/' . $segments[$i];
+
                     if (is_string($this->action)) {
                         $baseTarget .= '/$' . ++$pCount;
                     }
+
                     $routes[][$basePath][$method] = $baseTarget;
                 }
             }
@@ -313,9 +298,9 @@ class Route
      * Gets or sets a route parameter
      *
      * @param string $name Parameter name
-     * @param string|null $value Parameter value
+     * @param string $value Parameter value
      *
-     * @return string|void
+     * @return mixed
      */
     public function param($name, $value = null)
     {
@@ -324,6 +309,7 @@ class Route
                 if ($value !== null) {
                     $_param->value = $value;
                 }
+
                 return $_param->value;
             }
         }
@@ -343,6 +329,7 @@ class Route
                 return true;
             }
         }
+
         return false;
     }
 
@@ -352,12 +339,13 @@ class Route
      * @param mixed $params Route parameters
      *
      * @return string
+     *
+     * @throws \Exception
      */
     public function buildUrl($params)
     {
         $defaults = RouteBuilder::getDefaultParams();
 
-        // Thanks to @Ihabafia for the suggest!
         if (is_object($params)) {
             $params = (array)$params;
         }
@@ -436,7 +424,7 @@ class Route
      *
      * @return self
      */
-    public function setName(string $name)
+    public function setName($name)
     {
         $this->name = $name;
         return $this;
@@ -469,7 +457,7 @@ class Route
      *
      * @return self
      */
-    public function setPath(string $path)
+    public function setPath($path)
     {
         $this->path = $path;
         return $this;

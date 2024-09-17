@@ -24,7 +24,7 @@ class Middleware
             return self::$loadedMiddleware[$middleware];
         }
 
-        $target = APPPATH . '/middleware/' . $middleware . '.php';
+        $target = app_path('Middlewares/' . $middleware . '.php');
 
         if (file_exists($target)) {
             require_once($target);
@@ -44,21 +44,21 @@ class Middleware
     }
 
     /**
-     * Runs a middleware
+     * Runs middleware
      *
      * @param string|callable $middleware
      * @param array $args
      *
      * @return void
      */
-    final public function run($middleware, $args = [])
+    final public function run($middleware, array $args = [])
     {
         if (is_callable($middleware)) {
             call_user_func_array($middleware, $args);
         } else if (is_object($middleware)) {
             if (!$middleware instanceof MiddlewareInterface) {
                 if (method_exists($middleware, 'run')) {
-                    show_error('Your "' . get_class($middleware) . '" middleware doesn\'t have a run() public method');
+                    show_error('Your "' . get_class($middleware) . '" middleware does not have a run() public method');
                 }
             }
 
@@ -74,7 +74,7 @@ class Middleware
 
                 if (!$middleware instanceof MiddlewareInterface) {
                     if (method_exists($middleware, 'run')) {
-                        show_error('Your "' . get_class($middleware) . '" middleware doesn\'t have a run() public method');
+                        show_error('Your "' . get_class($middleware) . '" middleware does not have a run() public method');
                     }
                 }
 
@@ -105,14 +105,14 @@ class Middleware
                 $args[] =& get_instance();
             }
 
-            if (isset(app()->hooks->hooks[$hook]) && !is_array(app()->hooks->hooks[$hook])) {
-                $_hook = app()->hooks->hooks[$hook];
-                app()->hooks->hooks[$hook] = [$_hook];
+            if (isset(app('hooks')->hooks[$hook]) && !is_array(app('hooks')->hooks[$hook])) {
+                $_hook = app('hooks')->hooks[$hook];
+                app('hooks')->hooks[$hook] = [$_hook];
             }
 
-            app()->hooks->hooks[$hook][] = call_user_func_array($middleware, $args);
+            app('hooks')->hooks[$hook][] = call_user_func_array($middleware, $args);
         } else {
-            app()->hooks->hooks[$hook][] = call_user_function_array([$this, 'run'], [$middleware, $args]);
+            app('hooks')->hooks[$hook][] = call_user_function_array([$this, 'run'], [$middleware, $args]);
         }
     }
 }

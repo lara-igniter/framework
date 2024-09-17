@@ -13,12 +13,11 @@ use Elegant\Routing\Middleware\RouteAjaxMiddleware;
 use Elegant\Routing\RouteBuilder as Route;
 use Elegant\Support\Utils;
 
-class RouteServiceProvider implements PreSystem,
-    PreController,
-    PostControllerConstructor,
-    PostController,
-    DisplayOverride
+class RouteServiceProvider implements PreSystem, PreController, PostControllerConstructor, PostController, DisplayOverride
 {
+    /**
+     * @throws \Exception
+     */
     public function preSystem()
     {
         $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH'])
@@ -28,34 +27,52 @@ class RouteServiceProvider implements PreSystem,
         $isCli = is_cli();
         $isWeb = !is_cli();
 
-        require_once realpath(dirname(__DIR__) . './Support/Facades/Route.php');
+        require_once realpath(dirname(__DIR__) . '\Support\Facades\Route.php');
 
-        if (!file_exists(APPPATH . '/routes')) {
-            mkdir(APPPATH . '/routes');
+        if (!file_exists(base_path('routes'))) {
+            mkdir(base_path('routes'));
         }
 
-        if (!file_exists(APPPATH . '/middleware')) {
-            mkdir(APPPATH . '/middleware');
+        if (!file_exists(app_path('Middlewares'))) {
+            mkdir(app_path('Middlewares'));
         }
 
         if ($isWeb) {
-            require_once(APPPATH . '/routes/web.php');
+            $preSystemMiddlewares = [];
+            foreach (\App\Kernel::$middlewareGroups['web'] as $web) {
+                $preSystemMiddlewares[] = self::prepareMiddleware($web);
+            }
+
+            if(!empty($preSystemMiddlewares)) {
+                Route::group('', ['middleware' => $preSystemMiddlewares], function () {
+                    require_once(base_path('routes/web.php'));
+                });
+            } else {
+                require_once(base_path('routes/web.php'));
+            }
         }
 
         if ($isAjax || $isWeb) {
-            Route::group('/', ['middleware' => [new RouteAjaxMiddleware()]],
-                function () {
-                    require_once(APPPATH . '/routes/api.php');
-                }
-            );
+            $preSystemApiMiddlewares = [];
+            foreach (\App\Kernel::$middlewareGroups['api'] as $api) {
+                $preSystemApiMiddlewares[] = self::prepareMiddleware($api);
+            }
+
+            if(!empty($preSystemApiMiddlewares)) {
+                Route::group('/api', ['middleware' => $preSystemApiMiddlewares], function () {
+                    require_once(base_path('routes/api.php'));
+                });
+            } else {
+                require_once(base_path('routes/api.php'));
+            }
         }
 
         if ($isCli) {
-            require_once(APPPATH . '/routes/console.php');
+            require_once(base_path('routes/console.php'));
             Route::set('default_controller', Route::DEFAULT_CONTROLLER);
         }
 
-        require_once(realpath(dirname(__DIR__) . './Foundation/helpers.php'));
+//        require_once(realpath(dirname(__DIR__) . './Foundation/helpers.php'));
 
         // Compiling all routes
         Route::compileAll();
@@ -81,12 +98,23 @@ class RouteServiceProvider implements PreSystem,
             $currentRoute = Route::getByUrl($url);
         } catch (RouteNotFoundException $e) {
             Route::$compiled['routes'][$url] = Route::DEFAULT_CONTROLLER . '/index';
-            $currentRoute = Route::{!is_cli() ? 'any' : 'cli'}($url, function () {
+            $currentRoute = Route::{!is_cli() ? 'any' : 'cli'}($url, function () use ($url) {
                 if (!is_cli() && is_callable(Route::get404())) {
                     $_404 = Route::get404();
                     call_user_func($_404);
                 } else {
-                    show_404();
+                    if(request()->acceptsJson()) {
+                        app('output')
+                            ->set_status_header(404)
+                            ->set_content_type('application/json')
+                            ->set_output(json_encode([
+                                'error' => true,
+                                'status' => 404,
+                                'message' => 'Not Found'
+                            ]));
+                    } else {
+                        show_404($url);
+                    }
                 }
             });
             $currentRoute->is404 = true;
@@ -117,7 +145,7 @@ class RouteServiceProvider implements PreSystem,
                 $dir = $route->getNamespace();
                 [$_class, $_method] = explode('@', $route->getAction());
 
-                $_controller = APPPATH . 'controllers/' . (!empty($dir) ? $dir . '/' : '') . $_class . '.php';
+                $_controller = app_path('Controllers/'. (!empty($dir) ? $dir . '/' : '') . $_class . '.php');
 
                 if (file_exists($_controller)) {
                     require_once $_controller;
@@ -141,44 +169,23 @@ class RouteServiceProvider implements PreSystem,
             $sCount = 0;
 
             foreach (explode('/', $path) as $currentSegmentIndex => $segment) {
-                $key = [];
+                if (preg_match('/^\{(.*)\}$/', $segment)) {
+                    $segment = preg_replace('/\((.*)\):/', '', $segment);
 
-                if (preg_match('/\{(.*?)\}+/', $segment)) {
-                    foreach ($route->params as $param) {
-                        if (empty($key[$param->getSegmentIndex()])) {
-                            $key[$param->getSegmentIndex()] = str_replace($param->getSegment(), '(' . $param->getRegex() . ')', $param->getFullSegment());
-                        } else {
-                            $key[$param->getSegmentIndex()] = str_replace($param->getSegment(), '(' . $param->getRegex() . ')', $key[$param->getSegmentIndex()]);
-                        }
+                    $route->params[$pCount]->value = $URI->segment($currentSegmentIndex + 1);
+
+                    if (is_callable($route->getAction()) && !empty($URI->segment($currentSegmentIndex + 1))) {
+                        $params[$route->params[$pCount]->getName()] = $URI->segment($currentSegmentIndex + 1);
                     }
 
-                    foreach ($route->params as $param) {
-                        if ($param->segmentIndex === $currentSegmentIndex) {
-                            $segment = preg_replace('/\((.*)\):/', '', $segment);
-
-                            if (preg_match('#^' . $key[$currentSegmentIndex] . '$#', $URI->segment($currentSegmentIndex + 1), $matches)) {
-                                if (isset($matches[$pCount + 1 - $sCount])) {
-                                    $route->params[$pCount]->value = $matches[$pCount + 1 - $sCount];
-                                }
-                            }
-
-                            if (is_callable($route->getAction()) && !empty($URI->segment($currentSegmentIndex + 1))) {
-                                $params[$route->params[$pCount]->getName()] = $URI->segment($currentSegmentIndex + 1);
-                            }
-
-                            // Removing "sticky" route parameters
-                            if (substr($param->getName(), 0, 1) !== '_') {
-                                $params_result[] = $route->params[$pCount]->value;
-                            }
-
-                            $pCount++;
-                        }
+                    // Removing "sticky" route parameters
+                    if (substr($route->params[$pCount]->getName(), 0, 1) == '_') {
+                        unset($params[$pCount]);
                     }
-                    $sCount++;
+
+                    $pCount++;
                 }
             }
-
-            $params = $params_result;
         } else {
             if (!empty($route->params)) {
                 $argv = array_slice($_SERVER['argv'], 1);
@@ -203,7 +210,7 @@ class RouteServiceProvider implements PreSystem,
             $class = Route::DEFAULT_CONTROLLER;
 
             if (!class_exists($class)) {
-                require_once APPPATH . '/controllers/' . Route::DEFAULT_CONTROLLER . '.php';
+                require_once app_path('/Controllers/' . Route::DEFAULT_CONTROLLER . '.php');
             }
 
             $method = 'index';
@@ -213,63 +220,74 @@ class RouteServiceProvider implements PreSystem,
     public function postControllerConstructor(&$params)
     {
         // Current route configuration and dispatch
-        app()->route = Route::getCurrentRoute();
+        app('route', Route::getCurrentRoute());
 
-        if (!app()->route->is404) {
-            app()->load->helper('url');
+        if (!app('route')->is404) {
+            app('load')->helper('url');
 
-            app()->middleware = new Middleware();
+            app('middleware', new Middleware());
 
             if (method_exists(app(), 'preMiddleware')) {
                 call_user_func([app(), 'preMiddleware']);
             }
 
             foreach (Route::getGlobalMiddleware()['pre_controller'] as $middleware) {
-                app()->middleware->run($middleware);
+                app('middleware')->run($middleware);
             }
 
             // Setting "sticky" route parameters values as default for current route
-            foreach (app()->route->params as &$param) {
+            foreach (app('route')->params as &$param) {
                 if (substr($param->getName(), 0, 1) == '_') {
-                    Route::setDefaultParam($param->getName(), app()->route->param($param->getName()));
+                    Route::setDefaultParam($param->getName(), app('route')->param($param->getName()));
                 }
             }
 
-            foreach (app()->route->getMiddleware() as $middleware) {
+            foreach (app('route')->getMiddleware() as $middleware) {
                 if (is_string($middleware)) {
                     $middleware = [$middleware];
                 }
 
                 foreach ($middleware as $_middleware) {
-                    app()->middleware->run($_middleware);
+                    app('middleware')->run($_middleware);
                 }
             }
         }
 
-        if (is_callable(app()->route->getAction())) {
-            call_user_func_array(app()->route->getAction(), $params);
+        if (is_callable(app('route')->getAction())) {
+            call_user_func_array(app('route')->getAction(), $params);
         }
     }
 
     public function postController()
     {
-        if (app()->route->is404) {
+        if (app('route')->is404) {
             return;
         }
 
         foreach (Route::getGlobalMiddleware()['post_controller'] as $middleware) {
-            app()->middleware->run($middleware);
+            app('middleware')->run($middleware);
         }
     }
 
     public function displayOverride()
     {
-        $output = app()->output->get_output();
+        $output = app('output')->get_output();
 
-        if (isset(app()->db)) {
-            $queries = app()->db->queries;
+        app('output')->_display($output);
+    }
+
+    private static function prepareMiddleware($middleware)
+    {
+        if (is_string($middleware)) {
+            if (isset(\App\Kernel::$routeMiddleware[$middleware])) {
+                return new \App\Kernel::$routeMiddleware[$middleware]();
+            } else {
+                show_error('Route middleware {' . $middleware . '} does not exist in application\Kernel.php');
+            }
+        } elseif (is_object($middleware)) {
+            return new $middleware();
+        } else {
+            show_error('Route middleware must be a string or a new instance');
         }
-
-        app()->output->_display($output);
     }
 }

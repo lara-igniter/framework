@@ -7,11 +7,9 @@ class Utils
     /**
      * Gets the current url
      *
-     * (Taken from the CodeIgniter CI_Uri class)
-     *
      * @return string
      */
-    public static function currentUrl()
+    public static function currentUrl(): string
     {
         if (is_cli()) {
             $args = array_slice($_SERVER['argv'], 1);
@@ -97,65 +95,4 @@ class Utils
 
         return $url;
     }
-
-    /**
-     * Recursive mkdir function
-     *
-     * @param string[] $folders Array with folders to be created
-     * @param string $base Target base path
-     *
-     * @return void
-     * @deprecated Use mkdir('path', 0777, true) instead!
-     */
-//    public static function rmkdir(array $folders, string $base)
-//    {
-//        $target = APPPATH . $base;
-//
-//        foreach ($folders as $folder) {
-//            $target .= '/' . $folder;
-//
-//            if (!file_exists($target)) {
-//                mkdir($target);
-//            }
-//        }
-//    }
-
-    /**
-     * Recursive copy function
-     *
-     * @param string $source
-     * @param string $target
-     *
-     * @return void
-     */
-//    public static function rcopy(string $source, string $target)
-//    {
-//        foreach (scandir($source) as $res) {
-//            if ($res == '.' || $res == '..') {
-//                continue;
-//            }
-//
-//            $_source = $source . '/' . $res;
-//            $_target = $target . '/' . $res;
-//
-//            if (is_dir($_source)) {
-//                if (!file_exists($_target)) {
-//                    mkdir($_target);
-//                }
-//
-//                self::rcopy($_source, $_target);
-//            } else {
-//                if (!file_exists($_target)) {
-//                    copy($_source, $_target);
-//                    if (is_cli()) {
-//                        echo "CREATED: $_target\n";
-//                    }
-//                } else {
-//                    if (is_cli()) {
-//                        echo "SKIPPED: $_target (already exists)\n";
-//                    }
-//                }
-//            }
-//        }
-//    }
 }
