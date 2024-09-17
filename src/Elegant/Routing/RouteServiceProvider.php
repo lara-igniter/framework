@@ -9,7 +9,6 @@ use Elegant\Contracts\Hook\PreController;
 use Elegant\Contracts\Hook\PreSystem;
 use Elegant\Routing\Exceptions\RouteNotFoundException;
 use Elegant\Routing\Middleware\Middleware;
-use Elegant\Routing\Middleware\RouteAjaxMiddleware;
 use Elegant\Routing\RouteBuilder as Route;
 use Elegant\Support\Utils;
 
@@ -33,8 +32,8 @@ class RouteServiceProvider implements PreSystem, PreController, PostControllerCo
             mkdir(base_path('routes'));
         }
 
-        if (!file_exists(app_path('Middlewares'))) {
-            mkdir(app_path('Middlewares'));
+        if (!file_exists(app_path('Middleware'))) {
+            mkdir(app_path('Middleware'));
         }
 
         if ($isWeb) {
