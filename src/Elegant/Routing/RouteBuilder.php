@@ -14,7 +14,7 @@ class RouteBuilder
      *
      * @var string[]
      */
-    const HTTP_VERBS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE'];
+    const HTTP_VERBS = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE',  'OPTIONS'];
 
     /**
      * @var Route[]

@@ -12,7 +12,7 @@ class Application
      *
      * @var string
      */
-    const VERSION = '1.29.4';
+    const VERSION = '1.29.5';
 
     /**
      * The base path for the Laraigniter installation.
