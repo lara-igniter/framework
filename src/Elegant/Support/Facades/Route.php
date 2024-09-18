@@ -2,13 +2,15 @@
 
 namespace Elegant\Support\Facades;
 
+use Elegant\Routing\RouteBuilder;
+
 /**
- * @method static \Elegant\Routing\Route get(string|array $methods, array $route)
- * @method static \Elegant\Routing\Route post(string|array $methods, array $route)
- * @method static \Elegant\Routing\Route put(string|array $methods, array $route)
- * @method static \Elegant\Routing\Route patch(string|array $methods, array $route)
- * @method static \Elegant\Routing\Route delete(string|array $methods, array $route)
- * @method static \Elegant\Routing\Route options(string|array $methods, array $route)
+ * @method static \Elegant\Routing\Route get(string|array $methods, \Closure|array $route)
+ * @method static \Elegant\Routing\Route post(string|array $methods, \Closure|array $route)
+ * @method static \Elegant\Routing\Route put(string|array $methods, \Closure|array $route)
+ * @method static \Elegant\Routing\Route patch(string|array $methods, \Closure|array $route)
+ * @method static \Elegant\Routing\Route delete(string|array $methods, \Closure|array $route)
+ * @method static \Elegant\Routing\Route options(string|array $methods, \Closure|array $route)
  * @method static void group(string $prefix, callable|array $attributes, callable|null $routes = null)
  * @method static void middleware(mixed $middleware, string $point = 'pre_controller')
  * @method static void compileAll()
@@ -33,15 +35,7 @@ namespace Elegant\Support\Facades;
  *
  * @see \Elegant\Routing\RouteBuilder
  */
-class Route extends Facade
+class Route extends RouteBuilder
 {
-    /**
-     * Get the registered name of the component.
-     *
-     * @return string
-     */
-    protected static function getFacadeAccessor()
-    {
-        return 'route';
-    }
+    //
 }
