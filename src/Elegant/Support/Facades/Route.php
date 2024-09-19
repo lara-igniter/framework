@@ -5,12 +5,12 @@ namespace Elegant\Support\Facades;
 use Elegant\Routing\RouteBuilder;
 
 /**
- * @method static \Elegant\Routing\Route get(string|array $methods, \Closure|array $route)
- * @method static \Elegant\Routing\Route post(string|array $methods, \Closure|array $route)
- * @method static \Elegant\Routing\Route put(string|array $methods, \Closure|array $route)
- * @method static \Elegant\Routing\Route patch(string|array $methods, \Closure|array $route)
- * @method static \Elegant\Routing\Route delete(string|array $methods, \Closure|array $route)
- * @method static \Elegant\Routing\Route options(string|array $methods, \Closure|array $route)
+ * @method static \Elegant\Routing\Route get(string|array $methods, \Closure|array|string $route)
+ * @method static \Elegant\Routing\Route post(string|array $methods, \Closure|array|string $route)
+ * @method static \Elegant\Routing\Route put(string|array $methods, \Closure|array|string $route)
+ * @method static \Elegant\Routing\Route patch(string|array $methods, \Closure|array|string $route)
+ * @method static \Elegant\Routing\Route delete(string|array $methods, \Closure|array|string $route)
+ * @method static \Elegant\Routing\Route options(string|array $methods, \Closure|array|string $route)
  * @method static void group(string $prefix, callable|array $attributes, callable|null $routes = null)
  * @method static void middleware(mixed $middleware, string $point = 'pre_controller')
  * @method static void compileAll()
