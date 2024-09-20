@@ -15,7 +15,7 @@ class Number
      *
      * @var string
      */
-    protected static string $locale = 'en';
+    protected static string $locale = 'el';
 
     /**
      * Format the given number according to the current locale.
@@ -115,7 +115,7 @@ class Number
      * @param  string|null  $locale
      * @return string|false
      */
-    public static function currency($number, string $in = 'USD', ?string $locale = null)
+    public static function currency($number, string $in = 'EUR', ?string $locale = null)
     {
         static::ensureIntlExtensionIsInstalled();
 
