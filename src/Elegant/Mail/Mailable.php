@@ -65,6 +65,13 @@ class Mailable implements MailableContract
     public $subject;
 
     /**
+     * The Markdown template for the message (if applicable).
+     *
+     * @var string
+     */
+    protected $markdown;
+
+    /**
      * The HTML to use for the message.
      *
      * @var string
@@ -208,6 +215,10 @@ class Mailable implements MailableContract
             ]);
         }
 
+        if (isset($this->markdown)) {
+            return $this->buildMarkdownView();
+        }
+
         if (isset($this->view, $this->textView)) {
             return [$this->view, $this->textView];
         } elseif (isset($this->textView)) {
@@ -215,6 +226,29 @@ class Mailable implements MailableContract
         }
 
         return $this->view;
+    }
+
+    /**
+     * Build the Markdown view for the message.
+     *
+     * @return array
+     *
+     * @throws \ReflectionException
+     */
+    protected function buildMarkdownView()
+    {
+        $markdown = app('markdown');
+
+        if (isset($this->theme)) {
+            $markdown->theme($this->theme);
+        }
+
+        $data = $this->buildViewData();
+
+        return [
+            'html' => $markdown->render($this->markdown, $data),
+            'text' => $this->buildMarkdownText($markdown, $data),
+        ];
     }
 
     /**
@@ -239,6 +273,19 @@ class Mailable implements MailableContract
         }
 
         return $data;
+    }
+
+    /**
+     * Build the text view for a Markdown message.
+     *
+     * @param  \Elegant\Mail\Markdown  $markdown
+     * @param  array  $data
+     * @return string
+     */
+    protected function buildMarkdownText($markdown, $data)
+    {
+        return $this->textView
+            ?? $markdown->renderText($this->markdown, $data);
     }
 
     /**
@@ -597,6 +644,21 @@ class Mailable implements MailableContract
     public function subject($subject)
     {
         $this->subject = $subject;
+
+        return $this;
+    }
+
+    /**
+     * Set the Markdown template for the message.
+     *
+     * @param  string  $view
+     * @param  array  $data
+     * @return $this
+     */
+    public function markdown($view, array $data = [])
+    {
+        $this->markdown = $view;
+        $this->viewData = array_merge($this->viewData, $data);
 
         return $this;
     }

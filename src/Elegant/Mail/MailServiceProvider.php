@@ -13,6 +13,7 @@ class MailServiceProvider implements PostControllerConstructor
         app('load')->config('services', true);
 
         $this->registerElegantMailer();
+        $this->registerMarkdownRenderer();
     }
 
     /**
@@ -25,5 +26,18 @@ class MailServiceProvider implements PostControllerConstructor
         app('mail.manager', new MailManager(app('config')));
 
         app('mailer', app('mail.manager')->mailer());
+    }
+
+    /**
+     * Register the Markdown renderer instance.
+     *
+     * @return void
+     */
+    protected function registerMarkdownRenderer()
+    {
+        app('markdown', new Markdown(app('view'), [
+            'theme' => app('config')->config['mail']['markdown']['theme'] ?? 'default',
+            'paths' => app('config')->config['mail']['markdown']['paths'] ?? [],
+        ]));
     }
 }

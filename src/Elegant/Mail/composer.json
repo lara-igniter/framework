@@ -1,0 +1,46 @@
+{
+    "name": "elegant/mail",
+    "description": "The Elegant Mail package.",
+    "license": "MIT",
+    "homepage": "https://laraigniter.com",
+    "support": {
+        "issues": "https://github.com/lara-igniter/framework/issues",
+        "source": "https://github.com/lara-igniter/framework"
+    },
+    "authors": [
+        {
+            "name": "George Tsachrelias",
+            "email": "giorgosstab@laraigniter.com"
+        }
+    ],
+    "require": {
+        "php": "^7.4|^8.0",
+        "ext-json": "*",
+        "elegant/collections": "1.0",
+        "elegant/contracts": "1.0",
+        "elegant/macroable": "1.0",
+        "elegant/support": "1.0",
+        "league/commonmark": "^1.3",
+        "swiftmailer/swiftmailer": "^6.0",
+        "tijsverkoyen/css-to-inline-styles": "^2.2.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Elegant\\Mail\\": ""
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.x-dev"
+        }
+    },
+    "suggest": {
+        "aws/aws-sdk-php": "Required to use the SES mail driver (^3.155).",
+        "guzzlehttp/guzzle": "Required to use the Mailgun mail driver (^6.5.5|^7.0.1).",
+        "wildbit/swiftmailer-postmark": "Required to use Postmark mail driver (^3.0)."
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev"
+}
