@@ -10,6 +10,8 @@ class MailServiceProvider implements PostControllerConstructor
     {
         app('load')->config('mail', true);
 
+        app('load')->config('mail', true);
+
         $this->registerElegantMailer();
     }
 
