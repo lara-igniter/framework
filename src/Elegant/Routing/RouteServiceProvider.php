@@ -62,7 +62,9 @@ class RouteServiceProvider implements PreSystem, PreController, PostControllerCo
                     require_once(base_path('routes/api.php'));
                 });
             } else {
-                require_once(base_path('routes/api.php'));
+                Route::group('/api', function () {
+                    require_once(base_path('routes/api.php'));
+                });
             }
         }
 
