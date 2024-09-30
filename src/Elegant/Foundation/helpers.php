@@ -507,7 +507,7 @@ if (!function_exists('redirect')) {
      * @param bool|null $secure
      * @return \Elegant\Routing\Redirector|\Elegant\Http\RedirectResponse
      */
-    function redirect(string $to = null, int $status = 302, array $headers = [], bool $secure = null)
+    function redirector(string $to = null, int $status = 302, array $headers = [], bool $secure = null)
     {
         if (is_null($to)) {
             return app('redirect');
