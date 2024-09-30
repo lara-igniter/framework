@@ -279,14 +279,14 @@ class RouteServiceProvider implements PreSystem, PreController, PostControllerCo
 
     private static function prepareMiddleware($middleware)
     {
-        if (is_string($middleware)) {
+        if (class_exists($middleware)) {
+            return new $middleware();
+        } elseif (is_string($middleware)) {
             if (isset(\App\Kernel::$routeMiddleware[$middleware])) {
                 return new \App\Kernel::$routeMiddleware[$middleware]();
             } else {
                 show_error('Route middleware {' . $middleware . '} does not exist in application\Kernel.php');
             }
-        } elseif (is_object($middleware)) {
-            return new $middleware();
         } else {
             show_error('Route middleware must be a string or a new instance');
         }
