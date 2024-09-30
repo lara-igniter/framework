@@ -1,6 +1,7 @@
 <?php
 
 use Elegant\Database\Model\Factories\Factory;
+use Elegant\Http\RedirectResponse;
 use Elegant\Support\Facades\Date;
 use Elegant\Support\Facades\Route;
 
@@ -98,6 +99,21 @@ if (!function_exists('auth')) {
     }
 }
 
+if (!function_exists('back')) {
+    /**
+     * Create a new redirect response to the previous location.
+     *
+     * @param int $status
+     * @param array $headers
+     * @param mixed $fallback
+     * @return \Elegant\Http\RedirectResponse
+     */
+    function back(int $status = 302, array $headers = [], $fallback = false): RedirectResponse
+    {
+        return app('redirect')->back($status, $headers, $fallback);
+    }
+}
+
 if (!function_exists('base_path')) {
     /**
      * Get the path to the base of the install.
@@ -127,11 +143,11 @@ if (!function_exists('bcrypt')) {
     }
 }
 
-if (! function_exists('ci')) {
+if (!function_exists('ci')) {
     /**
+     * @return object
      * @deprecated Use app() instead
      *
-     * @return object
      */
     function &ci()
     {
@@ -195,7 +211,7 @@ if (!function_exists('core_path')) {
     /**
      * Get the path to the system.
      *
-     * @param  string  $path
+     * @param string $path
      *
      * @return string
      */
@@ -245,7 +261,7 @@ if (!function_exists('database_path')) {
     /**
      * Get the database path.
      *
-     * @param  string  $path
+     * @param string $path
      * @return string
      */
     function database_path(string $path = ''): string
@@ -269,11 +285,11 @@ if (!function_exists('factory')) {
     }
 }
 
-if (! function_exists('fake') && class_exists(\Faker\Factory::class)) {
+if (!function_exists('fake') && class_exists(\Faker\Factory::class)) {
     /**
      * Get a faker instance.
      *
-     * @param  string|null  $locale
+     * @param string|null $locale
      * @return \Faker\Generator
      */
     function fake(string $locale = null): \Faker\Generator
@@ -431,9 +447,9 @@ if (!function_exists('query_string')) {
     /**
      * Returns query string with added or removed key/value pairs.
      *
-     * @param  mixed  $add  (default: '') can be string or array
-     * @param  mixed  $remove  (default: '') can be string or array
-     * @param bool $includeCurrent  (default: true)
+     * @param mixed $add (default: '') can be string or array
+     * @param mixed $remove (default: '') can be string or array
+     * @param bool $includeCurrent (default: true)
      * @return string
      */
     function query_string($add = '', $remove = '', bool $includeCurrent = true): string
@@ -442,7 +458,7 @@ if (!function_exists('query_string')) {
         $queryString = [];
 
         if ($includeCurrent && request()->get() !== false) {
-            $queryString = (array) request()->get();
+            $queryString = (array)request()->get();
         }
 
         // add to query string
@@ -474,10 +490,30 @@ if (!function_exists('query_string')) {
         // return result
         $return = '';
         if (count($queryString) > 0) {
-            $return = '?'.http_build_query($queryString);
+            $return = '?' . http_build_query($queryString);
         }
 
         return $return;
+    }
+}
+
+if (!function_exists('redirect')) {
+    /**
+     * Get an instance of the redirector.
+     *
+     * @param string|null $to
+     * @param int $status
+     * @param array $headers
+     * @param bool|null $secure
+     * @return \Elegant\Routing\Redirector|\Elegant\Http\RedirectResponse
+     */
+    function redirect(string $to = null, int $status = 302, array $headers = [], bool $secure = null)
+    {
+        if (is_null($to)) {
+            return app('redirect');
+        }
+
+        return app('redirect')->to($to, $status, $headers, $secure);
     }
 }
 
@@ -519,7 +555,7 @@ if (!function_exists('resource_path')) {
     }
 }
 
-if (! function_exists('route')) {
+if (!function_exists('route')) {
     /**
      * Generate the URL to a named route.
      *
@@ -542,7 +578,7 @@ if (! function_exists('route')) {
     }
 }
 
-if (! function_exists('route_exists')) {
+if (!function_exists('route_exists')) {
     /**
      * Checks if a route exists
      *
@@ -556,7 +592,7 @@ if (! function_exists('route_exists')) {
     }
 }
 
-if (! function_exists('route_redirect')) {
+if (!function_exists('route_redirect')) {
     /**
      * Redirects to a route URL by its name
      *
@@ -580,7 +616,7 @@ if (! function_exists('route_redirect')) {
             }
         }
 
-        if($fragment !== '') {
+        if ($fragment !== '') {
             $fragment = '#' . $fragment;
 
             $query = $query !== '' ? query_string('', $query) : query_string();
@@ -709,7 +745,7 @@ if (!function_exists('trans')) {
     }
 }
 
-if (! function_exists('trigger_404')) {
+if (!function_exists('trigger_404')) {
     /**
      * Triggers the custom error page, with fallback to
      * native show_404() function
@@ -752,7 +788,7 @@ if (!function_exists('view')) {
      * Get the evaluated view contents for the given view.
      *
      * @param string|null $view
-     * @param \Elegant\Contracts\Support\Arrayable|array  $data
+     * @param \Elegant\Contracts\Support\Arrayable|array $data
      *
      * @return \Elegant\Contracts\View\View|\Elegant\Contracts\View\Factory|void
      */

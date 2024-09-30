@@ -257,6 +257,10 @@ class RouteServiceProvider implements PreSystem, PreController, PostControllerCo
         if (is_callable(app('route')->getAction())) {
             call_user_func_array(app('route')->getAction(), $params);
         }
+
+        app('url', new UrlGenerator(new RouteBuilder(), app('input')));
+
+        app('redirect', new Redirector(app('url')));
     }
 
     public function postController()

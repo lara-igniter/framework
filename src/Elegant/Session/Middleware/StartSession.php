@@ -1,0 +1,34 @@
+<?php
+
+namespace Elegant\Session\Middleware;
+
+use Elegant\Routing\Contracts\MiddlewareInterface as Middleware;
+use Elegant\Routing\Route;
+use MY_Input;
+
+class StartSession implements Middleware
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @return void
+     * @throws \Exception
+     */
+    public function run($args)
+    {
+        $this->storeCurrentUrl(app('input'));
+    }
+
+
+    protected function storeCurrentUrl(MY_Input $request)
+    {
+        if ($request->method(true) === 'GET' &&
+            $request->route() instanceof Route &&
+            !$request->ajax() &&
+            !$request->prefetch()) {
+            app('session')->set_userdata('_previous', [
+                'url' => current_url()
+            ]);
+        }
+    }
+}

@@ -33,6 +33,7 @@
         "symfony/debug": "4.2",
         "symfony/filesystem": "^5.1.4",
         "symfony/finder": "^5.1.4",
+        "symfony/http-foundation": "^5.4",
         "symfony/mime": "^5.1.4",
         "symfony/var-dumper": "^5.0",
         "tijsverkoyen/css-to-inline-styles": "2.2.2",
