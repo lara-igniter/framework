@@ -2,6 +2,7 @@
 
 namespace Elegant\Routing;
 
+use Elegant\Http\RedirectResponse;
 use Elegant\Support\Traits\Macroable;
 use MY_Session;
 
@@ -34,7 +35,7 @@ class Redirector
      * @param int $status
      * @param array $headers
      * @param mixed $fallback
-     * @return \App\libraries\RedirectResponse
+     * @return \Elegant\Http\RedirectResponse
      */
     public function back(int $status = 302, array $headers = [], $fallback = false)
     {
@@ -48,7 +49,7 @@ class Redirector
      * @param int $status
      * @param array $headers
      * @param bool|null $secure
-     * @return \App\libraries\RedirectResponse
+     * @return \Elegant\Http\RedirectResponse
      */
     public function to(string $path, int $status = 302, array $headers = [], bool $secure = null)
     {
@@ -61,7 +62,7 @@ class Redirector
      * @param int $status
      * @param array $headers
      *
-     * @return \App\libraries\RedirectResponse
+     * @return \Elegant\Http\RedirectResponse
      *
      * @throws \Elegant\Routing\Exceptions\RouteNotFoundException
      */
@@ -76,7 +77,7 @@ class Redirector
      * @param string $path
      * @param int $status
      * @param array $headers
-     * @return \App\libraries\RedirectResponse
+     * @return \Elegant\Http\RedirectResponse
      */
     protected function createRedirect(string $path, int $status, array $headers): RedirectResponse
     {
