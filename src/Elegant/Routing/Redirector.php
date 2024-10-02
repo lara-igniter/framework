@@ -136,9 +136,7 @@ class Redirector
     protected function createRedirect(string $path, int $status, array $headers): RedirectResponse
     {
         return tap(new RedirectResponse($path, $status, $headers), function ($redirect) {
-            if (!isset($this->session)) {
-                $redirect->setSession(app('session'));
-            }
+            $redirect->setSession(app('session'));
 
             $redirect->setRequest($this->generator->getRequest());
         });
