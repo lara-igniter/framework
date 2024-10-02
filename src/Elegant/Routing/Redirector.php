@@ -43,6 +43,43 @@ class Redirector
     }
 
     /**
+     * Create a new redirect response, while putting the current URL in the session.
+     *
+     * @param string $path
+     * @param int $status
+     * @param array $headers
+     * @param bool|null $secure
+     * @return \Elegant\Http\RedirectResponse
+     */
+    public function guest(string $path, int $status = 302, array $headers = [], bool $secure = null)
+    {
+        $request = $this->generator->getRequest();
+
+        $intended = $request->method(true) === 'GET' && $request->route() && !$request->expectsJson()
+            ? $this->generator->full()
+            : $this->generator->previous();
+
+        if ($intended) {
+            $this->setIntendedUrl($intended);
+        }
+
+        return $this->to($path, $status, $headers, $secure);
+    }
+
+    /**
+     * Set the intended url.
+     *
+     * @param string $url
+     * @return void
+     */
+    public function setIntendedUrl(string $url)
+    {
+        $this->session->set_userdata('url', [
+            'intended' => $url
+        ]);
+    }
+
+    /**
      * Create a new redirect response to the given path.
      *
      * @param string $path

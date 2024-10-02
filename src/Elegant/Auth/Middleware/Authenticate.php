@@ -17,7 +17,15 @@ class Authenticate implements Middleware
     public function run($args)
     {
         if (!app('ion_auth')->logged_in()) {
-            $this->unauthenticated(app('input'));
+            try {
+                $this->unauthenticated(app('input'));
+            } catch (AuthenticationException $e) {
+                redirector()->guest($e->redirectTo() ?? route('login'));
+
+//                return $request->expectsJson()
+//                    ? response()->json(['message' => $exception->getMessage()], 401)
+//                    : redirect()->guest($exception->redirectTo() ?? route('login'));
+            }
         }
     }
 

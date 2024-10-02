@@ -86,6 +86,16 @@ class UrlGenerator implements UrlGeneratorContract
     }
 
     /**
+     * Get the full URL for the current request.
+     *
+     * @return string
+     */
+    public function full()
+    {
+        return $this->request->url();
+    }
+
+    /**
      * Get the URL for the previous request.
      *
      * @param mixed $fallback
