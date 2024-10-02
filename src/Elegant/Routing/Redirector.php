@@ -24,9 +24,10 @@ class Redirector
      */
     protected MY_Session $session;
 
-    public function __construct(UrlGenerator $generator)
+    public function __construct(UrlGenerator $generator, MY_Session $session)
     {
         $this->generator = $generator;
+        $this->session = $session;
     }
 
     /**
@@ -119,7 +120,9 @@ class Redirector
     protected function createRedirect(string $path, int $status, array $headers): RedirectResponse
     {
         return tap(new RedirectResponse($path, $status, $headers), function ($redirect) {
-            $redirect->setSession(app('session'));
+            if(!isset($this->session)) {
+                $redirect->setSession(app('session'));
+            }
 
             $redirect->setRequest($this->generator->getRequest());
         });

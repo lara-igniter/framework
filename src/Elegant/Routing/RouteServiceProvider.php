@@ -223,6 +223,10 @@ class RouteServiceProvider implements PreSystem, PreController, PostControllerCo
         // Current route configuration and dispatch
         app('route', Route::getCurrentRoute());
 
+        app('url', new UrlGenerator(new RouteBuilder(), app('input')));
+
+        app('redirect', new Redirector(app('url'), app('session')));
+
         if (!app('route')->is404) {
             app('load')->helper('url');
 
@@ -257,10 +261,6 @@ class RouteServiceProvider implements PreSystem, PreController, PostControllerCo
         if (is_callable(app('route')->getAction())) {
             call_user_func_array(app('route')->getAction(), $params);
         }
-
-        app('url', new UrlGenerator(new RouteBuilder(), app('input')));
-
-        app('redirect', new Redirector(app('url')));
     }
 
     public function postController()
