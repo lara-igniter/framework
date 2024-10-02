@@ -49,6 +49,23 @@ class RedirectResponse extends BaseRedirectResponse
     }
 
     /**
+     * Flash a container of errors to the session.
+     *
+     * @param  string|array $key
+     * @return $this
+     */
+    public function withErrors($key): RedirectResponse
+    {
+        $errors = view()->shared('errors');
+
+        view()->share('errors', $errors->push($key));
+
+        $this->with('errors', $key);
+
+        return $this;
+    }
+
+    /**
      * Get the request instance.
      *
      * @return \MY_Input|null
