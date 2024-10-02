@@ -68,6 +68,22 @@ class Redirector
     }
 
     /**
+     * Create a new redirect response to the previously intended location.
+     *
+     * @param string $default
+     * @param int $status
+     * @param array $headers
+     * @param bool|null $secure
+     * @return \Elegant\Http\RedirectResponse
+     */
+    public function intended(string $default = '/', int $status = 302, array $headers = [], bool $secure = null)
+    {
+        $path = $this->session->pull_userdata('url.intended', $default);
+
+        return $this->to($path, $status, $headers, $secure);
+    }
+
+    /**
      * Set the intended url.
      *
      * @param string $url
@@ -120,7 +136,7 @@ class Redirector
     protected function createRedirect(string $path, int $status, array $headers): RedirectResponse
     {
         return tap(new RedirectResponse($path, $status, $headers), function ($redirect) {
-            if(!isset($this->session)) {
+            if (!isset($this->session)) {
                 $redirect->setSession(app('session'));
             }
 

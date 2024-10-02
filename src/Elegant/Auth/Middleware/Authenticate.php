@@ -11,7 +11,8 @@ class Authenticate implements Middleware
     /**
      * Handle an incoming request.
      *
-     * @return void
+     * @return \Elegant\Http\RedirectResponse
+     *
      * @throws \Exception
      */
     public function run($args)
@@ -20,7 +21,7 @@ class Authenticate implements Middleware
             try {
                 $this->unauthenticated(app('input'));
             } catch (AuthenticationException $e) {
-                redirector()->guest($e->redirectTo() ?? route('login'));
+                return redirector()->guest($e->redirectTo() ?? route('login'))->send();
 
 //                return $request->expectsJson()
 //                    ? response()->json(['message' => $exception->getMessage()], 401)
@@ -32,7 +33,7 @@ class Authenticate implements Middleware
     /**
      * Handle an unauthenticated user.
      *
-     * @param  \MY_Input  $request
+     * @param \MY_Input $request
      * @return void
      *
      * @throws \Elegant\Auth\AuthenticationException
@@ -47,7 +48,7 @@ class Authenticate implements Middleware
     /**
      * Get the path the user should be redirected to when they are not authenticated.
      *
-     * @param  \MY_Input  $request
+     * @param \MY_Input $request
      * @return string|null
      */
     protected function redirectTo(MY_Input $request): ?string
