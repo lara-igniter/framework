@@ -33,28 +33,28 @@ class UrlGenerator implements UrlGeneratorContract
      *
      * @var string
      */
-    protected string $forcedRoot;
+    protected ?string $forcedRoot = null;
 
     /**
      * The forced scheme for URLs.
      *
      * @var string
      */
-    protected string $forceScheme;
+    protected ?string $forceScheme = null;
 
     /**
      * A cached copy of the URL root for the current request.
      *
      * @var string|null
      */
-    protected ?string $cachedRoot;
+    protected ?string $cachedRoot = null;
 
     /**
      * A cached copy of the URL scheme for the current request.
      *
      * @var string|null
      */
-    protected ?string $cachedScheme;
+    protected ?string $cachedScheme = null;
 
     /**
      * The session resolver callable.
@@ -142,19 +142,16 @@ class UrlGenerator implements UrlGeneratorContract
             return $path;
         }
 
-        $parameters = $this->formatParameters($extra);
-
-        $tail = preg_replace_callback('/\\{num:(\w+)\}/', function ($matches) use ($parameters) {
-            $key = $matches[1];
-            return $parameters[$key] ?? $matches[0];
-        }, $path);
+        $tail = implode('/', array_map(
+                'rawurlencode', (array) $this->formatParameters($extra))
+        );
 
         $root = $this->formatRoot($this->formatScheme($secure));
 
         [$path, $query] = $this->extractQueryString($path);
 
         return $this->format(
-                $root, '/' . trim('/' . $tail, '/')
+                $root, '/'.trim($path.'/'.$tail, '/')
             ) . $query;
     }
 
@@ -241,7 +238,7 @@ class UrlGenerator implements UrlGeneratorContract
     {
         if (is_null($root)) {
             if (is_null($this->cachedRoot)) {
-                $this->cachedRoot = $this->forcedRoot ?: $this->request->server('HTTP_ORIGIN');
+                $this->cachedRoot = $this->forcedRoot ?: $this->request->root();
             }
 
             $root = $this->cachedRoot;
