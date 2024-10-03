@@ -7,6 +7,7 @@ use Elegant\Contracts\Hook\PostControllerConstructor;
 use Elegant\Contracts\Hook\PostController;
 use Elegant\Contracts\Hook\PreController;
 use Elegant\Contracts\Hook\PreSystem;
+use Elegant\Http\Response;
 use Elegant\Routing\Exceptions\RouteNotFoundException;
 use Elegant\Routing\Middleware\Middleware;
 use Elegant\Routing\RouteBuilder as Route;
@@ -223,9 +224,8 @@ class RouteServiceProvider implements PreSystem, PreController, PostControllerCo
         // Current route configuration and dispatch
         app('route', Route::getCurrentRoute());
 
-        app('url', new UrlGenerator(new RouteBuilder(), app('input')));
-
-        app('redirect', new Redirector(app('url'), app('session')));
+        $this->registerRedirector();
+        $this->registerResponse();
 
         if (!app('route')->is404) {
             app('load')->helper('url');
@@ -294,5 +294,27 @@ class RouteServiceProvider implements PreSystem, PreController, PostControllerCo
         } else {
             show_error('Route middleware must be a string or a new instance');
         }
+    }
+
+    /**
+     * Register the Redirector service.
+     *
+     * @return void
+     */
+    protected function registerRedirector()
+    {
+        app('url', new UrlGenerator(new RouteBuilder(), app('input')));
+
+        app('redirect', new Redirector(app('url'), app('session')));
+    }
+
+    /**
+     * Register the response implementation.
+     *
+     * @return void
+     */
+    protected function registerResponse()
+    {
+        app('response', new Response(app('output'), app('session')));
     }
 }

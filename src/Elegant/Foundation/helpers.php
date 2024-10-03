@@ -555,6 +555,25 @@ if (!function_exists('resource_path')) {
     }
 }
 
+if (!function_exists('response')) {
+    /**
+     * Return a new response from the application.
+     *
+     * @param string|array|null $content
+     * @param int $status
+     * @param array $headers
+     * @return \Elegant\Http\JsonResponse|\Elegant\Http\Response
+     */
+    function response($content = '', int $status = 200, array $headers = [])
+    {
+        if (empty($content)) {
+            return app('response');
+        }
+
+        return app('response')->json($content, $status, $headers);
+    }
+}
+
 if (!function_exists('route')) {
     /**
      * Generate the URL to a named route.
