@@ -615,6 +615,8 @@ if (!function_exists('route_redirect')) {
     /**
      * Redirects to a route URL by its name
      *
+     * @deprecated Use the "redirector()" helper
+     *
      * @param string $name Route name
      * @param array $params Route parameters
      * @param array $messages Array with flash data messages
