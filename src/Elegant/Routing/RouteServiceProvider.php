@@ -27,7 +27,7 @@ class RouteServiceProvider implements PreSystem, PreController, PostControllerCo
         $isCli = is_cli();
         $isWeb = !is_cli();
 
-        require_once realpath(dirname(__DIR__) . '\Support\Facades\Route.php');
+        require_once realpath(dirname(__DIR__) . '/Support/Facades/Route.php');
 
         if (!file_exists(base_path('routes'))) {
             mkdir(base_path('routes'));
@@ -74,7 +74,7 @@ class RouteServiceProvider implements PreSystem, PreController, PostControllerCo
             Route::set('default_controller', Route::DEFAULT_CONTROLLER);
         }
 
-//        require_once(realpath(dirname(__DIR__) . './Foundation/helpers.php'));
+//        require_once realpath(dirname(__DIR__) . '/Foundation/helpers.php');
 
         // Compiling all routes
         Route::compileAll();
