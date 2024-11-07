@@ -16,6 +16,7 @@ class StartSession implements Middleware
      */
     public function run($args)
     {
+        $this->collectGarbage(app('session'));
         $this->storeCurrentUrl(app('input'));
     }
 
@@ -29,6 +30,13 @@ class StartSession implements Middleware
             app('session')->set_userdata('_previous', [
                 'url' => current_url()
             ]);
+        }
+    }
+
+    protected function collectGarbage($session)
+    {
+        if(config_item('sess_driver') === 'files') {
+            $session->gc();
         }
     }
 }
