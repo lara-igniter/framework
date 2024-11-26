@@ -2,6 +2,7 @@
 
 namespace Elegant\Routing;
 
+use Elegant\Support\Arr;
 use Elegant\Support\Str;
 
 class Route
@@ -391,7 +392,12 @@ class Route
             }
         }
 
-        return base_url() . trim($path, '/');
+        // Add query string parameters if exists
+        foreach ($this->params as &$param) {
+            Arr::forget($params, $param->getName());
+        }
+
+        return base_url() . trim($path, '/') . (!empty($params) ? '?' . Arr::query($params) : '');
     }
 
     /**
