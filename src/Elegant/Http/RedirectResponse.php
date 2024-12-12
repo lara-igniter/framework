@@ -49,20 +49,45 @@ class RedirectResponse extends BaseRedirectResponse
     }
 
     /**
-     * Flash a container of errors to the session.
+     * Flash validates input to the session.
      *
-     * @param  string|array $key
      * @return $this
      */
-    public function withErrors($key): RedirectResponse
+    public function withInput(): RedirectResponse
     {
         $errors = view()->shared('errors');
 
-        view()->share('errors', $errors->push($key));
+        view()->share('errors', $errors);
 
-        $this->with('errors', $key);
+        $this->with('errors', $errors->toArray());
 
         return $this;
+    }
+
+    /**
+     * Flash a container of errors to the session.
+     *
+     * @param array $provider
+     * @return $this
+     */
+    public function withErrors(array $provider): RedirectResponse
+    {
+        $value = $this->parseErrors($provider);
+
+        $this->with('errors', $value);
+
+        return $this;
+    }
+
+    /**
+     * Parse the given errors into an appropriate value.
+     *
+     * @param array $provider
+     * @return array
+     */
+    protected function parseErrors(array $provider): array
+    {
+        return $provider;
     }
 
     /**

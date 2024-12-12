@@ -181,9 +181,7 @@ class FormRequest
 
         $errors = new Collection();
         foreach ($error_array as $index => $error) {
-            $errors->push((object)[
-                $index => $error
-            ]);
+            $errors->put($index, $error);
         }
 
         $this->error_data = $errors;
