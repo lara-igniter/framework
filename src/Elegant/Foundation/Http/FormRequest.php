@@ -2,6 +2,8 @@
 
 namespace Elegant\Foundation\Http;
 
+use Elegant\Contracts\Validation\Rule;
+use Elegant\Support\Arr;
 use Elegant\Support\Str;
 use Elegant\Support\Collection;
 
@@ -243,17 +245,25 @@ class FormRequest
      * rules for accept codeigniter rule
      *
      * @param array $data
-     * @return string
+     * @return string|array
      */
-    private function rulesToString(array $data): string
+    private function rulesToString(array $data)
     {
-        $string_rules = '';
+        $classRule = false;
 
-        foreach ($data as $rule) {
-            $string_rules != "" && $string_rules .= "|";
-            $string_rules .= $rule;
+        foreach ($data as $key => $rule) {
+            if($rule instanceof Rule) {
+                if(!$rule->passes()) {
+                    $data[$key] = $rule;
+                    $classRule = true;
+                } else {
+                    Arr::forget($data, $key);
+                }
+            } else {
+                $data[$key] = $rule;
+            }
         }
 
-        return $string_rules;
+        return $classRule ? collect($data)->toArray() : collect($data)->implode('|');
     }
 }
