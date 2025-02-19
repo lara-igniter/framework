@@ -19,11 +19,11 @@ class Benchmark
             return collect(range(1, $iterations))->map(function () use ($callback) {
                 gc_collect_cycles();
 
-                $start = hrtime(true);
+                $start = microtime(true);
 
                 $callback();
 
-                return (hrtime(true) - $start) / 1000000;
+                return number_format((microtime(true) - $start), 2);
             })->average();
         })->when(
             $benchmarkables instanceof Closure,
@@ -44,11 +44,11 @@ class Benchmark
     {
         gc_collect_cycles();
 
-        $start = hrtime(true);
+        $start = microtime(true);
 
         $result = $callback();
 
-        return [$result, (hrtime(true) - $start) / 1000000];
+        return [$result, number_format((microtime(true) - $start), 2)];
     }
 
     /**
