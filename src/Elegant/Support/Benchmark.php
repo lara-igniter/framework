@@ -61,7 +61,7 @@ class Benchmark
     public static function dd($benchmarkables, int $iterations = 1): void
     {
         $result = collect(static::measure(Arr::wrap($benchmarkables), $iterations))
-            ->map(fn ($average) => number_format($average, 3).'ms')
+            ->map(fn ($average) => number_format($average, 3).' sec')
             ->when($benchmarkables instanceof Closure, fn ($c) => $c->first(), fn ($c) => $c->all());
 
         dd($result);
