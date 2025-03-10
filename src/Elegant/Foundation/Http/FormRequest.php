@@ -116,7 +116,9 @@ class FormRequest
     {
         if (isset($_FILES)) {
             foreach ($_FILES as $key => $input) {
-                if (array_key_exists($key, $this->rules())) {
+                $check_key = is_array($input) ? $key . '[]' : $key;
+
+                if (array_key_exists($check_key, $this->rules())) {
                     $_POST[$key] = $this->input->file($key);
                 }
             }

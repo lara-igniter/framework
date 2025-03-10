@@ -243,4 +243,20 @@ class UploadedFile extends File
 
         return sprintf($message, $this->getClientOriginalName(), $maxFilesize);
     }
+
+    /**
+     * Create a new file instance from a base instance.
+     *
+     * @param  $file
+     * @return static
+     */
+    public static function createFromBase($file)
+    {
+        return $file instanceof static ? $file : new static(
+            $file['tmp_name'],
+            $file['name'],
+            $file['type'],
+            $file['error']
+        );
+    }
 }
