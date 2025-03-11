@@ -250,7 +250,7 @@ class UploadedFile extends File
      * @param  $file
      * @return static
      */
-    public static function createFromBase($file)
+    public static function createFromBase($file): UploadedFile
     {
         return $file instanceof static ? $file : new static(
             $file['tmp_name'],
