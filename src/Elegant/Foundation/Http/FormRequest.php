@@ -116,10 +116,16 @@ class FormRequest
     {
         if (isset($_FILES)) {
             foreach ($_FILES as $key => $input) {
-                $check_key = is_array($input) ? $key . '[]' : $key;
+                $check_key = is_array($input[array_key_first($input)]) ? $key . '[]' : $key;
 
                 if (array_key_exists($check_key, $this->rules())) {
-                    $_POST[$key] = $this->input->file($key);
+                    $files = $this->input->file($key);
+
+                    $_POST[$key] = $files;
+
+                    if(empty($files)) {
+                        unset($_POST[$key]);
+                    }
                 }
             }
         }
