@@ -4,6 +4,8 @@ namespace Elegant\Filesystem;
 
 use Elegant\Contracts\Filesystem\FileNotFoundException as ContractFileNotFoundException;
 use Elegant\Contracts\Filesystem\Filesystem as FilesystemContract;
+use Elegant\Foundation\Http\File\File;
+use Elegant\Foundation\Http\File\UploadedFile;
 use Elegant\Support\Str;
 use Elegant\Support\Collection;
 use InvalidArgumentException;
@@ -14,6 +16,7 @@ use League\Flysystem\Adapter\Local as LocalAdapter;
 use League\Flysystem\AdapterInterface;
 use League\Flysystem\FileNotFoundException;
 use League\Flysystem\Sftp\SftpAdapter as Sftp;
+use Psr\Http\Message\StreamInterface;
 
 class FilesystemAdapter
 {
@@ -103,12 +106,86 @@ class FilesystemAdapter
     }
 
     /**
-     * Get the visibility for the given path.
+     * Write the contents of a file.
      *
      * @param  string  $path
-     * @return string
+     * @param  \Psr\Http\Message\StreamInterface|\Elegant\Foundation\Http\File\File|\Elegant\Foundation\Http\File\UploadedFile|string|resource  $contents
+     * @param  mixed  $options
+     * @return string|bool
      */
-    public function getVisibility($path)
+    public function put(string $path, $contents, $options = [])
+    {
+        $options = is_string($options)
+            ? ['visibility' => $options]
+            : (array) $options;
+
+        // If the given contents is actually a file or uploaded file instance than we will
+        // automatically store the file using a stream. This provides a convenient path
+        // for the developer to store streams without managing them manually in code.
+        if ($contents instanceof File ||
+            $contents instanceof UploadedFile) {
+            return $this->putFile($path, $contents, $options);
+        }
+
+        if ($contents instanceof StreamInterface) {
+            return $this->driver->putStream($path, $contents->detach(), $options);
+        }
+
+        return is_resource($contents)
+            ? $this->driver->putStream($path, $contents, $options)
+            : $this->driver->put($path, $contents, $options);
+    }
+
+    /**
+     * Store the uploaded file on the disk.
+     *
+     * @param  string  $path
+     * @param  \Elegant\Foundation\Http\File\File|\Elegant\Foundation\Http\File\UploadedFile|string  $file
+     * @param  mixed  $options
+     * @return string|false
+     */
+    public function putFile(string $path, $file, $options = [])
+    {
+        $file = is_string($file) ? new File($file) : $file;
+
+        return $this->putFileAs($path, $file, $file->hashName(), $options);
+    }
+
+    /**
+     * Store the uploaded file on the disk with a given name.
+     *
+     * @param  string  $path
+     * @param  \Elegant\Foundation\Http\File\File|\Elegant\Foundation\Http\File\UploadedFile|string  $file
+     * @param  string  $name
+     * @param  mixed  $options
+     * @return string|false
+     */
+    public function putFileAs(string $path, $file, string $name, $options = [])
+    {
+        $stream = fopen(is_string($file) ? $file : $file->getRealPath(), 'r');
+
+        // Next, we will format the path of the file and store the file using a stream since
+        // they provide better performance than alternatives. Once we write the file this
+        // stream will get closed automatically by us so the developer doesn't have to.
+        $result = $this->put(
+            $path = trim($path.'/'.$name, '/'), $stream, $options
+        );
+
+        if (is_resource($stream)) {
+            fclose($stream);
+        }
+
+        return $result ? $path : false;
+    }
+
+    /**
+     * Get the visibility for the given path.
+     *
+     * @param string $path
+     * @return string
+     * @throws FileNotFoundException
+     */
+    public function getVisibility(string $path): string
     {
         if ($this->driver->getVisibility($path) == AdapterInterface::VISIBILITY_PUBLIC) {
             return FilesystemContract::VISIBILITY_PUBLIC;
@@ -120,11 +197,12 @@ class FilesystemAdapter
     /**
      * Set the visibility for the given path.
      *
-     * @param  string  $path
-     * @param  string  $visibility
+     * @param string $path
+     * @param string $visibility
      * @return bool
+     * @throws FileNotFoundException
      */
-    public function setVisibility($path, $visibility)
+    public function setVisibility(string $path, string $visibility): bool
     {
         return $this->driver->setVisibility($path, $this->parseVisibility($visibility));
     }
@@ -135,7 +213,7 @@ class FilesystemAdapter
      * @param  string|array  $paths
      * @return bool
      */
-    public function delete($paths)
+    public function delete($paths): bool
     {
         $paths = is_array($paths) ? $paths : func_get_args();
 
@@ -161,7 +239,7 @@ class FilesystemAdapter
      * @param  string  $to
      * @return bool
      */
-    public function copy($from, $to)
+    public function copy(string $from, string $to): bool
     {
         return $this->driver->copy($from, $to);
     }

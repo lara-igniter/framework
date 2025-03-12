@@ -2,13 +2,21 @@
 
 namespace Elegant\Foundation\Http\File;
 
+use Elegant\Contracts\Filesystem\FileNotFoundException;
+use Elegant\Support\Arr;
+use Elegant\Support\Facades\Storage;
+use Elegant\Support\Traits\Macroable;
 use RuntimeException;
 use Symfony\Component\Mime\MimeTypes;
 
 class UploadedFile extends File
 {
+    use FileHelpers, Macroable;
+
     protected string $originalName;
+
     protected ?string $mimeType;
+
     protected ?int $error;
 
     /**
@@ -26,6 +34,127 @@ class UploadedFile extends File
         $this->error = $error ?: \UPLOAD_ERR_OK;
 
         parent::__construct($path, \UPLOAD_ERR_OK === $this->error);
+    }
+
+    /**
+     * Store the uploaded file on a filesystem disk.
+     *
+     * @param string $path
+     * @param array|string $options
+     * @return string|false
+     */
+    public function store(string $path, $options = [])
+    {
+        return $this->storeAs($path, $this->hashName(), $this->parseOptions($options));
+    }
+
+    /**
+     * Store the uploaded file on a filesystem disk with public visibility.
+     *
+     * @param string $path
+     * @param array|string $options
+     * @return string|false
+     */
+    public function storePublicly(string $path, $options = [])
+    {
+        $options = $this->parseOptions($options);
+
+        $options['visibility'] = 'public';
+
+        return $this->storeAs($path, $this->hashName(), $options);
+    }
+
+    /**
+     * Store the uploaded file on a filesystem disk with public visibility.
+     *
+     * @param string $path
+     * @param string $name
+     * @param array|string $options
+     * @return string|false
+     */
+    public function storePubliclyAs(string $path, string $name, $options = [])
+    {
+        $options = $this->parseOptions($options);
+
+        $options['visibility'] = 'public';
+
+        return $this->storeAs($path, $name, $options);
+    }
+
+    /**
+     * Store the uploaded file on a filesystem disk.
+     *
+     * @param string $path
+     * @param string $name
+     * @param array|string $options
+     * @return string|false
+     */
+    public function storeAs(string $path, string $name, $options = [])
+    {
+        $options = $this->parseOptions($options);
+
+        $disk = Arr::pull($options, 'disk');
+
+        return Storage::disk($disk)->putFileAs(
+            $path, $this, $name, $options
+        );
+    }
+
+    /**
+     * Get the contents of the uploaded file.
+     *
+     * @return false|string
+     *
+     * @throws \Elegant\Contracts\Filesystem\FileNotFoundException
+     */
+    public function get()
+    {
+        if (!$this->isValid()) {
+            throw new FileNotFoundException("File does not exist at path {$this->getPathname()}.");
+        }
+
+        return file_get_contents($this->getPathname());
+    }
+
+    /**
+     * Get the file's extension supplied by the client.
+     *
+     * @return string
+     */
+    public function clientExtension(): ?string
+    {
+        return $this->guessClientExtension();
+    }
+
+    /**
+     * Create a new file instance from a base instance.
+     *
+     * @param  $file
+     * @return static
+     */
+    public static function createFromBase($file): UploadedFile
+    {
+        return $file instanceof static ? $file : new static(
+            $file['tmp_name'],
+            $file['name'],
+            $file['type'],
+            $file['error']
+        );
+    }
+
+    /**
+     * Parse and format the given options.
+     *
+     * @param array|string $options
+     * @return array
+     */
+    protected function parseOptions($options)
+    {
+        if (is_string($options)) {
+            $options = ['disk' => $options];
+        }
+
+        return $options;
     }
 
     /**
@@ -134,7 +263,9 @@ class UploadedFile extends File
         if ($this->isValid()) {
             $target = $this->getTargetFile($directory, $name);
 
-            set_error_handler(function ($type, $msg) use (&$error) { $error = $msg; });
+            set_error_handler(function ($type, $msg) use (&$error) {
+                $error = $msg;
+            });
             try {
                 $moved = move_uploaded_file($this->getPathname(), $target);
             } finally {
@@ -201,17 +332,21 @@ class UploadedFile extends File
         } elseif (str_starts_with($max, '0')) {
             $max = \intval($max, 8);
         } else {
-            $max = (int) $max;
+            $max = (int)$max;
         }
 
         switch (substr($size, -1)) {
-            case 't': $max *= 1024;
+            case 't':
+                $max *= 1024;
             // no break
-            case 'g': $max *= 1024;
+            case 'g':
+                $max *= 1024;
             // no break
-            case 'm': $max *= 1024;
+            case 'm':
+                $max *= 1024;
             // no break
-            case 'k': $max *= 1024;
+            case 'k':
+                $max *= 1024;
         }
 
         return $max;
@@ -242,21 +377,5 @@ class UploadedFile extends File
         $message = $errors[$errorCode] ?? 'The file "%s" was not uploaded due to an unknown error.';
 
         return sprintf($message, $this->getClientOriginalName(), $maxFilesize);
-    }
-
-    /**
-     * Create a new file instance from a base instance.
-     *
-     * @param  $file
-     * @return static
-     */
-    public static function createFromBase($file): UploadedFile
-    {
-        return $file instanceof static ? $file : new static(
-            $file['tmp_name'],
-            $file['name'],
-            $file['type'],
-            $file['error']
-        );
     }
 }
