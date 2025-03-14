@@ -2,6 +2,7 @@
 
 use Elegant\Database\Model\Factories\Factory;
 use Elegant\Http\RedirectResponse;
+use Elegant\Routing\UrlGenerator;
 use Elegant\Support\Facades\Date;
 use Elegant\Support\Facades\Route;
 
@@ -801,6 +802,26 @@ if (!function_exists('__')) {
         }
 
         return trans($key, $replace);
+    }
+}
+
+
+if (! function_exists('url')) {
+    /**
+     * Generate a url for the application.
+     *
+     * @param  string|null  $path
+     * @param  mixed  $parameters
+     * @param  bool|null  $secure
+     * @return \Elegant\Contracts\Routing\UrlGenerator|string
+     */
+    function url(string $path = null, $parameters = [], bool $secure = null)
+    {
+        if (is_null($path)) {
+            return app(UrlGenerator::class);
+        }
+
+        return app(UrlGenerator::class)->to($path, $parameters, $secure);
     }
 }
 

@@ -96,6 +96,16 @@ class UrlGenerator implements UrlGeneratorContract
     }
 
     /**
+     * Get the current URL for the request.
+     *
+     * @return string
+     */
+    public function current(): string
+    {
+        return $this->to($this->request->getPathInfo());
+    }
+
+    /**
      * Get the URL for the previous request.
      *
      * @param mixed $fallback
