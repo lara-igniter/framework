@@ -4,6 +4,7 @@ use Elegant\Contracts\Support\Htmlable;
 use Elegant\Support\Env;
 use Elegant\Support\Arr;
 use Elegant\Support\HigherOrderTapProxy;
+use Elegant\Support\Optional;
 use Elegant\Support\Str;
 
 if (!function_exists('append_config')) {
@@ -183,6 +184,27 @@ if (!function_exists('object_get')) {
         }
 
         return $object;
+    }
+}
+
+if (! function_exists('optional')) {
+    /**
+     * Provide access to optional objects.
+     *
+     * @template TValue
+     * @template TReturn
+     *
+     * @param  TValue  $value
+     * @param  (callable(TValue): TReturn)|null  $callback
+     * @return ($callback is null ? \Elegant\Support\Optional : ($value is null ? null : TReturn))
+     */
+    function optional($value = null, ?callable $callback = null)
+    {
+        if (is_null($callback)) {
+            return new Optional($value);
+        } elseif (! is_null($value)) {
+            return $callback($value);
+        }
     }
 }
 
