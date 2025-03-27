@@ -1,8 +1,9 @@
 <?php
 
-namespace Elegant\Foundation;
+namespace Elegant\Foundation\Providers;
 
 use Elegant\Contracts\Hook\PreSystem;
+use Elegant\Foundation\Autoloader;
 
 class AutoloadServiceProvider implements PreSystem
 {
