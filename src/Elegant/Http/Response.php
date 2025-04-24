@@ -3,7 +3,9 @@
 namespace Elegant\Http;
 
 use CI_Output;
+use Elegant\Support\Str;
 use MY_Session;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class Response
 {
@@ -42,6 +44,26 @@ class Response
     }
 
     /**
+     * Create a new file download response.
+     *
+     * @param \SplFileInfo|string $file
+     * @param string|null $name
+     * @param array $headers
+     * @param string|null $disposition
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+    public function download($file, string $name = null, array $headers = [], ?string $disposition = 'attachment'): BinaryFileResponse
+    {
+        $response = new BinaryFileResponse($file, 200, $headers, true, $disposition);
+
+        if (!is_null($name)) {
+            return $response->setContentDisposition($disposition, $name, $this->fallbackName($name));
+        }
+
+        return $response;
+    }
+
+    /**
      * @param array $data
      * @param int $status
      * @param array $headers
@@ -55,6 +77,17 @@ class Response
 
             $response->setResponse($this->getResponse());
         });
+    }
+
+    /**
+     * Convert the string to ASCII characters that are equivalent to the given name.
+     *
+     * @param string $name
+     * @return string
+     */
+    protected function fallbackName(string $name): string
+    {
+        return str_replace('%', '', Str::ascii($name));
     }
 
     /**
