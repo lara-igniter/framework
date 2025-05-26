@@ -52,6 +52,12 @@ if (!function_exists('app')) {
                     return get_instance()->{$key};
                 }
             }
+
+            if (is_subclass_of($abstract, 'Elegant\View\Component')) {
+                $component = new $abstract(...($instance ?: []));
+
+                return $component;
+            }
         }
 
         /**
