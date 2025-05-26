@@ -68,7 +68,7 @@ class BladeCompiler extends Compiler implements CompilerInterface
      * @var array
      */
     protected $compilers = [
-        'Comments',
+        // 'Comments',
         'Extensions',
         'Statements',
         'Echos',
