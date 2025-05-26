@@ -5,6 +5,7 @@ namespace Elegant\Support\Facades;
 /**
  * @method static array getCustomDirectives()
  * @method static array getExtensions()
+ * @method static bool check(string $name, array ...$parameters)
  * @method static string compileString(string $value)
  * @method static string getPath()
  * @method static string stripParentheses(string $expression)
