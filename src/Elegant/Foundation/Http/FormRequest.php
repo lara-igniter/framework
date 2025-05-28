@@ -146,6 +146,10 @@ class FormRequest
                     foreach ($_rules as $rule) {
                         $rule_clear = $rule;
 
+                        if($rule instanceof Rule) {
+                            continue;
+                        }
+
                         if (strpos($rule, '[') !== false) {
                             $rule_clear = substr($rule, 0, strpos($rule, "["));
                         }
