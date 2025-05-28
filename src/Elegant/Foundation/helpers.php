@@ -54,7 +54,8 @@ if (!function_exists('app')) {
             }
 
             if (is_subclass_of($abstract, 'Elegant\View\Component')) {
-                $component = new $abstract(...($instance ?: []));
+                // ...array_values() is for error "Cannot unpack array with string keys"
+                $component = new $abstract(...array_values($instance ?: []));
 
                 return $component;
             }
