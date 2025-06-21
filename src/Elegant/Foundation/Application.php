@@ -12,28 +12,28 @@ class Application implements ApplicationContract
      *
      * @var string
      */
-    const VERSION = '1.49.0';
+    const VERSION = '1.49.1';
 
     /**
      * The base path for the Laraigniter installation.
      *
      * @var string
      */
-    protected string $basePath;
+    protected $basePath;
 
     /**
      * The custom environment path defined by the developer.
      *
      * @var string
      */
-    protected string $environmentPath;
+    protected $environmentPath;
 
     /**
      * The environment file to load during bootstrapping.
      *
      * @var string
      */
-    protected string $environmentFile = '.env';
+    protected $environmentFile = '.env';
 
     public function __construct($basePath = null)
     {

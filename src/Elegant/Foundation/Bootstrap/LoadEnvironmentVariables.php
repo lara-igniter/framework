@@ -11,12 +11,51 @@ class LoadEnvironmentVariables
     /**
      * Bootstrap the given application.
      *
-     * @param  \Elegant\Contracts\Foundation\Application  $app
+     * @param \Elegant\Contracts\Foundation\Application $app
      * @return void
      */
     public function bootstrap(Application $app)
     {
-        $this->createDotenv($app)->load();
+        $this->checkForSpecificEnvironmentFile($app);
+
+        $this->createDotenv($app)->safeLoad();
+    }
+
+    /**
+     * Detect if a custom environment file matching the APP_ENV exists.
+     *
+     * @param \Elegant\Contracts\Foundation\Application $app
+     * @return void
+     */
+    protected function checkForSpecificEnvironmentFile($app)
+    {
+        $environment = Env::get('APP_ENV');
+
+        if (is_null($environment)) {
+            return;
+        }
+
+        $this->setEnvironmentFilePath(
+            $app, $app->environmentFile() . '.' . $environment
+        );
+    }
+
+    /**
+     * Load a custom environment file.
+     *
+     * @param \Elegant\Contracts\Foundation\Application $app
+     * @param string $file
+     * @return bool
+     */
+    protected function setEnvironmentFilePath($app, $file)
+    {
+        if (is_file($app->environmentPath() . '/' . $file)) {
+            $app->loadEnvironmentFrom($file);
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
