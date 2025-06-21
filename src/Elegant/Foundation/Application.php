@@ -2,38 +2,38 @@
 
 namespace Elegant\Foundation;
 
-use Dotenv\Dotenv;
-use Elegant\Support\Env;
+use Elegant\Contracts\Foundation\Application as ApplicationContract;
+use Elegant\Foundation\Bootstrap\LoadEnvironmentVariables;
 
-class Application
+class Application implements ApplicationContract
 {
     /**
      * The Laraigniter framework version.
      *
      * @var string
      */
-    const VERSION = '1.48.1';
+    const VERSION = '1.49.0';
 
     /**
      * The base path for the Laraigniter installation.
      *
      * @var string
      */
-    protected $basePath;
+    protected string $basePath;
 
     /**
      * The custom environment path defined by the developer.
      *
      * @var string
      */
-    protected $environmentPath;
+    protected string $environmentPath;
 
     /**
      * The environment file to load during bootstrapping.
      *
      * @var string
      */
-    protected $environmentFile = '.env';
+    protected string $environmentFile = '.env';
 
     public function __construct($basePath = null)
     {
@@ -41,7 +41,7 @@ class Application
             $this->setBasePath($basePath);
         }
 
-        $this->createDotenv();
+        (new LoadEnvironmentVariables)->bootstrap($this);
     }
 
     /**
@@ -57,19 +57,37 @@ class Application
     /**
      * Set the base path for the application.
      *
-     * @param  string  $basePath
+     * @param string $basePath
      * @return $this
      */
-    public function setBasePath($basePath)
+    public function setBasePath(string $basePath): Application
     {
         $this->basePath = rtrim($basePath, '\/');
 
         return $this;
     }
 
-    public function environmentPath()
+    /**
+     * Get the path to the environment file directory.
+     *
+     * @return string
+     */
+    public function environmentPath(): string
     {
         return $this->environmentPath ?: $this->basePath;
+    }
+
+    /**
+     * Set the environment file to be loaded during bootstrapping.
+     *
+     * @param string $file
+     * @return $this
+     */
+    public function loadEnvironmentFrom(string $file): Application
+    {
+        $this->environmentFile = $file;
+
+        return $this;
     }
 
     /**
@@ -77,17 +95,8 @@ class Application
      *
      * @return string
      */
-    public function environmentFile()
+    public function environmentFile(): string
     {
         return $this->environmentFile ?: '.env';
-    }
-
-    protected function createDotenv()
-    {
-        return Dotenv::create(
-            Env::getRepository(),
-            $this->environmentPath(),
-            $this->environmentFile()
-        )->load();
     }
 }
