@@ -5,6 +5,7 @@ namespace Elegant\Foundation\Http\File;
 use Elegant\Contracts\Filesystem\FileNotFoundException;
 use Elegant\Support\Arr;
 use Elegant\Support\Facades\Storage;
+use Elegant\Support\Str;
 use Elegant\Support\Traits\Macroable;
 use RuntimeException;
 use Symfony\Component\Mime\MimeTypes;
@@ -180,7 +181,7 @@ class UploadedFile extends File
      */
     public function getClientOriginalExtension(): string
     {
-        return pathinfo($this->originalName, \PATHINFO_EXTENSION);
+        return Str::lower(pathinfo($this->originalName, \PATHINFO_EXTENSION));
     }
 
     /**
