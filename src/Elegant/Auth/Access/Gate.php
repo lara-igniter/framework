@@ -139,6 +139,6 @@ class Gate implements GateContract
      */
     protected function resolveUser()
     {
-        return $this->userResolver;
+        return $this->userResolver ?? (auth() ?? null);
     }
 }

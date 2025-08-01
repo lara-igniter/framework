@@ -12,7 +12,7 @@ class Application implements ApplicationContract
      *
      * @var string
      */
-    const VERSION = '1.49.3';
+    const VERSION = '1.50.0';
 
     /**
      * The base path for the Laraigniter installation.
