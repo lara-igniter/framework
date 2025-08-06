@@ -306,6 +306,11 @@ class Factory implements FactoryContract
         $keys = is_array($key) ? $key : [$key => $value];
 
         foreach ($keys as $key => $value) {
+            if (is_string($value) && class_exists($value) && method_exists($value, 'share')) {
+                $instance = new $value();
+                $value = $instance->share();
+            }
+
             $this->shared[$key] = $value;
         }
 
