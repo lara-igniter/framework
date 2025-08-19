@@ -431,9 +431,9 @@ if (!function_exists('old')) {
     function old(string $field, $data_value = null)
     {
         if (is_null($data_value)) {
-            return set_value($field);
+            return set_value($field, '', false);
         } else {
-            return set_value($field, $data_value);
+            return set_value($field, $data_value, false);
         }
     }
 }
