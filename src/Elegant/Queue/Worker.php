@@ -428,12 +428,12 @@ class Worker
      * Stop the process if necessary.
      *
      * @param \Elegant\Queue\WorkerOptions $options
-     * @param int $lastRestart
+     * @param int|null $lastRestart
      * @param int $startTime
      * @param int $jobsProcessed
      * @return int|null
      */
-    protected function stopIfNecessary(WorkerOptions $options, int $lastRestart, int $startTime = 0, int $jobsProcessed = 0): ?int
+    protected function stopIfNecessary(WorkerOptions $options, ?int $lastRestart, int $startTime = 0, int $jobsProcessed = 0): ?int
     {
         if ($this->shouldQuit) {
             return 12;
