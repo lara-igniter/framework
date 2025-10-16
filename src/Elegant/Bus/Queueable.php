@@ -9,14 +9,14 @@ trait Queueable
      *
      * @var string|null
      */
-    public ?string $connection;
+    public ?string $connection = null;
 
     /**
      * The name of the queue the job should be sent to.
      *
      * @var string|null
      */
-    public ?string $queue;
+    public ?string $queue = null;
 
     /**
      * The number of seconds before the job should be made available.

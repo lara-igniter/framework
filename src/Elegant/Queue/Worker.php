@@ -2,7 +2,7 @@
 
 namespace Elegant\Queue;
 
-use Elegant\Console\Command;
+use Elegant\Console\OutputStyle;
 use Elegant\Support\Facades\Date;
 use Exception;
 use Throwable;
@@ -74,13 +74,13 @@ class Worker
 
         [$startTime, $jobsProcessed] = [time(), 0];
 
-        Command::write("  Processing jobs from the [{$queue}] queue.");
-        Command::newLine();
+        OutputStyle::write("  Processing jobs from the [{$queue}] queue.");
+        OutputStyle::newLine();
 
         while (true) {
             // The worker should not run if the application is in maintenance mode...
             if ($this->shouldQuit) {
-                Command::color("[" . now()->format('Y-m-d H:i:s') . "] Worker stopping...", 'red');
+                OutputStyle::color("[" . now()->format('Y-m-d H:i:s') . "] Worker stopping...", 'red');
                 $this->stop($options, $lastRestart, $startTime, $jobsProcessed);
                 break;
             }
@@ -96,7 +96,7 @@ class Worker
                 $this->queueShouldRestart($lastRestart) ||
                 $this->daemonExceedsLimits($options, $startTime, $jobsProcessed))
             {
-                Command::color("[" . now()->format('Y-m-d H:i:s') . "] Worker limits exceeded, stopping...", 'red');
+                OutputStyle::color("[" . now()->format('Y-m-d H:i:s') . "] Worker limits exceeded, stopping...", 'red');
 
                 $this->stop($options, $lastRestart, $startTime, $jobsProcessed);
 
@@ -107,7 +107,7 @@ class Worker
             $this->runNextJob($connectionName, $queue, $options);
 
             if ($options->stopWhenEmpty && $this->queueIsEmpty($connectionName, $queue)) {
-                Command::color("[" . now()->format('Y-m-d H:i:s') . "] Queue is empty, stopping...", 'red');
+                OutputStyle::color("[" . now()->format('Y-m-d H:i:s') . "] Queue is empty, stopping...", 'red');
 
                 $this->stop($options, $lastRestart, $startTime, $jobsProcessed);
                 break;
@@ -166,8 +166,8 @@ class Worker
             $payload = $job->payload();
             $jobName = $payload['job'] ?? 'Unknown Job';
 
-            Command::write(
-                Command::color("[" . now()->format('Y-m-d H:i:s') . "] Failed:     ", 'red') . "{$jobName}",
+            OutputStyle::write(
+                OutputStyle::color("[" . now()->format('Y-m-d H:i:s') . "] Failed:     ", 'red') . "{$jobName}",
                 'white'
             );
 
@@ -210,8 +210,8 @@ class Worker
             $payload = $job->payload();
             $jobName = $payload['job'] ?? 'Unknown Job';
 
-            Command::write(
-                Command::color("[" . now()->format('Y-m-d H:i:s') . "] Failed:     ", 'red') . "{$jobName}",
+            OutputStyle::write(
+                OutputStyle::color("[" . now()->format('Y-m-d H:i:s') . "] Failed:     ", 'red') . "{$jobName}",
                 'white'
             );
 
@@ -244,15 +244,15 @@ class Worker
             $payload = $job->payload();
             $jobName = $payload['job'] ?? 'Unknown Job';
 
-            Command::write(
-                Command::color("[" . now()->format('Y-m-d H:i:s') . "] Processing: ", 'yellow') . "{$jobName} (attempt: {$attempts})",
+            OutputStyle::write(
+                OutputStyle::color("[" . now()->format('Y-m-d H:i:s') . "] Processing: ", 'yellow') . "{$jobName} (attempt: {$attempts})",
                 'white'
             );
 
             // If we've reached max attempts, mark as permanently failed
             if ($nextAttempt >= $maxTries) {
-                Command::write(
-                    Command::color("[" . now()->format('Y-m-d H:i:s') . "] Failed:     ", 'red') . "{$jobName} (Job has been marked as failed)",
+                OutputStyle::write(
+                    OutputStyle::color("[" . now()->format('Y-m-d H:i:s') . "] Failed:     ", 'red') . "{$jobName} (Job has been marked as failed)",
                     'white'
                 );
                 $this->failJob($job, $e);
@@ -290,8 +290,8 @@ class Worker
             $jobName = $payload['job'] ?? 'Unknown Job';
 
             // Log processing start
-            Command::write(
-                Command::color("[" . now()->format('Y-m-d H:i:s') . "] Processing: ", 'yellow') . "{$jobName}",
+            OutputStyle::write(
+                OutputStyle::color("[" . now()->format('Y-m-d H:i:s') . "] Processing: ", 'yellow') . "{$jobName}",
                 'white'
             );
 
@@ -304,11 +304,11 @@ class Worker
             }
 
             // Log processing completion
-            Command::write(
-                Command::color("[" . now()->format('Y-m-d H:i:s') . "] Processed:  ", 'green') . "{$jobName}",
+            OutputStyle::write(
+                OutputStyle::color("[" . now()->format('Y-m-d H:i:s') . "] Processed:  ", 'green') . "{$jobName}",
                 'white'
             );
-            Command::newLine();
+            OutputStyle::newLine();
 
         } finally {
             $this->raiseAfterJobEvent($connectionName, $job);
@@ -460,7 +460,7 @@ class Worker
      */
     public function stop(WorkerOptions $options, int $lastRestart = 0, int $startTime = 0, int $jobsProcessed = 0, int $status = 0): int
     {
-        Command::color("[" . now()->format('Y-m-d H:i:s') . "] Worker stopped. Jobs processed: {$jobsProcessed}", 'red');
+        OutputStyle::color("[" . now()->format('Y-m-d H:i:s') . "] Worker stopped. Jobs processed: {$jobsProcessed}", 'red');
 
         return $status;
     }
