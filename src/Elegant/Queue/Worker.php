@@ -170,6 +170,7 @@ class Worker
                 OutputStyle::color("[" . now()->format('Y-m-d H:i:s') . "] Failed:     ", 'red') . "{$jobName}",
                 'white'
             );
+            OutputStyle::newLine();
 
             $this->stopWorkerIfLostConnection($e);
         }
