@@ -20,6 +20,8 @@
         "ext-fileinfo": "*",
         "ext-json": "*",
         "ext-mbstring": "*",
+        "ext-pcntl": "*",
+        "ext-readline": "*",
         "codeigniter/framework": "3.1.*",
         "doctrine/inflector": "^1.4|^2.0",
         "league/commonmark": "1.3",

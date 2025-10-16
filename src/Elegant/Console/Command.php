@@ -2,12 +2,16 @@
 
 namespace Elegant\Console;
 
+use CI_Controller;
 use Elegant\Console\Exceptions\CommandException;
 use InvalidArgumentException;
 use Throwable;
 
-class Command
+class Command extends CI_Controller
 {
+    use Concerns\HasParameters,
+        Concerns\InteractsWithIO;
+
     /**
      * Is the readline library on the system?
      *
@@ -78,9 +82,25 @@ class Command
     protected static $segments = [];
 
     /**
+     * The console command argument definitions.
+     *
      * @var array
      */
-    protected static $options = [];
+    protected array $arguments = [];
+
+    /**
+     * The console command option definitions.
+     *
+     * @var array
+     */
+    protected array $options = [];
+
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected string $signature;
 
     /**
      * Helps track internally whether the last
@@ -112,10 +132,21 @@ class Command
      */
     protected static $isColored = false;
 
+    public function __construct()
+    {
+        $this->init();
+
+        if (isset($this->signature)) {
+            $this->configureUsingFluentDefinition();
+        } else {
+            parent::__construct();
+        }
+    }
+
     /**
-     * Static "constructor".
+     * Initializes the Command class.
      */
-    public static function init()
+    public function init()
     {
         if (is_cli()) {
             // Readline is an extension for PHP that makes interactivity with PHP
@@ -125,7 +156,7 @@ class Command
 
             // clear segments & options to keep testing clean
             static::$segments = [];
-            static::$options  = [];
+            $this->options  = [];
 
             // Check our stream resource for color support
             static::$isColored = static::hasColorSupport(STDOUT);
@@ -138,6 +169,23 @@ class Command
             // we need to define STDOUT ourselves
             define('STDOUT', 'php://output'); // @codeCoverageIgnore
         }
+    }
+
+    /**
+     * Configure the console command using a fluent definition.
+     *
+     * @return void
+     */
+    protected function configureUsingFluentDefinition()
+    {
+        [$name, $arguments, $options] = Parser::parse($this->signature);
+
+        $this->arguments = $arguments;
+        $this->options = $options;
+
+        $this->specifyParameters();
+
+        parent::__construct();
     }
 
     /**
@@ -921,6 +969,3 @@ class Command
         fwrite($handle, $string);
     }
 }
-
-// Ensure the class is initialized. Done outside of code coverage
-Command::init(); // @codeCoverageIgnore

@@ -278,6 +278,49 @@ if (!function_exists('database_path')) {
     }
 }
 
+if (! function_exists('dispatch')) {
+    /**
+     * Dispatch a job to its appropriate handler.
+     *
+     * @param mixed $job
+     * @return mixed
+     * @throws ReflectionException
+     */
+    function dispatch($job)
+    {
+        return (new \Elegant\Bus\Dispatcher())->dispatch($job);
+    }
+}
+
+if (! function_exists('dispatch_sync')) {
+    /**
+     * Dispatch a command to its appropriate handler in the current process.
+     *
+     * Queueable jobs will be dispatched to the "sync" queue.
+     *
+     * @param mixed $job
+     * @return mixed
+     * @throws Exception
+     */
+    function dispatch_sync($job)
+    {
+        return (new \Elegant\Bus\Dispatcher())->dispatchSync($job);
+    }
+}
+
+if (! function_exists('dispatch_now')) {
+    /**
+     * Dispatch a command to its appropriate handler in the current process.
+     *
+     * @param  mixed  $job
+     * @return mixed
+     */
+    function dispatch_now($job)
+    {
+        return (new \Elegant\Bus\Dispatcher())->dispatchNow($job);
+    }
+}
+
 if (!function_exists('factory')) {
     /**
      * Get factory class and make a model object.
