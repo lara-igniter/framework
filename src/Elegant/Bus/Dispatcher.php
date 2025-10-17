@@ -54,7 +54,10 @@ class Dispatcher implements DispatcherContract
      */
     public function dispatchSync($command)
     {
-        $payload = $this->extractJobData($command);
+        $payload = json_encode([
+            'job' => get_class($command),
+            'data' => $this->extractJobData($command),
+        ], JSON_UNESCAPED_UNICODE);
 
         $syncJob = new SyncJob($payload);
 
