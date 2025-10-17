@@ -106,8 +106,8 @@ abstract class Job implements JobContract
                 $this->delete();
             }
         } catch (Throwable $e) {
-            error_log("Job fire error: " . $e->getMessage());
-            error_log("Job payload: " . $this->getRawBody());
+            log_message('error', "Job fire error: " . $e->getMessage());
+            log_message('debug', "Job payload: " . $this->getRawBody());
             throw $e;
         }
     }
