@@ -2,11 +2,17 @@
 
 namespace Elegant\Contracts\Queue;
 
-use Exception;
 use Throwable;
 
 interface Job
 {
+    /**
+     * Get the UUID of the job.
+     *
+     * @return string|null
+     */
+    public function uuid(): ?string;
+
     /**
      * Get the job identifier.
      *
@@ -25,7 +31,6 @@ interface Job
      * Fire the job.
      *
      * @return void
-     * @throws Exception
      */
     public function fire();
 
@@ -87,9 +92,9 @@ interface Job
     public function markAsFailed();
 
     /**
-     * Delete the job, call the "failed" method, and raise the failed job event.
+     * Mark the job as "failed".
      *
-     * @param Throwable|null $e
+     * @param \Throwable|null $e
      * @return void
      */
     public function fail(Throwable $e = null);
@@ -100,6 +105,13 @@ interface Job
      * @return int|null
      */
     public function maxTries(): ?int;
+
+    /**
+     * Get the maximum number of exceptions allowed, regardless of attempts.
+     *
+     * @return int|null
+     */
+    public function maxExceptions(): ?int;
 
     /**
      * Get the number of seconds the job can run.
@@ -124,8 +136,6 @@ interface Job
 
     /**
      * Get the resolved name of the queued job class.
-     *
-     * Resolves the name of "wrapped" jobs such as class-based handlers.
      *
      * @return string
      */

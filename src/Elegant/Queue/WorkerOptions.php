@@ -5,11 +5,11 @@ namespace Elegant\Queue;
 class WorkerOptions
 {
     /**
-     * The number of seconds to wait before retrying a job that encountered an uncaught exception.
+     * The number of seconds to wait before retrying a failed job.
      *
-     * @var int|int[]
+     * @var int
      */
-    public $backoff;
+    public int $backoff;
 
     /**
      * The maximum amount of RAM the worker may consume.
@@ -19,25 +19,18 @@ class WorkerOptions
     public int $memory;
 
     /**
-     * The maximum number of seconds a child worker may run.
+     * The maximum number of seconds a job may run.
      *
      * @var int
      */
     public int $timeout;
 
     /**
-     * The number of seconds to wait in between polling the queue.
+     * The number of seconds to sleep when no job is available.
      *
      * @var int
      */
     public int $sleep;
-
-    /**
-     * The number of seconds to rest between jobs.
-     *
-     * @var int
-     */
-    public int $rest;
 
     /**
      * The maximum number of times a job may be attempted.
@@ -54,7 +47,7 @@ class WorkerOptions
     public bool $force;
 
     /**
-     * Indicates if the worker should stop when the queue is empty.
+     * Indicates if the worker should stop when queue is empty.
      *
      * @var bool
      */
@@ -75,32 +68,48 @@ class WorkerOptions
     public int $maxTime;
 
     /**
-     * Create a new worker option instance.
+     * The number of seconds to rest between jobs.
      *
-     * @param int|int[] $backoff
-     * @param int $memory
-     * @param int $timeout
-     * @param int $sleep
-     * @param int $maxTries
-     * @param bool $force
-     * @param bool $stopWhenEmpty
-     * @param int $maxJobs
-     * @param int $maxTime
-     * @param int $rest
+     * @var int
+     */
+    public int $rest;
+
+    /**
+     * Create a new worker options instance.
+     *
+     * @param  int  $backoff
+     * @param  int  $memory
+     * @param  int  $timeout
+     * @param  int  $sleep
+     * @param  int  $maxTries
+     * @param  bool  $force
+     * @param  bool  $stopWhenEmpty
+     * @param  int  $maxJobs
+     * @param  int  $maxTime
+     * @param  int  $rest
      * @return void
      */
-    public function __construct($backoff = 0, int $memory = 128, int $timeout = 60, int $sleep = 3, int $maxTries = 1,
-                                bool $force = false, bool $stopWhenEmpty = false, int $maxJobs = 0, int $maxTime = 0, int $rest = 0)
-    {
+    public function __construct(
+        int $backoff = 0,
+        int $memory = 128,
+        int $timeout = 60,
+        int $sleep = 3,
+        int $maxTries = 1,
+        bool $force = false,
+        bool $stopWhenEmpty = false,
+        int $maxJobs = 0,
+        int $maxTime = 0,
+        int $rest = 0
+    ) {
         $this->backoff = $backoff;
-        $this->sleep = $sleep;
-        $this->rest = $rest;
-        $this->force = $force;
         $this->memory = $memory;
         $this->timeout = $timeout;
+        $this->sleep = $sleep;
         $this->maxTries = $maxTries;
+        $this->force = $force;
         $this->stopWhenEmpty = $stopWhenEmpty;
         $this->maxJobs = $maxJobs;
         $this->maxTime = $maxTime;
+        $this->rest = $rest;
     }
 }

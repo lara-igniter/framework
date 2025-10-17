@@ -4,21 +4,9 @@ namespace Elegant\Queue;
 
 use DateTimeInterface;
 use Elegant\Support\Str;
-use Exception;
-use Throwable;
 
-class Queue
+abstract class Queue
 {
-    /**
-     * The database connection instance.
-     */
-    protected $db;
-
-    /**
-     * The table name for storing jobs.
-     */
-    protected string $table = 'jobs';
-
     /**
      * The connection name for the queue.
      *
@@ -27,66 +15,129 @@ class Queue
     protected string $connectionName;
 
     /**
+     * The container instance.
+     *
+     * @var mixed
+     */
+    protected $container;
+
+    /**
+     * Indicates that jobs should be dispatched after all database transactions have committed.
+     *
+     * @var bool
+     */
+    protected $dispatchAfterCommit;
+
+    /**
      * The creation payload callbacks.
      *
      * @var callable[]
      */
     protected static array $createPayloadCallbacks = [];
 
-    public function __construct()
-    {
-        $this->db = app('db');
-    }
-
     /**
      * Push a new job onto the queue.
      *
      * @param string $job
      * @param mixed $data
-     * @param string $queue
-     * @param int $delay
+     * @param string|null $queue
      * @return mixed
-     * @throws \ReflectionException
      */
-    public function push(string $job, $data = '', string $queue = 'default', int $delay = 0)
-    {
-        $payload = $this->createPayload($job, $data, $queue);
-        $availableAt = $delay > 0 ? time() + $delay : time();
+    abstract public function push($job, $data = '', $queue = null);
 
-        return $this->db->insert($this->table, [
-            'queue' => $queue,
-            'payload' => json_encode($payload),
-            'attempts' => 0,
-            'reserved_at' => null,
-            'available_at' => $availableAt,
-            'created_at' => time()
-        ]);
+    /**
+     * Push a raw payload onto the queue.
+     *
+     * @param string $payload
+     * @param string|null $queue
+     * @param array $options
+     * @return mixed
+     */
+    abstract public function pushRaw($payload, $queue = null, array $options = []);
+
+    /**
+     * Push a new job onto the queue after (n) seconds.
+     *
+     * @param \DateTimeInterface|int $delay
+     * @param string $job
+     * @param mixed $data
+     * @param string|null $queue
+     * @return mixed
+     */
+    abstract public function later($delay, $job, $data = '', $queue = null);
+
+    /**
+     * Pop the next job off of the queue.
+     *
+     * @param string|null $queue
+     * @return \Elegant\Queue\Jobs\Job|null
+     */
+    abstract public function pop($queue = null);
+
+    /**
+     * Get the size of the queue.
+     *
+     * @param string|null $queue
+     * @return int
+     */
+    abstract public function size($queue = null);
+
+    /**
+     * Push a new job onto a specific queue.
+     *
+     * @param string $queue
+     * @param string $job
+     * @param mixed $data
+     * @return mixed
+     */
+    public function pushOn($queue, $job, $data = '')
+    {
+        return $this->push($job, $data, $queue);
+    }
+
+    /**
+     * Push a new job onto a specific queue after (n) seconds.
+     *
+     * @param string $queue
+     * @param \DateTimeInterface|int $delay
+     * @param string $job
+     * @param mixed $data
+     * @return mixed
+     */
+    public function laterOn($queue, $delay, $job, $data = '')
+    {
+        return $this->later($delay, $job, $data, $queue);
+    }
+
+    /**
+     * Push an array of jobs onto the queue.
+     *
+     * @param array $jobs
+     * @param mixed $data
+     * @param string|null $queue
+     * @return void
+     */
+    public function bulk($jobs, $data = '', $queue = null)
+    {
+        foreach ((array) $jobs as $job) {
+            $this->push($job, $data, $queue);
+        }
     }
 
     /**
      * Create a payload string from the given job and data.
      *
      * @param \Closure|string|object $job
-     * @param mixed $data
      * @param string $queue
-     * @return array
+     * @param mixed $data
+     * @return string
      * @throws \ReflectionException
      */
-    protected function createPayload($job, $data, string $queue)
+    protected function createPayload($job, $queue, $data = '')
     {
-        // If $job is a string and $data is an object (our case),
-        // then $data is actually the job object
-        if (is_string($job) && is_object($data)) {
-            return $this->createObjectPayload($data, $queue);
-        }
+        $payload = $this->createPayloadArray($job, $queue, $data);
 
-        // If $job is an object, use it directly
-        if (is_object($job)) {
-            return $this->createObjectPayload($job, $queue);
-        }
-
-        // Otherwise create string payload
-        return $this->createStringPayload($job, $queue, $data);
+        return json_encode($payload, JSON_UNESCAPED_UNICODE);
     }
 
     /**
@@ -126,6 +177,29 @@ class Queue
             'timeout' => $job->timeout ?? null,
             'retryUntil' => $this->getJobExpiration($job),
             'data' => $this->extractJobData($job),
+        ]);
+    }
+
+    /**
+     * Create a typical, string based queue payload array.
+     *
+     * @param string $job
+     * @param string $queue
+     * @param mixed $data
+     * @return array
+     */
+    protected function createStringPayload(string $job, string $queue, $data): array
+    {
+        return $this->withCreatePayloadHooks($queue, [
+            'uuid' => (string)Str::uuid(),
+            'displayName' => is_string($job) ? explode('@', $job)[0] : null,
+            'job' => $job,
+            'maxTries' => null,
+            'maxExceptions' => null,
+            'failOnTimeout' => false,
+            'backoff' => null,
+            'timeout' => null,
+            'data' => $data,
         ]);
     }
 
@@ -190,11 +264,7 @@ class Queue
             return;
         }
 
-        if (is_null($tries = $job->tries ?? $job->tries())) {
-            return;
-        }
-
-        return $tries;
+        return $job->tries ?? $job->tries();
     }
 
     /**
@@ -209,11 +279,7 @@ class Queue
             return;
         }
 
-        if (is_null($backoff = $job->backoff ?? $job->backoff())) {
-            return;
-        }
-
-        return $backoff;
+        return $job->backoff ?? $job->backoff();
     }
 
     /**
@@ -235,29 +301,6 @@ class Queue
     }
 
     /**
-     * Create a typical, string based queue payload array.
-     *
-     * @param string $job
-     * @param string $queue
-     * @param mixed $data
-     * @return array
-     */
-    protected function createStringPayload(string $job, string $queue, $data): array
-    {
-        return $this->withCreatePayloadHooks($queue, [
-            'uuid' => (string)Str::uuid(),
-            'displayName' => is_string($job) ? end(explode('\\', $job)[0]) : null,
-            'job' => $job,
-            'maxTries' => null,
-            'maxExceptions' => null,
-            'failOnTimeout' => false,
-            'backoff' => null,
-            'timeout' => null,
-            'data' => $data,
-        ]);
-    }
-
-    /**
      * Create the given payload using any registered payload hooks.
      *
      * @param string $queue
@@ -276,96 +319,6 @@ class Queue
     }
 
     /**
-     * Pop the next job off of the queue.
-     *
-     * @param string $queue
-     * @return \Elegant\Queue\Jobs\DatabaseJob|null
-     */
-    public function pop(string $queue = 'default'): ?Jobs\DatabaseJob
-    {
-        $job = $this->getNextAvailableJob($queue);
-
-        if ($job) {
-            $this->markJobAsReserved($job['id']);
-
-            return new Jobs\DatabaseJob($this, $job);
-        }
-
-        return null;
-    }
-
-    /**
-     * Get the next available job for the given queue.
-     *
-     * @param string $queue
-     * @return array|null
-     */
-    protected function getNextAvailableJob(string $queue): ?array
-    {
-        return $this->db->where('queue', $queue)
-            ->where('reserved_at IS NULL')
-            ->where('available_at <=', time())
-            ->order_by('id', 'ASC')
-            ->limit(1)
-            ->get($this->table)
-            ->row_array();
-    }
-
-    /**
-     * Mark the given job ID as reserved.
-     *
-     * @param int $id
-     * @return void
-     */
-    protected function markJobAsReserved(int $id)
-    {
-        $this->db->where('id', $id)
-            ->update($this->table, ['reserved_at' => time()]);
-    }
-
-    /**
-     * Delete a job from the queue.
-     *
-     * @param int $id
-     * @return void
-     */
-    public function deleteJob(int $id)
-    {
-        $this->db->where('id', $id)->delete($this->table);
-    }
-
-    /**
-     * Release a job back to the queue.
-     *
-     * @param int $id
-     * @param int $delay
-     * @return void
-     */
-    public function releaseJob(int $id, int $delay = 0)
-    {
-        $availableAt = $delay > 0 ? time() + $delay : time();
-
-        $this->db->where('id', $id)
-            ->set('reserved_at', null)
-            ->set('attempts', 'attempts + 1', false)
-            ->set('available_at', $availableAt)
-            ->update($this->table);
-    }
-
-    /**
-     * Increment the attempts for a job.
-     *
-     * @param int $id
-     * @return void
-     */
-    public function incrementAttempts(int $id)
-    {
-        $this->db->where('id', $id)
-            ->set('attempts', 'attempts + 1', false)
-            ->update($this->table);
-    }
-
-    /**
      * Get the connection name for the queue.
      *
      * @return string
@@ -381,33 +334,45 @@ class Queue
      * @param string $name
      * @return $this
      */
-    public function setConnectionName(string $name): Queue
+    public function setConnectionName(string $name)
     {
         $this->connectionName = $name;
         return $this;
     }
 
     /**
-     * Log a failed job to the failed_jobs table.
+     * Get the container instance being used by the connection.
      *
-     * @param string $connectionName
-     * @param string $queue
-     * @param string $payload
-     * @param Exception|Throwable $exception
+     * @return mixed
+     */
+    public function getContainer()
+    {
+        return $this->container;
+    }
+
+    /**
+     * Set the IoC container instance.
+     *
+     * @param mixed $container
      * @return void
      */
-    public function logFailedJob(string $connectionName, string $queue, string $payload, $exception)
+    public function setContainer($container)
     {
-        try {
-            $this->db->insert('failed_jobs', [
-                'connection' => $connectionName,
-                'queue' => $queue,
-                'payload' => $payload,
-                'exception' => (string)$exception,
-                'failed_at' => now()->toDateTimeString(),
-            ]);
-        } catch (Exception $e) {
-            //
+        $this->container = $container;
+    }
+
+    /**
+     * Register a callback to be executed when creating job payloads.
+     *
+     * @param callable|null $callback
+     * @return void
+     */
+    public static function createPayloadUsing($callback)
+    {
+        if (is_null($callback)) {
+            static::$createPayloadCallbacks = [];
+        } else {
+            static::$createPayloadCallbacks[] = $callback;
         }
     }
 }

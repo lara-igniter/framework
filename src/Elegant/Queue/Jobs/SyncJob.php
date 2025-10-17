@@ -3,44 +3,37 @@
 namespace Elegant\Queue\Jobs;
 
 use Elegant\Contracts\Queue\Job as JobContract;
-use Exception;
 
 class SyncJob extends Job implements JobContract
 {
     /**
-     * The sync job payload.
+     * The class name of the job.
      *
-     * @var mixed
+     * @var string
      */
-    protected $job;
+    protected string $job;
 
     /**
-     * The job payload data.
+     * The queue job payload.
      *
-     * @var array
+     * @var string
      */
-    protected array $payload;
+    protected string $payload;
 
     /**
-     * Create a new sync job instance.
+     * Create a new job instance.
      *
-     * @param  mixed  $job
-     * @param array $payload
-     * @param string $queue
-     * @return void
+     * @param string $payload
      */
-    public function __construct($job, array $payload = [], string $queue = 'default')
+    public function __construct(string $payload)
     {
-        $this->job = $job;
         $this->payload = $payload;
-        $this->connectionName = 'sync';
-        $this->queue = $queue;
     }
 
     /**
      * Release the job back into the queue after (n) seconds.
      *
-     * @param  int  $delay
+     * @param int $delay
      * @return void
      */
     public function release(int $delay = 0)
@@ -75,51 +68,16 @@ class SyncJob extends Job implements JobContract
      */
     public function getRawBody(): string
     {
-        return json_encode([
-            'job' => get_class($this->job),
-            'data' => $this->payload
-        ]);
+        return $this->payload;
     }
 
     /**
-     * Get the decoded body of the job.
+     * Get the name of the queue the job belongs to.
      *
-     * @return array
+     * @return string
      */
-    public function payload(): array
+    public function getQueue(): string
     {
-        return [
-            'job' => get_class($this->job),
-            'data' => $this->payload
-        ];
-    }
-
-    /**
-     * Execute the sync job immediately.
-     *
-     * @return mixed
-     */
-    public function handle()
-    {
-        return $this->job->handle();
-    }
-
-    /**
-     * Fire the job (execute immediately for sync jobs).
-     *
-     * @return void
-     * @throws Exception
-     */
-    public function fire()
-    {
-        try {
-            $this->handle();
-
-            $this->delete();
-        } catch (Exception $e) {
-            $this->failed = true;
-
-            throw $e;
-        }
+        return 'sync';
     }
 }

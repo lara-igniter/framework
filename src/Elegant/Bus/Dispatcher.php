@@ -4,24 +4,26 @@ namespace Elegant\Bus;
 
 use Elegant\Contracts\Bus\Dispatcher as DispatcherContract;
 use Elegant\Queue\Jobs\SyncJob;
-use Elegant\Queue\Queue;
+use Elegant\Queue\QueueManager;
 use ReflectionClass;
 
 class Dispatcher implements DispatcherContract
 {
     /**
-     * The queue instance.
+     * The queue manager instance.
      *
-     * @var \Elegant\Queue\Queue
+     * @var \Elegant\Queue\QueueManager
      */
-    protected $queue;
+    protected QueueManager $queueManager;
 
     /**
      * Create a new queue dispatcher instance.
+     *
+     * @param \Elegant\Queue\QueueManager|null $queueManager
      */
-    public function __construct()
+    public function __construct(QueueManager $queueManager = null)
     {
-        $this->queue = new Queue();
+        $this->queueManager = $queueManager ?: new QueueManager();
     }
 
     /**
@@ -47,15 +49,14 @@ class Dispatcher implements DispatcherContract
      * Dispatch a job using SyncJob for immediate execution.
      *
      * @param mixed $command
+     * @return mixed
      * @throws \Exception
      */
     public function dispatchSync($command)
     {
-        $queue = $command->queue ?? 'default';
+        $payload = $this->extractJobData($command);
 
-        $data = $this->extractJobData($command);
-
-        $syncJob = new SyncJob($command, $data, $queue);
+        $syncJob = new SyncJob($payload);
 
         return $syncJob->fire();
     }
@@ -84,7 +85,7 @@ class Dispatcher implements DispatcherContract
 
         $reflection = new ReflectionClass($command);
 
-        $excludeProperties = ['queue', 'delay', 'connection', 'timeout'];
+        $excludeProperties = ['connection', 'queue', 'delay', 'timeout', 'tries', 'connectionName', 'shouldFail'];
 
         foreach ($reflection->getProperties() as $property) {
             if (in_array($property->getName(), $excludeProperties)) {
@@ -139,7 +140,7 @@ class Dispatcher implements DispatcherContract
      */
     public function dispatchToQueue($command)
     {
-        $queue = $command->queue ?? 'default';
+        $queueName = $command->queue ?? 'default';
 
         // Get delay from the job instance if it was set via delay() method
         $delay = 0;
@@ -147,16 +148,31 @@ class Dispatcher implements DispatcherContract
             $delay = $command->delay;
         }
 
-        return $this->queue->push(get_class($command), $command, $queue, $delay);
+        // Use the queue manager to get the appropriate queue connection
+        $queue = $this->queueManager->connection();
+
+        return $queue->push(get_class($command), $command, $queueName, $delay);
     }
 
     /**
-     * Get the queue instance.
+     * Get the queue manager instance.
      *
-     * @return \Elegant\Queue\Queue
+     * @return \Elegant\Queue\QueueManager
      */
-    public function getQueue(): Queue
+    public function getQueueManager(): QueueManager
     {
-        return $this->queue;
+        return $this->queueManager;
+    }
+
+    /**
+     * Set the queue manager instance.
+     *
+     * @param \Elegant\Queue\QueueManager $queueManager
+     * @return $this
+     */
+    public function setQueueManager(QueueManager $queueManager)
+    {
+        $this->queueManager = $queueManager;
+        return $this;
     }
 }
