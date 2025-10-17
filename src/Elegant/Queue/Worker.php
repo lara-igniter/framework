@@ -200,7 +200,7 @@ class Worker
      * @param \Elegant\Queue\WorkerOptions $options
      * @return int
      */
-    protected function timeoutForJob($job, WorkerOptions $options): int
+    protected function timeoutForJob(?Jobs\Job $job, WorkerOptions $options): int
     {
         return $job && !is_null($job->timeout()) ? $job->timeout() : $options->timeout;
     }
@@ -327,7 +327,7 @@ class Worker
     protected function runJob(Jobs\Job $job, string $connectionName, WorkerOptions $options)
     {
         try {
-            return $this->process($connectionName, $job, $options);
+            $this->process($connectionName, $job, $options);
         } catch (Throwable $e) {
             $this->stopWorkerIfLostConnection($e);
         }
@@ -376,6 +376,10 @@ class Worker
             // they can be reported to the developers logs, etc. Once the job is finished the
             // proper events will be fired to let any listeners know this job has finished.
             $job->fire();
+
+            if (!$job->isDeleted() && !$job->isReleased() && !$job->hasFailed()) {
+                $job->delete();
+            }
 
             $this->raiseAfterJobEvent($connectionName, $job);
         } catch (Throwable $e) {

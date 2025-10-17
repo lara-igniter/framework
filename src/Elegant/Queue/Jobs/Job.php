@@ -94,6 +94,17 @@ abstract class Job implements JobContract
             }
 
             $this->instance = $this->resolve($payload);
+
+            // Then execute the job
+            if (method_exists($this->instance, 'handle')) {
+                $this->instance->handle();
+            } else {
+                throw new Exception('Job class does not have a handle() method');
+            }
+
+            if (!$this->isDeleted() && !$this->isReleased() && !$this->hasFailed()) {
+                $this->delete();
+            }
         } catch (Throwable $e) {
             error_log("Job fire error: " . $e->getMessage());
             error_log("Job payload: " . $this->getRawBody());
@@ -194,9 +205,11 @@ abstract class Job implements JobContract
         }
 
         try {
+            $this->delete();
+
             $this->failed($e);
-        } catch (Throwable $e) {
-            //
+        } catch (Throwable $failedException) {
+            // If failed() method throws an exception, we still want to log the original failure
         }
     }
 
@@ -237,35 +250,25 @@ abstract class Job implements JobContract
                 throw new Exception("Job class {$class} not found");
             }
 
-            if (method_exists($class, 'handle')) {
-                $reflection = new \ReflectionClass($class);
-                $constructor = $reflection->getConstructor();
+            $reflection = new \ReflectionClass($class);
+            $constructor = $reflection->getConstructor();
 
-                if ($constructor && $constructor->getNumberOfParameters() > 0) {
-                    $instance = $reflection->newInstanceArgs(array_values($jobData));
-                } else {
-                    $instance = new $class;
-
-                    foreach ($jobData as $key => $value) {
-                        if (property_exists($instance, $key)) {
-                            $instance->{$key} = $value;
-                        }
-                    }
-                }
+            if ($constructor && $constructor->getNumberOfParameters() > 0) {
+                $instance = $reflection->newInstanceArgs(array_values($jobData));
             } else {
                 $instance = new $class;
+
+                foreach ($jobData as $key => $value) {
+                    if (property_exists($instance, $key)) {
+                        $instance->{$key} = $value;
+                    }
+                }
             }
 
-            if (method_exists($instance, 'handle')) {
-                return $instance->handle();
-            } elseif (method_exists($instance, $method)) {
-                return $instance->{$method}($this, $jobData);
-            } else {
-                throw new Exception("Job class {$class} does not have a handle() or {$method}() method");
-            }
+            return $instance;
 
         } catch (Throwable $e) {
-            error_log("Failed to execute job {$class}: " . $e->getMessage());
+            error_log("Failed to resolve job {$class}: " . $e->getMessage());
             error_log("Job data: " . print_r($jobData, true));
             throw $e;
         }

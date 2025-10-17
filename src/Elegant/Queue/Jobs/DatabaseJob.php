@@ -4,6 +4,7 @@ namespace Elegant\Queue\Jobs;
 
 use Elegant\Contracts\Queue\Job as JobContract;
 use Elegant\Queue\DatabaseQueue;
+use Throwable;
 
 class DatabaseJob extends Job implements JobContract
 {
@@ -66,6 +67,37 @@ class DatabaseJob extends Job implements JobContract
     }
 
     /**
+     * Mark the job as "failed".
+     *
+     * @param \Throwable|null $e
+     * @return void
+     * @throws \Throwable
+     */
+    public function fail(Throwable $e = null)
+    {
+        $this->markAsFailed();
+
+        if ($this->isDeleted()) {
+            return;
+        }
+
+        try {
+            $this->database->logFailedJob(
+                $this->connectionName,
+                $this->queue,
+                $this->getRawBody(),
+                $e
+            );
+
+            $this->delete();
+
+            $this->failed($e);
+        } catch (Throwable $failedException) {
+            // If failed() method throws an exception, we still want to log the original failure
+        }
+    }
+
+    /**
      * Get the number of times the job has been attempted.
      *
      * @return int
@@ -96,12 +128,33 @@ class DatabaseJob extends Job implements JobContract
     }
 
     /**
+     * Get the name of the connection the job belongs to.
+     *
+     * @return string
+     */
+    public function getConnectionName(): string
+    {
+        return $this->connectionName;
+    }
+
+    /**
+     * Get the name of the queue the job belongs to.
+     *
+     * @return string
+     */
+    public function getQueue(): string
+    {
+        return $this->queue;
+    }
+
+    /**
      * Increment the number of times the job has been attempted.
      *
      * @return void
      */
     public function incrementAttempts()
     {
+        $this->job['attempts'] = $this->job['attempts'] + 1;
         $this->database->incrementAttempts($this->job['id']);
     }
 }
