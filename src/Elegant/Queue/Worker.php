@@ -86,7 +86,10 @@ class Worker
 
         [$startTime, $jobsProcessed] = [hrtime(true) / 1e9, 0];
 
-        OutputStyle::write("  Processing jobs from the [{$queue}] queue.");
+        OutputStyle::write(
+            OutputStyle::color("  ", 'white') . OutputStyle::color(" INFO ", 'white', 'blue') . " Processing jobs from the [{$queue}] queue.",
+            'white'
+        );
         OutputStyle::newLine();
 
         while (true) {
