@@ -80,7 +80,7 @@ class DatabaseJob extends Job implements JobContract
      *
      * @return string|int
      */
-    public function getJobId()
+    public function getJobId(): string
     {
         return $this->job['id'];
     }
