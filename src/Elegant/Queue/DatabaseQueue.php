@@ -2,7 +2,6 @@
 
 namespace Elegant\Queue;
 
-use CI_DB_driver;
 use Elegant\Queue\Jobs\DatabaseJob;
 use Elegant\Queue\Jobs\DatabaseJobRecord;
 use Elegant\Support\Carbon;
@@ -126,14 +125,16 @@ class DatabaseQueue extends Queue
     public function bulk($jobs, $data = '', $queue = null)
     {
         $queue = $this->getQueue($queue);
-        $now = time();
+
+        $now = $this->availableAt();
 
         $records = [];
         foreach ((array)$jobs as $job) {
-            $payload = $this->createPayload($job, $queue, $data);
-            $availableAt = isset($job->delay) ? $now + $job->delay : $now;
-
-            $records[] = $this->buildDatabaseRecord($queue, $payload, $availableAt);
+            $records[] = $this->buildDatabaseRecord(
+                $queue,
+                $this->createPayload($job, $this->getQueue($queue), $data),
+                isset($job->delay) ? $this->availableAt($job->delay) : $now,
+            );
         }
 
         if (!empty($records)) {
@@ -224,7 +225,7 @@ class DatabaseQueue extends Queue
             ->where('queue', $this->getQueue($queue))
             ->group_start()
             ->where('reserved_at IS NULL')
-            ->where('available_at <=', time())
+            ->where('available_at <=', $this->currentTime())
             ->group_end()
             ->or_group_start()
             ->where('reserved_at <=', $expiration)
@@ -288,11 +289,23 @@ class DatabaseQueue extends Queue
      */
     public function deleteAndRelease(string $queue, DatabaseJob $job, int $delay)
     {
-        if ($this->database->where('id', $job->getJobId())->get($this->table)->count_all_results()) {
+        if ($this->database->where('id', $job->getJobId())->get($this->table)) {
             $this->database->where('id', $job->getJobId())->delete($this->table);
         }
 
-//        $this->release($queue, $job->getJobRecord(), $delay);
+        $this->releaseReserved($job, $delay);
+    }
+
+    /**
+     * Release a job back to the queue.
+     *
+     * @param \Elegant\Queue\Jobs\DatabaseJob $job
+     * @param int $delay
+     * @return void
+     */
+    public function releaseReserved(DatabaseJob $job, int $delay = 0)
+    {
+        $this->job->attempts = $this->job->attempts + 1;
 
         $this->database->where('id', $job->getJobId())
             ->set('reserved_at', null)

@@ -5,7 +5,7 @@ namespace Elegant\Queue\Jobs;
 use Elegant\Support\InteractsWithTime;
 use stdClass;
 
-class DatabaseJobRecord extends stdClass
+class DatabaseJobRecord
 {
     use InteractsWithTime;
 

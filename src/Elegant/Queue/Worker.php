@@ -3,12 +3,15 @@
 namespace Elegant\Queue;
 
 use Elegant\Console\OutputStyle;
+use Elegant\Database\DetectsLostConnections;
 use Elegant\Support\Facades\Date;
 use Exception;
 use Throwable;
 
 class Worker
 {
+    use DetectsLostConnections;
+
     /**
      * Exit code constants.
      */
@@ -167,7 +170,7 @@ class Worker
         pcntl_signal(SIGALRM, function () use ($job, $options) {
             if ($job) {
                 $this->markJobAsFailedIfWillExceedMaxAttempts(
-                    $job->getConnectionName(), $job, (int) $options->maxTries, $e = $this->maxAttemptsExceededException($job)
+                    $job->getConnectionName(), $job, (int)$options->maxTries, $e = $this->maxAttemptsExceededException($job)
                 );
 
                 $this->markJobAsFailedIfItShouldFailOnTimeout(
@@ -336,7 +339,7 @@ class Worker
     /**
      * Stop the worker if we have lost connection to a database.
      *
-     * @param \Exception $e
+     * @param \Throwable $e
      * @return void
      */
     protected function stopWorkerIfLostConnection($e)
@@ -365,7 +368,7 @@ class Worker
             $this->raiseBeforeJobEvent($connectionName, $job);
 
             $this->markJobAsFailedIfAlreadyExceedsMaxAttempts(
-                $connectionName, $job, (int) $options->maxTries
+                $connectionName, $job, (int)$options->maxTries
             );
 
             if ($job->isDeleted()) {
@@ -406,7 +409,7 @@ class Worker
             // go ahead and mark it as failed now so we do not have to release this again.
             if (!$job->hasFailed()) {
                 $this->markJobAsFailedIfWillExceedMaxAttempts(
-                    $connectionName, $job, (int) $options->maxTries, $e
+                    $connectionName, $job, (int)$options->maxTries, $e
                 );
             }
 
@@ -529,7 +532,7 @@ class Worker
                 : $options->backoff
         );
 
-        return (int) ($backoff[$job->attempts() - 1] ?? last($backoff));
+        return (int)($backoff[$job->attempts() - 1] ?? last($backoff));
     }
 
     /**
@@ -773,52 +776,5 @@ class Worker
     public function setManager(QueueManager $manager)
     {
         $this->manager = $manager;
-    }
-
-    /**
-     * Determine if the given exception was caused by a lost connection.
-     *
-     * @param \Exception|\Throwable $e
-     * @return bool
-     */
-    protected function causedByLostConnection($e): bool
-    {
-        $message = $e->getMessage();
-
-        $patterns = [
-            'server has gone away',
-            'no connection to the server',
-            'Lost connection',
-            'is dead or not enabled',
-            'Error while sending',
-            'decryption failed or bad record mac',
-            'server closed the connection unexpectedly',
-            'SSL connection has been closed unexpectedly',
-            'Error writing data to the connection',
-            'Resource deadlock avoided',
-            'Transaction() on null',
-            'child connection forced to terminate due to client_idle_limit',
-            'query_wait_timeout',
-            'reset by peer',
-            'Physical connection is not usable',
-            'TCP Provider: Error code 0x68',
-            'Name or service not known',
-            'ORA-03114',
-            'Packets out of order. Expected',
-            'Adaptive Server connection failed',
-            'Communication link failure',
-            'connection is no longer usable',
-            'Login timeout expired',
-            'SQLSTATE[HY000] [2002]',
-            'SQLSTATE[HY000] [2006]',
-        ];
-
-        foreach ($patterns as $pattern) {
-            if (strpos($message, $pattern) !== false) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

@@ -19,20 +19,20 @@ class DatabaseJob extends Job implements JobContract
     /**
      * The database job payload.
      *
-     * @var \stdClass
+     * @var \Elegant\Queue\Jobs\DatabaseJobRecord
      */
-    protected stdClass $job;
+    protected DatabaseJobRecord $job;
 
     /**
      * Create a new job instance.
      *
      * @param \Elegant\Queue\DatabaseQueue $database
-     * @param \stdClass $job
+     * @param \Elegant\Queue\Jobs\DatabaseJobRecord $job
      * @param string $connectionName
      * @param string $queue
      * @return void
      */
-    public function __construct(DatabaseQueue $database, stdClass $job, string $connectionName, string $queue)
+    public function __construct(DatabaseQueue $database, DatabaseJobRecord $job, string $connectionName, string $queue)
     {
         $this->database = $database;
         $this->job = $job;
@@ -50,10 +50,7 @@ class DatabaseJob extends Job implements JobContract
     {
         parent::release($delay);
 
-        $this->database->deleteAndRelease($this->queue, $this, $delay);
-
-//        $this->job['attempts'] = $this->job['attempts'] + 1;
-//        $this->database->releaseJob($this->job->id, $delay);
+        $this->database->releaseReserved($this, $delay);
     }
 
     /**
@@ -75,7 +72,7 @@ class DatabaseJob extends Job implements JobContract
      */
     public function attempts(): int
     {
-        return (int) $this->job->attempts;
+        return (int)$this->job->attempts;
     }
 
     /**
@@ -142,26 +139,6 @@ class DatabaseJob extends Job implements JobContract
         } catch (Throwable $failedException) {
             // If failed() method throws an exception, we still want to log the original failure
         }
-    }
-
-    /**
-     * Get the name of the connection the job belongs to.
-     *
-     * @return string
-     */
-    public function getConnectionName(): string
-    {
-        return $this->connectionName;
-    }
-
-    /**
-     * Get the name of the queue the job belongs to.
-     *
-     * @return string
-     */
-    public function getQueue(): string
-    {
-        return $this->queue;
     }
 
     /**
