@@ -3,6 +3,7 @@
 namespace Elegant\Database;
 
 use Elegant\Support\Str;
+use Throwable;
 
 trait DetectsLostConnections
 {
@@ -12,7 +13,7 @@ trait DetectsLostConnections
      * @param  \Throwable  $e
      * @return bool
      */
-    protected function causedByLostConnection(Throwable $e)
+    protected function causedByLostConnection(Throwable $e): bool
     {
         $message = $e->getMessage();
 

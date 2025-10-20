@@ -342,7 +342,7 @@ class Worker
      * @param \Throwable $e
      * @return void
      */
-    protected function stopWorkerIfLostConnection($e)
+    protected function stopWorkerIfLostConnection(Throwable $e)
     {
         if ($this->causedByLostConnection($e)) {
             $this->shouldQuit = true;
