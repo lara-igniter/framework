@@ -2,6 +2,7 @@
 
 namespace Elegant\Queue;
 
+use CI_Cache;
 use Elegant\Console\OutputStyle;
 use Elegant\Database\DetectsLostConnections;
 use Elegant\Support\Facades\Date;
@@ -628,7 +629,11 @@ class Worker
      */
     protected function getTimestampOfLastQueueRestart(): ?int
     {
-        return null; // For now, always return null since we don't have cache
+        if ($this->cache) {
+            return $this->cache->file->get('elegant_queue_restart');
+        }
+
+        return null;
     }
 
     /**
@@ -726,6 +731,19 @@ class Worker
         } else {
             sleep($seconds);
         }
+    }
+
+    /**
+     * Set the cache repository implementation.
+     *
+     * @param  \CI_Cache  $cache
+     * @return $this
+     */
+    public function setCache(CI_Cache $cache): Worker
+    {
+        $this->cache = $cache;
+
+        return $this;
     }
 
     /**
