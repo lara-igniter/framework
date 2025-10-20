@@ -778,10 +778,10 @@ class Worker
     /**
      * Determine if the given exception was caused by a lost connection.
      *
-     * @param \Exception $e
+     * @param \Exception|\Throwable $e
      * @return bool
      */
-    protected function causedByLostConnection(Exception $e): bool
+    protected function causedByLostConnection($e): bool
     {
         $message = $e->getMessage();
 
