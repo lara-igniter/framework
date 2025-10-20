@@ -263,7 +263,10 @@ class DatabaseQueue extends Queue
     protected function markJobAsReserved(DatabaseJobRecord $job): DatabaseJobRecord
     {
         $this->database->where('id', $job->id)
-            ->update($this->table, ['reserved_at' => $job->touch()]);
+            ->update($this->table, [
+                'reserved_at' => $job->touch(),
+                'attempts' => $job->increment(),
+            ]);
 
         return $job;
     }
@@ -305,11 +308,8 @@ class DatabaseQueue extends Queue
      */
     public function releaseReserved(DatabaseJob $job, int $delay = 0)
     {
-        $this->job->attempts = $this->job->attempts + 1;
-
         $this->database->where('id', $job->getJobId())
             ->set('reserved_at', null)
-            ->set('attempts', 'attempts + 1', false)
             ->set('available_at', $this->availableAt($delay))
             ->update($this->table);
     }
@@ -347,19 +347,6 @@ class DatabaseQueue extends Queue
     /**
      * TODO: Remove function bellow
      */
-
-    /**
-     * Increment the attempts for a job.
-     *
-     * @param int $id
-     * @return void
-     */
-    public function incrementAttempts(int $id)
-    {
-        $this->database->where('id', $id)
-            ->set('attempts', 'attempts + 1', false)
-            ->update($this->table);
-    }
 
     /**
      * Log a failed job to the failed_jobs table.

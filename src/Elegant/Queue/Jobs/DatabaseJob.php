@@ -140,16 +140,4 @@ class DatabaseJob extends Job implements JobContract
             // If failed() method throws an exception, we still want to log the original failure
         }
     }
-
-    /**
-     * Increment the number of times the job has been attempted.
-     *
-     * @return void
-     */
-    public function incrementAttempts()
-    {
-        $this->job->attempts = $this->job->attempts + 1;
-
-        $this->database->incrementAttempts($this->job->id);
-    }
 }
