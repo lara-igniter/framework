@@ -3,10 +3,13 @@
 namespace Elegant\Queue;
 
 use DateTimeInterface;
+use Elegant\Support\InteractsWithTime;
 use Elegant\Support\Str;
 
 abstract class Queue
 {
+    use InteractsWithTime;
+
     /**
      * The connection name for the queue.
      *
@@ -26,7 +29,7 @@ abstract class Queue
      *
      * @var bool
      */
-    protected $dispatchAfterCommit;
+    protected bool $dispatchAfterCommit;
 
     /**
      * The creation payload callbacks.
@@ -319,6 +322,44 @@ abstract class Queue
     }
 
     /**
+     * Enqueue a job using the given callback.
+     *
+     * @param \Closure|string|object $job
+     * @param string $payload
+     * @param string $queue
+     * @param \DateTimeInterface|int|null $delay
+     * @param callable $callback
+     * @return mixed
+     */
+    protected function enqueueUsing($job, string $payload, string $queue, $delay, callable $callback)
+    {
+        if ($this->shouldDispatchAfterCommit($job) && $this->container && method_exists($this->container, 'bound')) {
+            return $callback($payload, $queue, $delay);
+        }
+
+        return $callback($payload, $queue, $delay);
+    }
+
+    /**
+     * Determine if the job should be dispatched after all database transactions have committed.
+     *
+     * @param \Closure|string|object $job
+     * @return bool
+     */
+    protected function shouldDispatchAfterCommit($job): bool
+    {
+        if (is_object($job) && isset($job->afterCommit)) {
+            return $job->afterCommit;
+        }
+
+        if (isset($this->dispatchAfterCommit)) {
+            return $this->dispatchAfterCommit;
+        }
+
+        return false;
+    }
+
+    /**
      * Get the connection name for the queue.
      *
      * @return string
@@ -334,9 +375,10 @@ abstract class Queue
      * @param string $name
      * @return $this
      */
-    public function setConnectionName(string $name)
+    public function setConnectionName(string $name): Queue
     {
         $this->connectionName = $name;
+
         return $this;
     }
 

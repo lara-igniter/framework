@@ -2,8 +2,12 @@
 
 namespace Elegant\Queue;
 
+use CI_DB_driver;
 use Elegant\Queue\Jobs\DatabaseJob;
+use Elegant\Queue\Jobs\DatabaseJobRecord;
+use Elegant\Support\Carbon;
 use Exception;
+use stdClass;
 use Throwable;
 
 class DatabaseQueue extends Queue
@@ -11,7 +15,7 @@ class DatabaseQueue extends Queue
     /**
      * The database connection instance.
      */
-    protected $db;
+    protected $database;
 
     /**
      * The table name for storing jobs.
@@ -28,9 +32,12 @@ class DatabaseQueue extends Queue
      */
     protected int $retryAfter = 60;
 
-    public function __construct($database = null, string $table = 'jobs', string $default = 'default', int $retryAfter = 60)
+    public function __construct($database = null,
+                                string $table = 'jobs',
+                                string $default = 'default',
+                                int $retryAfter = 60)
     {
-        $this->db = $database ?: app('db');
+        $this->database = $database ?: app('db');
         $this->table = $table;
         $this->default = $default;
         $this->retryAfter = $retryAfter;
@@ -44,9 +51,7 @@ class DatabaseQueue extends Queue
      */
     public function size($queue = null): int
     {
-        $queue = $queue ?: $this->default;
-
-        return $this->db->where('queue', $queue)
+        return $this->database->where('queue', $this->getQueue($queue))
             ->where('reserved_at IS NULL')
             ->count_all_results($this->table);
     }
@@ -124,7 +129,7 @@ class DatabaseQueue extends Queue
         $now = time();
 
         $records = [];
-        foreach ((array) $jobs as $job) {
+        foreach ((array)$jobs as $job) {
             $payload = $this->createPayload($job, $queue, $data);
             $availableAt = isset($job->delay) ? $now + $job->delay : $now;
 
@@ -132,74 +137,25 @@ class DatabaseQueue extends Queue
         }
 
         if (!empty($records)) {
-            $this->db->insert_batch($this->table, $records);
+            $this->database->insert_batch($this->table, $records);
         }
-    }
-
-    /**
-     * Pop the next job off of the queue.
-     *
-     * @param string|null $queue
-     * @return \Elegant\Queue\Jobs\DatabaseJob|null
-     */
-    public function pop($queue = null): ?DatabaseJob
-    {
-        $queue = $this->getQueue($queue);
-
-        $job = $this->getNextAvailableJob($queue);
-
-        if ($job) {
-            $this->markJobAsReserved($job['id']);
-            return new DatabaseJob($this, $job, $this->connectionName, $queue);
-        }
-
-        return null;
-    }
-
-    /**
-     * Get the next available job for the given queue.
-     *
-     * @param string $queue
-     * @return array|null
-     */
-    protected function getNextAvailableJob(string $queue): ?array
-    {
-        return $this->db->where('queue', $queue)
-            ->where('reserved_at IS NULL')
-            ->where('available_at <=', time())
-            ->order_by('id', 'ASC')
-            ->limit(1)
-            ->get($this->table)
-            ->row_array();
-    }
-
-    /**
-     * Mark the given job ID as reserved.
-     *
-     * @param int $id
-     * @return void
-     */
-    protected function markJobAsReserved(int $id)
-    {
-        $this->db->where('id', $id)
-            ->update($this->table, ['reserved_at' => time()]);
     }
 
     /**
      * Release a reserved job back onto the queue after (n) seconds.
      *
      * @param string $queue
-     * @param array $job
+     * @param \stdClass $job
      * @param int $delay
      * @return mixed
      */
-    public function release(string $queue, array $job, int $delay)
+    public function release(string $queue, stdClass $job, int $delay)
     {
-        return $this->pushToDatabase($queue, $job['payload'], $delay, $job['attempts']);
+        return $this->pushToDatabase($queue, $job->payload, $delay, $job->attempts);
     }
 
     /**
-     * Push a raw payload to the database with a given delay.
+     * Push a raw payload to the database with a given delay of (n) seconds.
      *
      * @param string|null $queue
      * @param string $payload
@@ -209,18 +165,11 @@ class DatabaseQueue extends Queue
      */
     protected function pushToDatabase(?string $queue, string $payload, int $delay = 0, int $attempts = 0)
     {
-        $availableAt = $delay > 0 ? time() + $delay : time();
+        $this->database->insert($this->table, $this->buildDatabaseRecord(
+            $this->getQueue($queue), $payload, $this->availableAt($delay), $attempts
+        ));
 
-        $record = $this->buildDatabaseRecord(
-            $this->getQueue($queue),
-            $payload,
-            $availableAt,
-            $attempts
-        );
-
-        $this->db->insert($this->table, $record);
-
-        return $this->db->insert_id();
+        return $this->database->insert_id();
     }
 
     /**
@@ -236,42 +185,155 @@ class DatabaseQueue extends Queue
     {
         return [
             'queue' => $queue,
-            'payload' => $payload,
             'attempts' => $attempts,
             'reserved_at' => null,
             'available_at' => $availableAt,
-            'created_at' => time(),
+            'created_at' => $this->currentTime(),
+            'payload' => $payload,
         ];
     }
 
     /**
-     * Delete a job from the queue.
+     * Pop the next job off of the queue.
      *
-     * @param int $id
-     * @return void
+     * @param string|null $queue
+     * @return \Elegant\Queue\Jobs\DatabaseJob|null
      */
-    public function deleteJob(int $id)
+    public function pop($queue = null): ?DatabaseJob
     {
-        $this->db->where('id', $id)->delete($this->table);
+        $queue = $this->getQueue($queue);
+
+        if ($job = $this->getNextAvailableJob($queue)) {
+            return $this->marshalJob($queue, $job);
+        }
+
+        return null;
     }
 
     /**
-     * Release a job back to the queue.
+     * Get the next available job for the given queue.
+     *
+     * @param string $queue
+     * @return \Elegant\Queue\Jobs\DatabaseJobRecord|null
+     */
+    protected function getNextAvailableJob(string $queue): ?DatabaseJobRecord
+    {
+        $expiration = Carbon::now()->subSeconds($this->retryAfter)->getTimestamp();
+
+        $job = $this->database
+            ->where('queue', $this->getQueue($queue))
+            ->group_start()
+            ->where('reserved_at IS NULL')
+            ->where('available_at <=', time())
+            ->group_end()
+            ->or_group_start()
+            ->where('reserved_at <=', $expiration)
+            ->group_end()
+            ->order_by('id', 'ASC')
+            ->limit(1)
+            ->get($this->table)
+            ->row_array();
+
+        return $job ? new DatabaseJobRecord((object)$job) : null;
+    }
+
+    /**
+     * Marshal the reserved job into a DatabaseJob instance.
+     *
+     * @param string $queue
+     * @param \Elegant\Queue\Jobs\DatabaseJobRecord $job
+     * @return \Elegant\Queue\Jobs\DatabaseJob
+     */
+    protected function marshalJob(string $queue, DatabaseJobRecord $job): DatabaseJob
+    {
+        $job = $this->markJobAsReserved($job);
+
+        return new DatabaseJob(
+            $this, $job, $this->connectionName, $queue
+        );
+    }
+
+    /**
+     * Mark the given job ID as reserved.
+     *
+     * @param \Elegant\Queue\Jobs\DatabaseJobRecord $job
+     * @return \Elegant\Queue\Jobs\DatabaseJobRecord
+     */
+    protected function markJobAsReserved(DatabaseJobRecord $job): DatabaseJobRecord
+    {
+        $this->database->where('id', $job->id)
+            ->update($this->table, ['reserved_at' => $job->touch()]);
+
+        return $job;
+    }
+
+    /**
+     * Delete a reserved job from the queue.
      *
      * @param int $id
+     * @return void
+     */
+    public function deleteReserved(int $id)
+    {
+        $this->database->where('id', $id)->delete($this->table);
+    }
+
+    /**
+     * Delete a reserved job from the reserved queue and release it.
+     *
+     * @param string $queue
+     * @param \Elegant\Queue\Jobs\DatabaseJob $job
      * @param int $delay
      * @return void
      */
-    public function releaseJob(int $id, int $delay = 0)
+    public function deleteAndRelease(string $queue, DatabaseJob $job, int $delay)
     {
-        $availableAt = $delay > 0 ? time() + $delay : time();
+        if ($this->database->where('id', $job->getJobId())->get($this->table)->count_all_results()) {
+            $this->database->where('id', $job->getJobId())->delete($this->table);
+        }
 
-        $this->db->where('id', $id)
+//        $this->release($queue, $job->getJobRecord(), $delay);
+
+        $this->database->where('id', $job->getJobId())
             ->set('reserved_at', null)
             ->set('attempts', 'attempts + 1', false)
-            ->set('available_at', $availableAt)
+            ->set('available_at', $this->availableAt($delay))
             ->update($this->table);
     }
+
+    /**
+     * Delete all of the jobs from the queue.
+     *
+     * @param string $queue
+     * @return int
+     */
+    public function clear(string $queue): int
+    {
+        return $this->database->table($this->table)->where('queue', $this->getQueue($queue))->delete($this->table);
+    }
+
+    /**
+     * Get the queue or return the default.
+     *
+     * @param string|null $queue
+     * @return string
+     */
+    public function getQueue(?string $queue): string
+    {
+        return $queue ?: $this->default;
+    }
+
+    /**
+     * Get the underlying database instance.
+     */
+    public function getDatabase()
+    {
+        return $this->database;
+    }
+
+    /**
+     * TODO: Remove function bellow
+     */
 
     /**
      * Increment the attempts for a job.
@@ -281,7 +343,7 @@ class DatabaseQueue extends Queue
      */
     public function incrementAttempts(int $id)
     {
-        $this->db->where('id', $id)
+        $this->database->where('id', $id)
             ->set('attempts', 'attempts + 1', false)
             ->update($this->table);
     }
@@ -298,7 +360,7 @@ class DatabaseQueue extends Queue
     public function logFailedJob(string $connectionName, string $queue, string $payload, $exception)
     {
         try {
-            $this->db->insert('failed_jobs', [
+            $this->database->insert('failed_jobs', [
                 'connection' => $connectionName,
                 'queue' => $queue,
                 'payload' => $payload,
@@ -308,54 +370,5 @@ class DatabaseQueue extends Queue
         } catch (Exception $e) {
             //
         }
-    }
-
-    /**
-     * Get the queue or return the default.
-     *
-     * @param string|null $queue
-     * @return string
-     */
-    protected function getQueue(?string $queue): string
-    {
-        return $queue ?: $this->default;
-    }
-
-    /**
-     * Enqueue a job using the given callback.
-     *
-     * @param \Closure|string|object $job
-     * @param string $payload
-     * @param string $queue
-     * @param \DateTimeInterface|int|null $delay
-     * @param callable $callback
-     * @return mixed
-     */
-    protected function enqueueUsing($job, string $payload, string $queue, $delay, callable $callback)
-    {
-        if ($this->shouldDispatchAfterCommit($job) && $this->container && method_exists($this->container, 'bound')) {
-            return $callback($payload, $queue, $delay);
-        }
-
-        return $callback($payload, $queue, $delay);
-    }
-
-    /**
-     * Determine if the job should be dispatched after all database transactions have committed.
-     *
-     * @param \Closure|string|object $job
-     * @return bool
-     */
-    protected function shouldDispatchAfterCommit($job): bool
-    {
-        if (is_object($job) && isset($job->afterCommit)) {
-            return $job->afterCommit;
-        }
-
-        if (isset($this->dispatchAfterCommit)) {
-            return $this->dispatchAfterCommit;
-        }
-
-        return false;
     }
 }

@@ -4,6 +4,7 @@ namespace Elegant\Queue\Jobs;
 
 use Elegant\Contracts\Queue\Job as JobContract;
 use Elegant\Queue\DatabaseQueue;
+use stdClass;
 use Throwable;
 
 class DatabaseJob extends Job implements JobContract
@@ -18,20 +19,20 @@ class DatabaseJob extends Job implements JobContract
     /**
      * The database job payload.
      *
-     * @var array
+     * @var \stdClass
      */
-    protected array $job;
+    protected stdClass $job;
 
     /**
      * Create a new job instance.
      *
      * @param \Elegant\Queue\DatabaseQueue $database
-     * @param array $job
+     * @param \stdClass $job
      * @param string $connectionName
      * @param string $queue
      * @return void
      */
-    public function __construct(DatabaseQueue $database, array $job, string $connectionName, string $queue)
+    public function __construct(DatabaseQueue $database, stdClass $job, string $connectionName, string $queue)
     {
         $this->database = $database;
         $this->job = $job;
@@ -49,9 +50,10 @@ class DatabaseJob extends Job implements JobContract
     {
         parent::release($delay);
 
-        $this->job['attempts'] = $this->job['attempts'] + 1;
+        $this->database->deleteAndRelease($this->queue, $this, $delay);
 
-        $this->database->releaseJob($this->job['id'], $delay);
+//        $this->job['attempts'] = $this->job['attempts'] + 1;
+//        $this->database->releaseJob($this->job->id, $delay);
     }
 
     /**
@@ -63,8 +65,53 @@ class DatabaseJob extends Job implements JobContract
     {
         parent::delete();
 
-        $this->database->deleteJob($this->job['id']);
+        $this->database->deleteReserved($this->job->id);
     }
+
+    /**
+     * Get the number of times the job has been attempted.
+     *
+     * @return int
+     */
+    public function attempts(): int
+    {
+        return (int) $this->job->attempts;
+    }
+
+    /**
+     * Get the job identifier.
+     *
+     * @return string|int
+     */
+    public function getJobId(): string
+    {
+        return $this->job->id;
+    }
+
+    /**
+     * Get the raw body string for the job.
+     *
+     * @return string
+     */
+    public function getRawBody(): string
+    {
+        return $this->job->payload;
+    }
+
+    /**
+     * Get the database job record.
+     *
+     * @return \Elegant\Queue\Jobs\DatabaseJobRecord
+     */
+    public function getJobRecord(): stdClass
+    {
+        return $this->job;
+    }
+
+
+    /**
+     * TODO: Remove function bellow
+     */
 
     /**
      * Mark the job as "failed".
@@ -98,36 +145,6 @@ class DatabaseJob extends Job implements JobContract
     }
 
     /**
-     * Get the number of times the job has been attempted.
-     *
-     * @return int
-     */
-    public function attempts(): int
-    {
-        return (int) $this->job['attempts'];
-    }
-
-    /**
-     * Get the job identifier.
-     *
-     * @return string|int
-     */
-    public function getJobId(): string
-    {
-        return $this->job['id'];
-    }
-
-    /**
-     * Get the raw body string for the job.
-     *
-     * @return string
-     */
-    public function getRawBody(): string
-    {
-        return $this->job['payload'];
-    }
-
-    /**
      * Get the name of the connection the job belongs to.
      *
      * @return string
@@ -154,7 +171,8 @@ class DatabaseJob extends Job implements JobContract
      */
     public function incrementAttempts()
     {
-        $this->job['attempts'] = $this->job['attempts'] + 1;
-        $this->database->incrementAttempts($this->job['id']);
+        $this->job->attempts = $this->job->attempts + 1;
+
+        $this->database->incrementAttempts($this->job->id);
     }
 }
