@@ -83,8 +83,8 @@ class RouteBuilder
      * Creates a new route group
      *
      * @param string $prefix
-     * @param callable|array $attributes
-     * @param callable|null $routes
+     * @param \Closure|array $attributes
+     * @param \Closure|null $routes
      *
      * @return void
      */
