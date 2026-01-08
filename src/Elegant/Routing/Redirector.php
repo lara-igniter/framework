@@ -111,6 +111,19 @@ class Redirector
     }
 
     /**
+     * Create a new redirect response to an external URL (no validation).
+     *
+     * @param string $path
+     * @param int $status
+     * @param array $headers
+     * @return \Elegant\Http\RedirectResponse
+     */
+    public function away(string $path, int $status = 302, array $headers = [])
+    {
+        return $this->createRedirect($path, $status, $headers);
+    }
+
+    /**
      * @param string $route
      * @param mixed $parameters
      * @param int $status
