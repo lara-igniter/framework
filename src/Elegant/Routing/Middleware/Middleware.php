@@ -62,7 +62,7 @@ class Middleware
                 }
             }
 
-            $middleware->run($args);
+            $middleware->run(app('input'), $args);
         } else if (is_array($middleware)) {
             foreach ($middleware as $run) {
                 $this->run($run, $args);

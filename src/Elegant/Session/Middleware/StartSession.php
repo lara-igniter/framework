@@ -11,13 +11,15 @@ class StartSession implements Middleware
     /**
      * Handle an incoming request.
      *
+     * @param \MY_Input $request
+     * @param mixed $args
      * @return void
      * @throws \Exception
      */
-    public function run($args)
+    public function run(MY_Input $request, $args)
     {
         $this->collectGarbage(app('session'));
-        $this->storeCurrentUrl(app('input'));
+        $this->storeCurrentUrl($request);
     }
 
 

@@ -2,14 +2,16 @@
 
 namespace Elegant\Routing\Contracts;
 
+use MY_Input;
+
 interface MiddlewareInterface
 {
     /**
-     * Middleware entry point
+     * Handle an incoming request.
      *
-     * @param mixed $args Middleware arguments
-     *
+     * @param \MY_Input $request
+     * @param mixed $args
      * @return mixed
      */
-    public function run($args);
+    public function run(MY_Input $request, $args);
 }
