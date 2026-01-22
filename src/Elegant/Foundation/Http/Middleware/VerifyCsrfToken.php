@@ -35,6 +35,8 @@ class VerifyCsrfToken implements Middleware
      */
     public function run(MY_Input $request, $args)
     {
+        app('session')->token();
+
         if (
             $this->isReading($request) ||
             $this->runningInConsole() ||
