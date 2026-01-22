@@ -237,19 +237,7 @@ if (!function_exists('csrf_field')) {
      */
     function csrf_field(): string
     {
-        return '<input type="hidden" name="' . csrf_name() . '" value="' . csrf_token() . '">';
-    }
-}
-
-if (!function_exists('csrf_name')) {
-    /**
-     * Get the CSRF token name.
-     *
-     * @return string
-     */
-    function csrf_name(): string
-    {
-        return app('security')->get_csrf_token_name();
+        return '<input type="hidden" name="_token" value="' . csrf_token() . '">';
     }
 }
 
@@ -258,10 +246,18 @@ if (!function_exists('csrf_token')) {
      * Get the CSRF token value.
      *
      * @return string
+     *
+     * @throws \RuntimeException
      */
     function csrf_token(): string
     {
-        return app('security')->get_csrf_hash();
+        $session = app('session');
+
+        if (isset($session)) {
+            return $session->token();
+        }
+
+        throw new RuntimeException('Application session store not set.');
     }
 }
 

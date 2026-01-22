@@ -4,6 +4,7 @@ namespace Elegant\Support;
 
 use DateInterval;
 use DateTimeInterface;
+use Elegant\Support\Facades\Date;
 
 trait InteractsWithTime
 {
@@ -34,7 +35,7 @@ trait InteractsWithTime
 
         return $delay instanceof DateTimeInterface
             ? $delay->getTimestamp()
-            : Carbon::now()->addRealSeconds($delay)->getTimestamp();
+            : Date::now()->addRealSeconds($delay)->getTimestamp();
     }
 
     /**
@@ -46,7 +47,7 @@ trait InteractsWithTime
     protected function parseDateInterval($delay)
     {
         if ($delay instanceof DateInterval) {
-            $delay = Carbon::now()->add($delay);
+            $delay = Date::now()->add($delay);
         }
 
         return $delay;
@@ -59,6 +60,6 @@ trait InteractsWithTime
      */
     protected function currentTime(): int
     {
-        return Carbon::now()->getTimestamp();
+        return Date::now()->getTimestamp();
     }
 }
