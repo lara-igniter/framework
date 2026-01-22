@@ -35,8 +35,6 @@ class VerifyCsrfToken implements Middleware
      */
     public function run(MY_Input $request, $args)
     {
-        app('session')->token();
-
         if (
             $this->isReading($request) ||
             $this->runningInConsole() ||
@@ -116,18 +114,45 @@ class VerifyCsrfToken implements Middleware
     {
         $token = $this->getTokenFromRequest($request);
         $cookieToken = $_COOKIE['XSRF-TOKEN'] ?? null;
+        $sessionToken = app('session')->userdata('_token');
 
-        if (
-            !is_string(app('session')->token()) ||
-            !is_string($token) ||
-            !is_string($cookieToken)
-        ) {
-            return false;
+        if (empty($sessionToken) && empty($cookieToken)) {
+            app('session')->token();
+            return true;
         }
 
-        return hash_equals(app('session')->token(), $token)
-            && hash_equals(app('session')->token(), $cookieToken);
+        if (!empty($token)) {
+            if ((!empty($cookieToken) && hash_equals($token, $cookieToken)) ||
+                (!empty($sessionToken) && hash_equals($token, $sessionToken))) {
+                return true;
+            }
+        }
+
+        // If no form token but we have both cookie and session, they should match
+        if (empty($token) && !empty($cookieToken) && !empty($sessionToken)) {
+            return hash_equals($cookieToken, $sessionToken);
+        }
+
+        return false;
+
+//        $token = $this->getTokenFromRequest($request);
+//        $cookieToken = $_COOKIE['XSRF-TOKEN'] ?? null;
+//
+//        if (
+////            !is_string(app('session')->userdata('_token')) ||
+//            !is_string($token) ||
+//            !is_string($cookieToken)
+//        ) {
+//            dd('edw mpainw', app('session')->userdata('_token'), $_SESSION['_token'], $token, $cookieToken);
+//            return false;
+//        }
+//
+//        dd('edw', app('session')->userdata('_token'), $token, $cookieToken);
+//
+//        return hash_equals(app('session')->token(), $token)
+//            && hash_equals(app('session')->token(), $cookieToken);
     }
+
 
     /**
      * Get the CSRF token from the request.
@@ -137,21 +162,25 @@ class VerifyCsrfToken implements Middleware
      */
     protected function getTokenFromRequest(MY_Input $request): ?string
     {
-        $token = $request->post('_token');
+        $token = $request->input('_token') ?: $request->get_request_header('X-CSRF-TOKEN');
 
-        if (empty($token)) {
-            $payload = json_decode(file_get_contents('php://input'), true);
-            if (is_array($payload) && isset($payload['_token'])) {
-                $token = $payload['_token'];
-            }
+//        if (empty($token)) {
+//            $payload = json_decode(file_get_contents('php://input'), true);
+//            if (is_array($payload) && isset($payload['_token'])) {
+//                $token = $payload['_token'];
+//            }
+//        }
+//
+//        if (empty($token)) {
+//            $token = $request->get_request_header('X-CSRF-TOKEN', true)
+//                ?: $request->get_request_header('X-XSRF-TOKEN', true);
+//        }
+
+        if (! $token && $header = $request->get_request_header('X-XSRF-TOKEN')) {
+            $token = $header;
         }
 
-        if (empty($token)) {
-            $token = $request->get_request_header('X-CSRF-TOKEN', true)
-                ?: $request->get_request_header('X-XSRF-TOKEN', true);
-        }
-
-        unset($_POST['_token']);
+//        unset($_POST['_token']);
 
         return $token;
     }
@@ -163,11 +192,14 @@ class VerifyCsrfToken implements Middleware
      */
     public function shouldAddXsrfTokenCookie(): bool
     {
-        return $this->addHttpCookie &&
-            (
-                !isset($_COOKIE['XSRF-TOKEN']) ||
-                !hash_equals($_COOKIE['XSRF-TOKEN'], app('session')->token())
-            );
+        if (!$this->addHttpCookie) {
+            return false;
+        }
+
+        $sessionToken = app('session')->token();
+
+        return empty($_COOKIE['XSRF-TOKEN']) ||
+            !hash_equals($_COOKIE['XSRF-TOKEN'], $sessionToken);
     }
 
     /**
@@ -186,17 +218,20 @@ class VerifyCsrfToken implements Middleware
 
     protected function newCookie()
     {
+        $token = app('session')->token();
+        $secure = config_item('cookie_secure') ? '; Secure' : '';
+
         header(
-            'Set-Cookie: XSRF-TOKEN=' . app('session')->token()
+            'Set-Cookie: XSRF-TOKEN=' . $token
             . '; Expires=' . gmdate('D, d-M-Y H:i:s T', $this->availableAt(config_item('sess_expiration')))
             . '; Max-Age=' . config_item('sess_expiration')
             . '; Path=' . config_item('cookie_path')
             . '; Domain=' . config_item('cookie_domain')
-            . '; Secure'
-            . '; SameSite=Strict'
+            . $secure
+            . '; SameSite=Lax'
         );
 
-        $_COOKIE['XSRF-TOKEN'] = app('session')->token();
+        $_COOKIE['XSRF-TOKEN'] = $token;
     }
 
     /**
