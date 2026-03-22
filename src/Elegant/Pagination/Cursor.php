@@ -12,14 +12,14 @@ class Cursor implements Arrayable
      *
      * @var array
      */
-    protected array $parameters;
+    protected $parameters;
 
     /**
      * Determine whether the cursor points to the next or previous set of items.
      *
      * @var bool
      */
-    protected bool $pointsToNextItems;
+    protected $pointsToNextItems;
 
     /**
      * Create a new cursor instance.
@@ -27,7 +27,7 @@ class Cursor implements Arrayable
      * @param array $parameters
      * @param bool $pointsToNextItems
      */
-    public function __construct(array $parameters, bool $pointsToNextItems = true)
+    public function __construct(array $parameters, $pointsToNextItems = true)
     {
         $this->parameters = $parameters;
         $this->pointsToNextItems = $pointsToNextItems;
@@ -41,7 +41,7 @@ class Cursor implements Arrayable
      *
      * @throws \UnexpectedValueException
      */
-    public function parameter(string $parameterName): ?string
+    public function parameter(string $parameterName)
     {
         if (!array_key_exists($parameterName, $this->parameters)) {
             throw new UnexpectedValueException("Unable to find parameter [{$parameterName}] in pagination item.");
@@ -56,7 +56,7 @@ class Cursor implements Arrayable
      * @param array $parameterNames
      * @return array
      */
-    public function parameters(array $parameterNames): array
+    public function parameters(array $parameterNames)
     {
         return collect($parameterNames)->map(function ($parameterName) {
             return $this->parameter($parameterName);
@@ -68,7 +68,7 @@ class Cursor implements Arrayable
      *
      * @return bool
      */
-    public function pointsToNextItems(): bool
+    public function pointsToNextItems()
     {
         return $this->pointsToNextItems;
     }
@@ -78,7 +78,7 @@ class Cursor implements Arrayable
      *
      * @return bool
      */
-    public function pointsToPreviousItems(): bool
+    public function pointsToPreviousItems()
     {
         return !$this->pointsToNextItems;
     }
@@ -88,7 +88,7 @@ class Cursor implements Arrayable
      *
      * @return array
      */
-    public function toArray(): array
+    public function toArray()
     {
         return array_merge($this->parameters, [
             '_pointsToNextItems' => $this->pointsToNextItems,
@@ -100,7 +100,7 @@ class Cursor implements Arrayable
      *
      * @return string
      */
-    public function encode(): string
+    public function encode()
     {
         return str_replace(['+', '/', '='], ['-', '_', ''], base64_encode(json_encode($this->toArray())));
     }
@@ -111,7 +111,7 @@ class Cursor implements Arrayable
      * @param string|null $encodedString
      * @return static|null
      */
-    public static function fromEncoded(?string $encodedString): ?Cursor
+    public static function fromEncoded($encodedString)
     {
         if (!is_string($encodedString)) {
             return null;

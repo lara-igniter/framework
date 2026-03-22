@@ -11,20 +11,20 @@ interface LengthAwarePaginator extends Paginator
      * @param int $end
      * @return array
      */
-    public function getUrlRange(int $start, int $end): array;
+    public function getUrlRange($start, $end);
 
     /**
      * Determine the total number of items in the data store.
      *
      * @return int
      */
-    public function total(): int;
+    public function total();
 
     /**
      * Get the page number of the last available page.
      *
      * @return int
      */
-    public function lastPage(): int;
+    public function lastPage();
 }
 

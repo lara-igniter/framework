@@ -18,7 +18,7 @@ class Paginator extends AbstractPaginator implements Arrayable, ArrayAccess, Cou
      *
      * @var bool
      */
-    protected bool $hasMore;
+    protected $hasMore;
 
     /**
      * Create a new paginator instance.
@@ -29,7 +29,7 @@ class Paginator extends AbstractPaginator implements Arrayable, ArrayAccess, Cou
      * @param array $options (path, query, fragment, pageName)
      * @return void
      */
-    public function __construct($items, int $perPage, int $currentPage = null, array $options = [])
+    public function __construct($items, $perPage, $currentPage = null, array $options = [])
     {
         $this->options = $options;
 
@@ -50,7 +50,7 @@ class Paginator extends AbstractPaginator implements Arrayable, ArrayAccess, Cou
      * @param int $currentPage
      * @return int
      */
-    protected function setCurrentPage(int $currentPage): int
+    protected function setCurrentPage($currentPage)
     {
         $currentPage = $currentPage ?: static::resolveCurrentPage();
 
@@ -77,7 +77,7 @@ class Paginator extends AbstractPaginator implements Arrayable, ArrayAccess, Cou
      *
      * @return string|null
      */
-    public function nextPageUrl(): ?string
+    public function nextPageUrl()
     {
         if ($this->hasMorePages()) {
             return $this->url($this->currentPage() + 1);
@@ -93,7 +93,7 @@ class Paginator extends AbstractPaginator implements Arrayable, ArrayAccess, Cou
      * @param array $data
      * @return string
      */
-    public function links(string $view = null, array $data = []): string
+    public function links($view = null, $data = [])
     {
         return $this->render($view, $data);
     }
@@ -105,7 +105,7 @@ class Paginator extends AbstractPaginator implements Arrayable, ArrayAccess, Cou
      * @param array $data
      * @return string
      */
-    public function render(string $view = null, array $data = []): string
+    public function render($view = null, $data = [])
     {
         return static::viewFactory()->make($view ?: static::$defaultSimpleView, array_merge($data, [
             'paginator' => $this,
@@ -118,7 +118,7 @@ class Paginator extends AbstractPaginator implements Arrayable, ArrayAccess, Cou
      * @param bool $hasMore
      * @return $this
      */
-    public function hasMorePagesWhen(bool $hasMore = true): Paginator
+    public function hasMorePagesWhen($hasMore = true)
     {
         $this->hasMore = $hasMore;
 
@@ -130,7 +130,7 @@ class Paginator extends AbstractPaginator implements Arrayable, ArrayAccess, Cou
      *
      * @return bool
      */
-    public function hasMorePages(): bool
+    public function hasMorePages()
     {
         return $this->hasMore;
     }
@@ -140,7 +140,7 @@ class Paginator extends AbstractPaginator implements Arrayable, ArrayAccess, Cou
      *
      * @return array
      */
-    public function toArray(): array
+    public function toArray()
     {
         return [
             'current_page' => $this->currentPage(),
@@ -171,7 +171,7 @@ class Paginator extends AbstractPaginator implements Arrayable, ArrayAccess, Cou
      * @param int $options
      * @return string
      */
-    public function toJson($options = 0): string
+    public function toJson($options = 0)
     {
         return json_encode($this->jsonSerialize(), $options);
     }

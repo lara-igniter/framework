@@ -11,7 +11,7 @@ class UrlWindow
      *
      * @var \Elegant\Contracts\Pagination\LengthAwarePaginator
      */
-    protected PaginatorContract $paginator;
+    protected $paginator;
 
     /**
      * Create a new URL window instance.

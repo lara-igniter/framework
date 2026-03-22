@@ -10,7 +10,7 @@ interface Paginator
      * @param int $page
      * @return string
      */
-    public function url(int $page): string;
+    public function url($page);
 
     /**
      * Add a set of query string values to the paginator.
@@ -19,7 +19,7 @@ interface Paginator
      * @param string|null $value
      * @return $this
      */
-    public function appends($key, string $value = null);
+    public function appends($key, $value = null);
 
     /**
      * Get / set the URL fragment to be appended to URLs.
@@ -27,77 +27,77 @@ interface Paginator
      * @param string|null $fragment
      * @return $this|string|null
      */
-    public function fragment(string $fragment = null);
+    public function fragment($fragment = null);
 
     /**
      * The URL for the next page, or null.
      *
      * @return string|null
      */
-    public function nextPageUrl(): ?string;
+    public function nextPageUrl();
 
     /**
      * Get the URL for the previous page, or null.
      *
      * @return string|null
      */
-    public function previousPageUrl(): ?string;
+    public function previousPageUrl();
 
     /**
      * Get all of the items being paginated.
      *
      * @return array
      */
-    public function items(): array;
+    public function items();
 
     /**
      * Get the "index" of the first item being paginated.
      *
      * @return int|null
      */
-    public function firstItem(): ?int;
+    public function firstItem();
 
     /**
      * Get the "index" of the last item being paginated.
      *
      * @return int|null
      */
-    public function lastItem(): ?int;
+    public function lastItem();
 
     /**
      * Get the number of items shown per page.
      *
      * @return int
      */
-    public function perPage(): int;
+    public function perPage();
 
     /**
      * Determine if there are enough items to split into multiple pages.
      *
      * @return bool
      */
-    public function hasPages(): bool;
+    public function hasPages();
 
     /**
      * Determine if the paginator is on the first page.
      *
      * @return bool
      */
-    public function onFirstPage(): bool;
+    public function onFirstPage();
 
     /**
      * Get the current page.
      *
      * @return int
      */
-    public function currentPage(): int;
+    public function currentPage();
 
     /**
      * Get the query string variable used to store the page.
      *
      * @return string
      */
-    public function getPageName(): string;
+    public function getPageName();
 
     /**
      * Set the query string variable used to store the page.
@@ -105,6 +105,6 @@ interface Paginator
      * @param string $name
      * @return $this
      */
-    public function setPageName(string $name);
+    public function setPageName($name);
 }
 

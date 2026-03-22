@@ -18,7 +18,7 @@ class CursorPaginator extends AbstractCursorPaginator implements Arrayable, Arra
      *
      * @var bool
      */
-    protected bool $hasMore;
+    protected $hasMore;
 
     /**
      * Create a new paginator instance.
@@ -29,7 +29,7 @@ class CursorPaginator extends AbstractCursorPaginator implements Arrayable, Arra
      * @param array $options (path, query, fragment, cursorName, parameters)
      * @return void
      */
-    public function __construct($items, int $perPage, Cursor $cursor = null, array $options = [])
+    public function __construct($items, $perPage, $cursor = null, array $options = [])
     {
         $this->options = $options;
 
@@ -70,7 +70,7 @@ class CursorPaginator extends AbstractCursorPaginator implements Arrayable, Arra
      * @param array $data
      * @return string
      */
-    public function links(string $view = null, array $data = []): string
+    public function links($view = null, $data = [])
     {
         return $this->render($view, $data);
     }
@@ -82,7 +82,7 @@ class CursorPaginator extends AbstractCursorPaginator implements Arrayable, Arra
      * @param array $data
      * @return string
      */
-    public function render(string $view = null, array $data = []): string
+    public function render($view = null, $data = [])
     {
         return static::viewFactory()->make($view ?: Paginator::$defaultSimpleView, array_merge($data, [
             'paginator' => $this,
@@ -94,7 +94,7 @@ class CursorPaginator extends AbstractCursorPaginator implements Arrayable, Arra
      *
      * @return bool
      */
-    public function hasMorePages(): bool
+    public function hasMorePages()
     {
         return (is_null($this->cursor) && $this->hasMore) ||
             (!is_null($this->cursor) && $this->cursor->pointsToNextItems() && $this->hasMore) ||
@@ -106,7 +106,7 @@ class CursorPaginator extends AbstractCursorPaginator implements Arrayable, Arra
      *
      * @return bool
      */
-    public function hasPages(): bool
+    public function hasPages()
     {
         return !$this->onFirstPage() || $this->hasMorePages();
     }
@@ -116,7 +116,7 @@ class CursorPaginator extends AbstractCursorPaginator implements Arrayable, Arra
      *
      * @return bool
      */
-    public function onFirstPage(): bool
+    public function onFirstPage()
     {
         return is_null($this->cursor) || ($this->cursor->pointsToPreviousItems() && !$this->hasMore);
     }
@@ -126,7 +126,7 @@ class CursorPaginator extends AbstractCursorPaginator implements Arrayable, Arra
      *
      * @return bool
      */
-    public function onLastPage(): bool
+    public function onLastPage()
     {
         return !$this->hasMorePages();
     }
@@ -136,7 +136,7 @@ class CursorPaginator extends AbstractCursorPaginator implements Arrayable, Arra
      *
      * @return array
      */
-    public function toArray(): array
+    public function toArray()
     {
         return [
             'data' => $this->items->toArray(),
@@ -165,7 +165,7 @@ class CursorPaginator extends AbstractCursorPaginator implements Arrayable, Arra
      * @param int $options
      * @return string
      */
-    public function toJson($options = 0): string
+    public function toJson($options = 0)
     {
         return json_encode($this->jsonSerialize(), $options);
     }
