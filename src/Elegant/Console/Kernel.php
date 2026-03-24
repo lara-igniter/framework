@@ -94,13 +94,12 @@ class Kernel implements KernelContract
 
     /**
      * Register the application's console commands.
-     * Override in App\Console\Kernel to load commands from a directory.
      *
      * @return void
      */
     protected function commands(): void
     {
-        //
+        $this->load(__DIR__ . '/../Foundation/Console');
     }
 
     /**
@@ -132,29 +131,61 @@ class Kernel implements KernelContract
                 continue;
             }
 
-            if (preg_match('/^abstract\s+class\s+/m', $content)) {
-                continue;
-            }
-
-            // Parse $signature directly from source to avoid autoloading the class
-            // before CI is bootstrapped (CI_Controller would not be defined yet).
-            if (! preg_match('/\$signature\s*=\s*[\'"](.+?)[\'"]\s*;/s', $content, $sigMatches)) {
-                continue;
-            }
-
-            $signature = $sigMatches[1];
-
-            [$commandName, $arguments] = Parser::parse(trim($signature));
-
-            $routePath = $commandName;
-
-            foreach ($arguments as $argument) {
-                $routePath .= '/{' . $argument['name'] . ($argument['required'] ? '' : '?') . '}';
-            }
-
-            $this->commands[]               = $commandName;
-            static::$discovered[$routePath] = $class;
+            $this->registerFromContent($class, $content);
         }
+    }
+
+    /**
+     * Register a command class into the discovery registry by resolving its
+     * source file via the Composer ClassLoader.
+     *
+     * Intended for use by service providers during the pre_system hook.
+     *
+     * @param  class-string  $class
+     * @return void
+     */
+    public static function registerCommand(string $class): void
+    {
+        $loader = null;
+
+        foreach (spl_autoload_functions() as $fn) {
+            if (is_array($fn) && $fn[0] instanceof \Composer\Autoload\ClassLoader) {
+                $loader = $fn[0];
+                break;
+            }
+        }
+
+        if ($loader === null) {
+            return;
+        }
+
+        $file = $loader->findFile($class);
+
+        if ($file === false) {
+            return;
+        }
+
+        $file = realpath($file);
+
+        if ($file === false) {
+            return;
+        }
+
+        $content = file_get_contents($file);
+
+        if (preg_match('/^abstract\s+class\s+/m', $content)) {
+            return;
+        }
+
+        $route = static::parseCommandRoute($content);
+
+        if ($route === null) {
+            return;
+        }
+
+        [, $routePath] = $route;
+
+        static::$discovered[$routePath] = $class;
     }
 
     /**
@@ -228,6 +259,64 @@ class Kernel implements KernelContract
             },
             ARRAY_FILTER_USE_BOTH
         ));
+    }
+
+    /**
+     * Parse a command signature from file content and add the command to
+     * the discovery registry. Shared by load().
+     *
+     * @param  class-string  $class
+     * @param  string        $content
+     * @return void
+     */
+    private function registerFromContent(string $class, string $content): void
+    {
+        if (preg_match('/^abstract\s+class\s+/m', $content)) {
+            return;
+        }
+
+        $route = static::parseCommandRoute($content);
+
+        if ($route === null) {
+            return;
+        }
+
+        [$commandName, $routePath] = $route;
+
+        $this->commands[]               = $commandName;
+        static::$discovered[$routePath] = $class;
+    }
+
+    /**
+     * Resolve the command name and CI route path from a PHP source file's content.
+     *
+     * Checks $defaultName first (fast path); falls back to parsing $signature.
+     *
+     * @param  string  $content
+     * @return array{0: string, 1: string}|null  [$commandName, $routePath] or null
+     */
+    private static function parseCommandRoute(string $content): ?array
+    {
+        // Fast path: $defaultName is set — no signature parsing needed.
+        if (preg_match('/protected\s+static\s+\$defaultName\s*=\s*[\'"]([^\'"]+)[\'"]\s*;/', $content, $m)) {
+            return [$m[1], $m[1]];
+        }
+
+        // Parse $signature from source without loading the class (CI_Controller
+        // is unavailable before bootstrap()).
+        if (! preg_match('/\$signature\s*=\s*[\'"](.+?)[\'"]\s*;/s', $content, $m)) {
+            return null;
+        }
+
+        [$commandName, $arguments] = Parser::parse(trim($m[1]));
+
+        $routePath = $commandName;
+
+        foreach ($arguments as $argument) {
+            $routePath .= '/{' . $argument['name'] . ($argument['required'] ? '' : '?') . '}';
+        }
+
+        return [$commandName, $routePath];
     }
 
     /**
