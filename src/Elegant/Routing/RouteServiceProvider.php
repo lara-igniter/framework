@@ -2,6 +2,7 @@
 
 namespace Elegant\Routing;
 
+use Elegant\Console\Kernel;
 use Elegant\Contracts\Hook\DisplayOverride;
 use Elegant\Contracts\Hook\PostControllerConstructor;
 use Elegant\Contracts\Hook\PostController;
@@ -70,6 +71,9 @@ class RouteServiceProvider implements PreSystem, PreController, PostControllerCo
         }
 
         if ($isCli) {
+            // Auto-register commands discovered from app/Console/Commands/
+            Kernel::registerDiscoveredRoutes();
+
             require_once(base_path('routes/console.php'));
             Route::set('default_controller', Route::DEFAULT_CONTROLLER);
         }
