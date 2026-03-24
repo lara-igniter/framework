@@ -29,23 +29,29 @@ abstract class ServiceProvider
      */
     public static array $publishGroups = [];
 
-    // -------------------------------------------------------------------------
-    // Views
-    // -------------------------------------------------------------------------
+    /**
+     * Merge the given configuration with the existing configuration.
+     *
+     * @param  string  $path
+     * @param  string  $key
+     * @return void
+     */
+    protected function mergeConfigFrom(string $path, string $key): void
+    {
+        $ci = app('config');
+
+        $packageRoot = realpath(dirname($path) . '/..') . DIRECTORY_SEPARATOR;
+
+        if (!in_array($packageRoot, $ci->_config_paths, true)) {
+            array_unshift($ci->_config_paths, $packageRoot);
+        }
+    }
 
     /**
-     * Register a view file namespace, with app-level override support.
+     * Register a view file namespace.
      *
-     * Mirrors Laravel's ServiceProvider::loadViewsFrom() behaviour:
-     *
-     *   For each path in config('view.paths'):
-     *       if {viewPath}/vendor/{namespace}/ exists  → addNamespace (override, checked FIRST)
-     *   addNamespace(packagePath)                     → package default (fallback)
-     *
-     * Copying a view to resources/views/vendor/{namespace}/ is sufficient to override it.
-     *
-     * @param  string|array  $path       Absolute path to the package's view directory.
-     * @param  string        $namespace  Blade namespace (e.g. 'pagination').
+     * @param  string|array  $path
+     * @param  string  $namespace
      * @return void
      */
     protected function loadViewsFrom($path, string $namespace): void
