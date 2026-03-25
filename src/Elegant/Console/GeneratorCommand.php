@@ -43,9 +43,9 @@ abstract class GeneratorCommand extends Command
     /**
      * Execute the console command.
      *
-     * @return int|null
+     * @return int|void
      */
-    public function handle(): ?int
+    public function handle()
     {
         if ($this->isReservedName($this->getNameInput())) {
             $this->error('The name "' . $this->getNameInput() . '" is reserved by PHP.');
@@ -69,8 +69,6 @@ abstract class GeneratorCommand extends Command
 
         $this->info($this->type . ' [' . $class . '] created successfully.');
         $this->line('File: ' . OutputStyle::color($relPath, 'light_gray'));
-
-        return 0;
     }
 
     /**

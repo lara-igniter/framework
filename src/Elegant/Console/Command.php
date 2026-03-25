@@ -4,7 +4,7 @@ namespace Elegant\Console;
 
 use CI_Controller;
 
-abstract class Command extends CI_Controller
+class Command extends CI_Controller
 {
     use Concerns\HasParameters,
         Concerns\InteractsWithIO;
@@ -75,17 +75,12 @@ abstract class Command extends CI_Controller
             exit(0);
         }
 
-        $statusCode = $this->handle();
+        $method = method_exists($this, 'handle') ? 'handle' : '__invoke';
 
-        exit(is_numeric($statusCode) ? (int)$statusCode : 0);
+        $statusCode = $this->$method();
+
+        exit(is_numeric($statusCode) ? (int) $statusCode : 0);
     }
-
-    /**
-     * Execute the console command.
-     *
-     * @return int|null
-     */
-    abstract public function handle(): ?int;
 
     /**
      * Print command help: Description, Usage, Arguments, Options.

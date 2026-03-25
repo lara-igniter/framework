@@ -36,9 +36,9 @@ class VendorPublishCommand extends Command
     /**
      * Execute the console command.
      *
-     * @return int|null
+     * @return int|void
      */
-    public function handle(): ?int
+    public function handle()
     {
         $provider = $this->option('provider') ?: null;
         $tag = $this->option('tag') ?: null;
@@ -46,7 +46,7 @@ class VendorPublishCommand extends Command
 
         if (is_null($provider) && is_null($tag)) {
             $this->showList();
-            return 0;
+            return;
         }
 
         $paths = ServiceProvider::pathsToPublish($provider, $tag);
@@ -83,8 +83,6 @@ class VendorPublishCommand extends Command
         } else {
             $this->info('Publishing complete.');
         }
-
-        return 0;
     }
 
     /**
