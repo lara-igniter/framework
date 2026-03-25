@@ -2,12 +2,10 @@
 
 namespace Elegant\Foundation\Console;
 
-use Elegant\Console\Command;
-use Elegant\Console\OutputStyle;
-use Elegant\Support\Facades\File;
+use Elegant\Console\GeneratorCommand;
 use Elegant\Support\Str;
 
-class ConsoleMakeCommand extends Command
+class ConsoleMakeCommand extends GeneratorCommand
 {
     /**
      * The name and signature of the console command.
@@ -15,8 +13,8 @@ class ConsoleMakeCommand extends Command
      * @var string
      */
     protected string $signature = 'make:command
-                                    {name : The name of the command class (e.g. SendEmails or Notifications/SendEmails)}
-                                    {--command= : The terminal command that should be assigned (e.g. emails:send)}';
+                                    {name : The name of the command class}
+                                    {--command= : The terminal command that should be assigned}';
 
     /**
      * The default name (used for routing — must match the command name in $signature).
@@ -33,59 +31,56 @@ class ConsoleMakeCommand extends Command
     protected string $description = 'Create a new console command class';
 
     /**
-     * Execute the console command.
+     * The type of class being generated.
      *
-     * @return void
+     * @var string
      */
-    public function handle(): void
+    protected string $type = 'Console command';
+
+    /**
+     * Replace the class name for the given stub.
+     *
+     * @param string $stub
+     * @param string $name
+     * @return string
+     */
+    protected function replaceClass(string $stub, string $name): string
     {
-        $rawName = $this->argument('name');
+        $stub = parent::replaceClass($stub, $name);
 
-        // Normalise separator: always use backslash internally
-        $rawName = str_replace('/', '\\', $rawName);
-
-        // Split into (optional) sub-namespace parts + class name
-        $parts = explode('\\', $rawName);
-        $class = Str::studly(array_pop($parts));
-        $subNs = implode('\\', array_map([Str::class, 'studly'], array_filter($parts)));
-
-        // Full PSR-4 namespace
-        $namespace = 'App\\Console\\Commands' . ($subNs !== '' ? '\\' . $subNs : '');
-
-        // Absolute file path
-        $subDir = $subNs !== '' ? str_replace('\\', DIRECTORY_SEPARATOR, $subNs) : '';
-        $filePath = app_path(
-            'Console' . DIRECTORY_SEPARATOR . 'Commands' .
-            ($subDir !== '' ? DIRECTORY_SEPARATOR . $subDir : '') .
-            DIRECTORY_SEPARATOR . $class . '.php'
-        );
-
-        if (File::exists($filePath)) {
-            OutputStyle::error("Command [{$class}] already exists!", 'light_gray', 'red');
-            return;
-        }
-
-        // Derive the default CLI slug from the class name and sub-namespace
+        $defaultNs = $this->getDefaultNamespace(trim($this->rootNamespace(), '\\'));
+        $subNs = ltrim(Str::replaceFirst($defaultNs, '', $this->getNamespace($name)), '\\');
+        $class = str_replace($this->getNamespace($name) . '\\', '', $name);
         $commandName = $this->option('command') ?: $this->guessCommandName($class, $subNs);
 
-        // Resolve stub path — prefer a published stub in the project root, fall back to package stub
-        $stub = $this->resolveStub();
-
-        $stub = str_replace('{{ namespace }}', $namespace, $stub);
-        $stub = str_replace('{{ class }}', $class, $stub);
-        $stub = str_replace('{{ command }}', $commandName, $stub);
-
-        File::ensureDirectoryExists(dirname($filePath));
-        File::put($filePath, $stub);
-
-        $relPath = ltrim(str_replace(base_path(), '', $filePath), '/\\');
-
-        OutputStyle::write("Console command [{$class}] created successfully.", 'green');
-        OutputStyle::write('File: ' . OutputStyle::color($relPath, 'light_gray'), 'green');
+        return str_replace(['dummy:command', '{{ command }}', '{{command}}'], $commandName, $stub);
     }
 
     /**
-     * Guess a human-readable CLI command name from the class name and sub-namespace.
+     * Get the stub file for the generator.
+     *
+     * @return string
+     */
+    protected function getStub(): string
+    {
+        $published = base_path('stubs/console.stub');
+
+        return file_exists($published) ? $published : __DIR__ . '/stubs/console.stub';
+    }
+
+    /**
+     * Get the default namespace for the class.
+     *
+     * @param string $rootNamespace
+     * @return string
+     */
+    protected function getDefaultNamespace(string $rootNamespace): string
+    {
+        return $rootNamespace . '\Console\Commands';
+    }
+
+    /**
+     * Guess a human-readable CLI command name from the class and sub-namespace.
      *
      * @param string $class
      * @param string $subNs
@@ -93,34 +88,17 @@ class ConsoleMakeCommand extends Command
      */
     protected function guessCommandName(string $class, string $subNs): string
     {
-        // Strip trailing "Command" suffix before kebab-casing
-        $slug = Str::kebab(Str::endsWith($class, 'Command')
-            ? Str::beforeLast($class, 'Command')
-            : $class
+        $slug = Str::kebab(
+            Str::endsWith($class, 'Command')
+                ? Str::beforeLast($class, 'Command')
+                : $class
         );
 
         if ($subNs === '') {
             return $slug;
         }
 
-        // Use only the first (outermost) namespace part as the group
-        $group = Str::kebab(explode('\\', $subNs)[0]);
-
-        return $group . ':' . $slug;
-    }
-
-    /**
-     * Resolve the stub content.
-     *
-     * @return string
-     */
-    protected function resolveStub(): string
-    {
-        $published = base_path('stubs/console.stub');
-
-        $path = file_exists($published) ? $published : __DIR__ . '/stubs/console.stub';
-
-        return File::get($path);
+        return Str::kebab(explode('\\', $subNs)[0]) . ':' . $slug;
     }
 }
 
