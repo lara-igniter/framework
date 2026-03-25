@@ -43,13 +43,13 @@ abstract class GeneratorCommand extends Command
     /**
      * Execute the console command.
      *
-     * @return void
+     * @return int|null
      */
-    public function handle(): void
+    public function handle(): ?int
     {
         if ($this->isReservedName($this->getNameInput())) {
             $this->error('The name "' . $this->getNameInput() . '" is reserved by PHP.');
-            return;
+            return 1;
         }
 
         $name = $this->qualifyClass($this->getNameInput());
@@ -57,7 +57,7 @@ abstract class GeneratorCommand extends Command
 
         if ($this->alreadyExists($this->getNameInput())) {
             $this->error($this->type . ' already exists!');
-            return;
+            return 1;
         }
 
         $this->makeDirectory($path);
@@ -69,6 +69,8 @@ abstract class GeneratorCommand extends Command
 
         $this->info($this->type . ' [' . $class . '] created successfully.');
         $this->line('File: ' . OutputStyle::color($relPath, 'light_gray'));
+
+        return 0;
     }
 
     /**

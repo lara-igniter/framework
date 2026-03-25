@@ -72,18 +72,20 @@ abstract class Command extends CI_Controller
     {
         if ($this->option('h') || $this->option('help')) {
             $this->printHelp();
-            return;
+            exit(0);
         }
 
-        $this->handle();
+        $statusCode = $this->handle();
+
+        exit(is_numeric($statusCode) ? (int)$statusCode : 0);
     }
 
     /**
      * Execute the console command.
      *
-     * @return void
+     * @return int|null
      */
-    abstract public function handle(): void;
+    abstract public function handle(): ?int;
 
     /**
      * Print command help: Description, Usage, Arguments, Options.
@@ -118,7 +120,7 @@ abstract class Command extends CI_Controller
             $this->warn('Arguments:');
             foreach ($arguments as $arg) {
                 $title = '  ' . $arg['name'];
-                $desc  = $arg['description'] ?? '';
+                $desc = $arg['description'] ?? '';
                 $this->line(
                     substr($title . str_repeat(' ', $maxLen + 3), 0, $maxLen + 3)
                     . OutputStyle::wrap(OutputStyle::color($desc, 'light_gray'), 120, $maxLen + 3),
@@ -133,7 +135,7 @@ abstract class Command extends CI_Controller
             foreach ($options as $opt) {
                 $short = !empty($opt['shortcut']) ? '-' . $opt['shortcut'] . ', ' : '    ';
                 $title = '  ' . $short . '--' . $opt['name'];
-                $desc  = $opt['description'] ?? '';
+                $desc = $opt['description'] ?? '';
                 $this->line(
                     substr($title . str_repeat(' ', $maxLen + 3), 0, $maxLen + 3)
                     . OutputStyle::wrap(OutputStyle::color($desc, 'light_gray'), 120, $maxLen + 3),

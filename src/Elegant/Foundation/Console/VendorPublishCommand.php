@@ -36,9 +36,9 @@ class VendorPublishCommand extends Command
     /**
      * Execute the console command.
      *
-     * @return void
+     * @return int|null
      */
-    public function handle(): void
+    public function handle(): ?int
     {
         $provider = $this->option('provider') ?: null;
         $tag = $this->option('tag') ?: null;
@@ -46,7 +46,7 @@ class VendorPublishCommand extends Command
 
         if (is_null($provider) && is_null($tag)) {
             $this->showList();
-            return;
+            return 0;
         }
 
         $paths = ServiceProvider::pathsToPublish($provider, $tag);
@@ -56,7 +56,7 @@ class VendorPublishCommand extends Command
                 ? "No publishable resources for provider [{$provider}]."
                 : "No publishable resources for tag [{$tag}]."
             );
-            return;
+            return 1;
         }
 
         $published = 0;
@@ -83,6 +83,8 @@ class VendorPublishCommand extends Command
         } else {
             $this->info('Publishing complete.');
         }
+
+        return 0;
     }
 
     /**
