@@ -52,11 +52,10 @@ class VendorPublishCommand extends Command
         $paths = ServiceProvider::pathsToPublish($provider, $tag);
 
         if (empty($paths)) {
-            if ($provider) {
-                OutputStyle::write("No publishable resources for provider [{$provider}].", 'yellow');
-            } else {
-                OutputStyle::write("No publishable resources for tag [{$tag}].", 'yellow');
-            }
+            $this->warn($provider
+                ? "No publishable resources for provider [{$provider}]."
+                : "No publishable resources for tag [{$tag}]."
+            );
             return;
         }
 
@@ -71,19 +70,18 @@ class VendorPublishCommand extends Command
             }
         }
 
-        OutputStyle::newLine();
+        $this->newLine();
 
         if ($published === 0 && $skipped > 0) {
-            OutputStyle::write(
+            $this->line(
                 'No new files published. ' .
                 OutputStyle::color((string)$skipped, 'yellow') .
                 ' file(s) already exist. Use ' .
                 OutputStyle::color('--force', 'yellow') .
-                ' to overwrite.',
-                'light_gray'
+                ' to overwrite.'
             );
         } else {
-            OutputStyle::write('Publishing complete.', 'green');
+            $this->info('Publishing complete.');
         }
     }
 
@@ -98,33 +96,33 @@ class VendorPublishCommand extends Command
         $groups = ServiceProvider::publishableGroups();
 
         if (empty($providers) && empty($groups)) {
-            OutputStyle::write('No publishable resources found.', 'yellow');
-            OutputStyle::write('Run ' . OutputStyle::color('vendor:publish -h', 'green') . ' for usage.', 'light_gray');
+            $this->warn('No publishable resources found.');
+            $this->line('Run ' . OutputStyle::color('vendor:publish -h', 'green') . ' for usage.');
             return;
         }
 
         if (!empty($providers)) {
-            OutputStyle::write('Publishable providers:', 'yellow');
+            $this->warn('Publishable providers:');
 
             foreach ($providers as $providerClass) {
-                OutputStyle::write('  ' . OutputStyle::color($providerClass, 'green'));
+                $this->line('  ' . OutputStyle::color($providerClass, 'green'));
             }
 
-            OutputStyle::newLine();
+            $this->newLine();
         }
 
         if (!empty($groups)) {
-            OutputStyle::write('Publishable tags:', 'yellow');
+            $this->warn('Publishable tags:');
 
             foreach ($groups as $group) {
-                OutputStyle::write('  ' . OutputStyle::color($group, 'green'));
+                $this->line('  ' . OutputStyle::color($group, 'green'));
             }
 
-            OutputStyle::newLine();
+            $this->newLine();
         }
 
-        OutputStyle::write('Run ' . OutputStyle::color('vendor:publish -h', 'green') . ' for usage.', 'light_gray');
-        OutputStyle::newLine();
+        $this->line('Run ' . OutputStyle::color('vendor:publish -h', 'green') . ' for usage.');
+        $this->newLine();
     }
 
     /**
@@ -146,13 +144,13 @@ class VendorPublishCommand extends Command
     ): void
     {
         if (!File::exists($source)) {
-            OutputStyle::error("Source [{$source}] not found.", 'light_gray', 'red');
+            $this->error("Source [{$source}] not found.");
             return;
         }
 
         if (File::exists($destination) && !$force) {
             $skipped++;
-            OutputStyle::write(
+            $this->line(
                 OutputStyle::color('Skipping', 'yellow') .
                 ' [' . OutputStyle::color($destination, 'light_gray') . '] already exists.'
             );
@@ -164,7 +162,7 @@ class VendorPublishCommand extends Command
 
         $published++;
 
-        OutputStyle::write(
+        $this->line(
             'Copying [' . OutputStyle::color($source, 'light_gray') . ']' .
             ' to [' . OutputStyle::color($destination, 'light_gray') . ']  ' .
             OutputStyle::color('DONE', 'green')
@@ -190,7 +188,7 @@ class VendorPublishCommand extends Command
     ): void
     {
         if (!is_dir($source)) {
-            OutputStyle::error("Source directory [{$source}] not found.", 'light_gray', 'red');
+            $this->error("Source directory [{$source}] not found.");
             return;
         }
 

@@ -2,6 +2,7 @@
 
 namespace Elegant\Console;
 
+use Elegant\Console\OutputStyle;
 use Elegant\Support\Facades\File;
 use Elegant\Support\Str;
 
@@ -47,7 +48,7 @@ abstract class GeneratorCommand extends Command
     public function handle(): void
     {
         if ($this->isReservedName($this->getNameInput())) {
-            OutputStyle::error('The name "' . $this->getNameInput() . '" is reserved by PHP.');
+            $this->error('The name "' . $this->getNameInput() . '" is reserved by PHP.');
             return;
         }
 
@@ -55,7 +56,7 @@ abstract class GeneratorCommand extends Command
         $path = $this->getPath($name);
 
         if ($this->alreadyExists($this->getNameInput())) {
-            OutputStyle::error($this->type . ' already exists!', 'light_gray', 'red');
+            $this->error($this->type . ' already exists!');
             return;
         }
 
@@ -63,17 +64,17 @@ abstract class GeneratorCommand extends Command
 
         File::put($path, $this->sortImports($this->buildClass($name)));
 
-        $class   = str_replace($this->getNamespace($name) . '\\', '', $name);
+        $class = str_replace($this->getNamespace($name) . '\\', '', $name);
         $relPath = ltrim(str_replace(base_path(), '', $path), '/\\');
 
-        OutputStyle::write($this->type . ' [' . $class . '] created successfully.', 'green');
-        OutputStyle::write('File: ' . OutputStyle::color($relPath, 'light_gray'), 'green');
+        $this->info($this->type . ' [' . $class . '] created successfully.');
+        $this->line('File: ' . OutputStyle::color($relPath, 'light_gray'));
     }
 
     /**
      * Parse the class name and format according to the root namespace.
      *
-     * @param  string  $name
+     * @param string $name
      * @return string
      */
     protected function qualifyClass(string $name): string
@@ -95,7 +96,7 @@ abstract class GeneratorCommand extends Command
     /**
      * Get the default namespace for the class.
      *
-     * @param  string  $rootNamespace
+     * @param string $rootNamespace
      * @return string
      */
     protected function getDefaultNamespace(string $rootNamespace): string
@@ -106,7 +107,7 @@ abstract class GeneratorCommand extends Command
     /**
      * Determine if the class already exists.
      *
-     * @param  string  $rawName
+     * @param string $rawName
      * @return bool
      */
     protected function alreadyExists(string $rawName): bool
@@ -117,7 +118,7 @@ abstract class GeneratorCommand extends Command
     /**
      * Get the destination class path.
      *
-     * @param  string  $name
+     * @param string $name
      * @return string
      */
     protected function getPath(string $name): string
@@ -130,7 +131,7 @@ abstract class GeneratorCommand extends Command
     /**
      * Build the directory for the class if necessary.
      *
-     * @param  string  $path
+     * @param string $path
      * @return string
      */
     protected function makeDirectory(string $path): string
@@ -145,7 +146,7 @@ abstract class GeneratorCommand extends Command
     /**
      * Build the class with the given name.
      *
-     * @param  string  $name
+     * @param string $name
      * @return string
      */
     protected function buildClass(string $name): string
@@ -158,16 +159,16 @@ abstract class GeneratorCommand extends Command
     /**
      * Replace the namespace for the given stub.
      *
-     * @param  string  $stub
-     * @param  string  $name
+     * @param string $stub
+     * @param string $name
      * @return $this
      */
     protected function replaceNamespace(string &$stub, string $name): self
     {
         $searches = [
-            ['DummyNamespace',  'DummyRootNamespace' ],
+            ['DummyNamespace', 'DummyRootNamespace'],
             ['{{ namespace }}', '{{ rootNamespace }}'],
-            ['{{namespace}}',   '{{rootNamespace}}'  ],
+            ['{{namespace}}', '{{rootNamespace}}'],
         ];
 
         foreach ($searches as [$nsToken, $rootToken]) {
@@ -184,7 +185,7 @@ abstract class GeneratorCommand extends Command
     /**
      * Get the full namespace for a given class, without the class name.
      *
-     * @param  string  $name
+     * @param string $name
      * @return string
      */
     protected function getNamespace(string $name): string
@@ -195,8 +196,8 @@ abstract class GeneratorCommand extends Command
     /**
      * Replace the class name for the given stub.
      *
-     * @param  string  $stub
-     * @param  string  $name
+     * @param string $stub
+     * @param string $name
      * @return string
      */
     protected function replaceClass(string $stub, string $name): string
@@ -209,7 +210,7 @@ abstract class GeneratorCommand extends Command
     /**
      * Alphabetically sorts the imports for the given stub.
      *
-     * @param  string  $stub
+     * @param string $stub
      * @return string
      */
     protected function sortImports(string $stub): string
@@ -248,7 +249,7 @@ abstract class GeneratorCommand extends Command
     /**
      * Checks whether the given name is reserved.
      *
-     * @param  string  $name
+     * @param string $name
      * @return bool
      */
     protected function isReservedName(string $name): bool
