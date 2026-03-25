@@ -97,12 +97,11 @@ abstract class Command extends CI_Controller
         $maxLen = 24;
 
         if ($this->description !== '') {
-            OutputStyle::write('Description:', 'yellow');
-            OutputStyle::write('  ' . $this->description, 'light_gray');
-            OutputStyle::newLine();
+            $this->warn('Description:');
+            $this->line('  ' . $this->description, 'light_gray');
+            $this->newLine();
         }
 
-        // Usage line
         $usage = '  ' . $name;
         foreach ($arguments as $arg) {
             $usage .= $arg['required'] ? ' <' . $arg['name'] . '>' : ' [' . $arg['name'] . ']';
@@ -111,37 +110,37 @@ abstract class Command extends CI_Controller
             $usage .= ' [options]';
         }
 
-        OutputStyle::write('Usage:', 'yellow');
-        OutputStyle::write($usage, 'light_gray');
-        OutputStyle::newLine();
+        $this->warn('Usage:');
+        $this->line($usage, 'light_gray');
+        $this->newLine();
 
         if (!empty($arguments)) {
-            OutputStyle::write('Arguments:', 'yellow');
+            $this->warn('Arguments:');
             foreach ($arguments as $arg) {
                 $title = '  ' . $arg['name'];
-                $desc = $arg['description'] ?? '';
-                OutputStyle::write(
+                $desc  = $arg['description'] ?? '';
+                $this->line(
                     substr($title . str_repeat(' ', $maxLen + 3), 0, $maxLen + 3)
                     . OutputStyle::wrap(OutputStyle::color($desc, 'light_gray'), 120, $maxLen + 3),
                     'green'
                 );
             }
-            OutputStyle::newLine();
+            $this->newLine();
         }
 
         if (!empty($options)) {
-            OutputStyle::write('Options:', 'yellow');
+            $this->warn('Options:');
             foreach ($options as $opt) {
                 $short = !empty($opt['shortcut']) ? '-' . $opt['shortcut'] . ', ' : '    ';
                 $title = '  ' . $short . '--' . $opt['name'];
-                $desc = $opt['description'] ?? '';
-                OutputStyle::write(
+                $desc  = $opt['description'] ?? '';
+                $this->line(
                     substr($title . str_repeat(' ', $maxLen + 3), 0, $maxLen + 3)
                     . OutputStyle::wrap(OutputStyle::color($desc, 'light_gray'), 120, $maxLen + 3),
                     'green'
                 );
             }
-            OutputStyle::newLine();
+            $this->newLine();
         }
     }
 }
