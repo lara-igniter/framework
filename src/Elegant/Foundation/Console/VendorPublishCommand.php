@@ -99,6 +99,7 @@ class VendorPublishCommand extends Command
 
         if (empty($providers) && empty($groups)) {
             OutputStyle::write('No publishable resources found.', 'yellow');
+            OutputStyle::write('Run ' . OutputStyle::color('vendor:publish -h', 'green') . ' for usage.', 'light_gray');
             return;
         }
 
@@ -122,12 +123,7 @@ class VendorPublishCommand extends Command
             OutputStyle::newLine();
         }
 
-        OutputStyle::write('Publish a provider:', 'yellow');
-        OutputStyle::write('  vendor:publish --provider=<ProviderClass>', 'light_gray');
-        OutputStyle::newLine();
-
-        OutputStyle::write('Publish a tag:', 'yellow');
-        OutputStyle::write('  vendor:publish --tag=<tag>', 'light_gray');
+        OutputStyle::write('Run ' . OutputStyle::color('vendor:publish -h', 'green') . ' for usage.', 'light_gray');
         OutputStyle::newLine();
     }
 

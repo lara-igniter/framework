@@ -43,8 +43,8 @@ class Kernel implements KernelContract
     /**
      * Handle an incoming CLI command.
      *
-     * @param  ArgvInput     $input
-     * @param  ConsoleOutput $output
+     * @param ArgvInput $input
+     * @param ConsoleOutput $output
      * @return int
      */
     public function handle(ArgvInput $input, ConsoleOutput $output): int
@@ -71,7 +71,7 @@ class Kernel implements KernelContract
      */
     public function bootstrap(): void
     {
-        if (! file_exists($this->entryPoint)) {
+        if (!file_exists($this->entryPoint)) {
             throw new RuntimeException(
                 sprintf('Application entry point [%s] not found.', $this->entryPoint)
             );
@@ -83,8 +83,8 @@ class Kernel implements KernelContract
     /**
      * Perform any final actions after the command has run.
      *
-     * @param  ArgvInput  $input
-     * @param  int        $status
+     * @param ArgvInput $input
+     * @param int $status
      * @return void
      */
     public function terminate(ArgvInput $input, int $status): void
@@ -105,12 +105,12 @@ class Kernel implements KernelContract
     /**
      * Register all of the commands in the given directory.
      *
-     * @param  string  $path
+     * @param string $path
      * @return void
      */
     protected function load(string $path): void
     {
-        if (! is_dir($path)) {
+        if (!is_dir($path)) {
             return;
         }
 
@@ -119,7 +119,7 @@ class Kernel implements KernelContract
         );
 
         foreach ($iterator as $file) {
-            if (! $file->isFile() || $file->getExtension() !== 'php') {
+            if (!$file->isFile() || $file->getExtension() !== 'php') {
                 continue;
             }
 
@@ -141,7 +141,7 @@ class Kernel implements KernelContract
      *
      * Intended for use by service providers during the pre_system hook.
      *
-     * @param  class-string  $class
+     * @param class-string $class
      * @return void
      */
     public static function registerCommand(string $class): void
@@ -196,14 +196,14 @@ class Kernel implements KernelContract
     public static function registerDiscoveredRoutes(): void
     {
         foreach (static::$discovered as $routePath => $commandClass) {
-            Route::cli($routePath, [$commandClass, 'handle']);
+            Route::cli($routePath, [$commandClass, 'execute']);
         }
     }
 
     /**
      * Resolve a discovered command class by its short (unqualified) name.
      *
-     * @param  string  $shortName
+     * @param string $shortName
      * @return class-string|null
      */
     public static function resolveByShortName(string $shortName): ?string
@@ -241,14 +241,14 @@ class Kernel implements KernelContract
      * Strip option flags from $_SERVER['argv'] for Command-based commands
      * so the router receives only the command name as the routing URL.
      *
-     * @param  ArgvInput  $input
+     * @param ArgvInput $input
      * @return void
      */
     protected function prepareArgv(ArgvInput $input): void
     {
         $command = $input->getFirstArgument();
 
-        if ($command === null || ! in_array($command, $this->getCommands(), true)) {
+        if ($command === null || !in_array($command, $this->getCommands(), true)) {
             return;
         }
 
@@ -265,8 +265,8 @@ class Kernel implements KernelContract
      * Parse a command signature from file content and add the command to
      * the discovery registry. Shared by load().
      *
-     * @param  class-string  $class
-     * @param  string        $content
+     * @param class-string $class
+     * @param string $content
      * @return void
      */
     private function registerFromContent(string $class, string $content): void
@@ -283,7 +283,7 @@ class Kernel implements KernelContract
 
         [$commandName, $routePath] = $route;
 
-        $this->commands[]               = $commandName;
+        $this->commands[] = $commandName;
         static::$discovered[$routePath] = $class;
     }
 
@@ -292,7 +292,7 @@ class Kernel implements KernelContract
      *
      * Checks $defaultName first (fast path); falls back to parsing $signature.
      *
-     * @param  string  $content
+     * @param string $content
      * @return array{0: string, 1: string}|null  [$commandName, $routePath] or null
      */
     private static function parseCommandRoute(string $content): ?array
@@ -304,7 +304,7 @@ class Kernel implements KernelContract
 
         // Parse $signature from source without loading the class (CI_Controller
         // is unavailable before bootstrap()).
-        if (! preg_match('/\$signature\s*=\s*[\'"](.+?)[\'"]\s*;/s', $content, $m)) {
+        if (!preg_match('/\$signature\s*=\s*[\'"](.+?)[\'"]\s*;/s', $content, $m)) {
             return null;
         }
 
@@ -322,8 +322,8 @@ class Kernel implements KernelContract
     /**
      * Extract the fully-qualified class name from a PHP source file.
      *
-     * @param  string       $file
-     * @param  string|null  $content
+     * @param string $file
+     * @param string|null $content
      * @return string|null
      */
     protected function classFromFile(string $file, ?string $content = null): ?string
@@ -331,7 +331,7 @@ class Kernel implements KernelContract
         $content = $content ?? file_get_contents($file);
 
         $namespace = null;
-        $class     = null;
+        $class = null;
 
         if (preg_match('/^namespace\s+([^;]+);/m', $content, $matches)) {
             $namespace = trim($matches[1]);
