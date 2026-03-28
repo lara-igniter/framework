@@ -1,0 +1,20 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Controllers\Controller;
+
+class {{ class }} extends Controller
+{
+    /**
+     * Display an invokable resource.
+     *
+     * @return \Elegant\Contracts\View\Factory|\Elegant\Contracts\View\View
+     *
+     * @throws \Exception
+     */
+    public function __invoke()
+    {
+        //
+    }
+}

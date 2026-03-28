@@ -1,0 +1,44 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Repositories\BaseRepository as AbstractRepository;
+
+class {{ class }} extends AbstractRepository
+{
+    protected string $model = '{{ model }}';
+
+    /**
+     * Store data repository
+     *
+     * @param array<string, string> $data
+     * @return mixed
+     */
+    public function store(array $data)
+    {
+        //
+    }
+
+    /**
+     * Update data repository
+     *
+     * @param array<string, string> $data
+     * @param int $id
+     * @return void
+     */
+    public function update(array $data, int $id)
+    {
+        //
+    }
+
+    /**
+     * Destroy data repository
+     *
+     * @param int $id
+     * @return array|false|int
+     */
+    public function destroy(int $id)
+    {
+       //
+    }
+}

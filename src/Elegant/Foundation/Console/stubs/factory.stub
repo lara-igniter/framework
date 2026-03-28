@@ -1,0 +1,27 @@
+<?php
+
+namespace {{ namespace }};
+
+use Elegant\Database\Model\Factories\Factory;
+
+class {{ class }} extends Factory
+{
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = {{ model }};
+
+    /**
+     * Define the model's default state.
+     *
+     * @return array
+     */
+    public function definition(): array
+    {
+        return [
+            //
+        ];
+    }
+}

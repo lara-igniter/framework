@@ -1,0 +1,164 @@
+﻿<?php
+
+namespace {{ namespace }};
+
+use App\Controllers\Controller;
+use App\Repositories\BaseRepository as Repository;
+use App\Requests\{{ requestNamespace }};
+use {{ namespacedModel }};
+
+class {{ class }} extends Controller
+{
+    private Repository $repo;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->repo = new Repository('{{ model }}');
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Elegant\Contracts\View\Factory|\Elegant\Contracts\View\View
+     *
+     * @throws \Exception
+     */
+    public function index()
+    {
+        $this->authorize('browse', {{ modelClass }}::class);
+
+        //
+    }
+
+    /**
+     * Show the form for creating the specified resource.
+     *
+     * @return \Elegant\Contracts\View\Factory|\Elegant\Contracts\View\View
+     *
+     * @throws \Exception
+     */
+    public function create()
+    {
+        $this->authorize('add', {{ modelClass }}::class);
+
+        //
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @return \Elegant\Contracts\View\Factory|\Elegant\Contracts\View\View|\Elegant\Http\RedirectResponse
+     *
+     * @throws \Exception
+     */
+    public function store()
+    {
+        $this->authorize('add', {{ modelClass }}::class);
+
+        $request = new {{ requestName }}();
+
+        if(!$request->valid()) {
+            return $this->create();
+        } else {
+            $this->repo->store($request->validated());
+
+            return redirector()->route('admin.{{ modelPlural }}.index')->with([
+                'success' => trans('{{ modelPlural }}.message_save_success'),
+            ])->send();
+        }
+    }
+
+    /**
+     * Show a resource in storage.
+     *
+     * @param int ${{ model }}_id
+     * @return \Elegant\Contracts\View\Factory|\Elegant\Contracts\View\View
+     *
+     * @throws \Exception
+     */
+    public function show(int ${{ model }}_id)
+    {
+        $this->authorize('read', {{ modelClass }}::class);
+
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param int ${{ model }}_id
+     * @return \Elegant\Contracts\View\Factory|\Elegant\Contracts\View\View
+     *
+     * @throws \Exception
+     */
+    public function edit(int ${{ model }}_id)
+    {
+        $this->authorize('edit', {{ modelClass }}::class);
+
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param int ${{ model }}_id
+     * @return \Elegant\Contracts\View\Factory|\Elegant\Contracts\View\View|\Elegant\Http\RedirectResponse
+     *
+     * @throws \Exception
+     */
+    public function update(int ${{ model }}_id)
+    {
+        $this->authorize('edit', {{ modelClass }}::class);
+
+        $request = new {{ requestName }}();
+
+        if(!$request->valid()) {
+            return $this->edit(${{ model }}_id);
+        } else {
+            $this->repo->update($request->validated(), ${{ model }}_id);
+
+            return redirector()->route('admin.{{ modelPlural }}.index')->with([
+                'success' => trans('{{ modelPlural }}.message_update_success')
+            ])->send();
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param int ${{ model }}_id
+     * @return \Elegant\Http\JsonResponse
+     *
+     * @throws \Exception
+     */
+    public function destroy(int ${{ model }}_id): \Elegant\Http\JsonResponse
+    {
+        $this->authorize('delete', {{ modelClass }}::class);
+
+        $deleted = $this->repo->destroy(${{ model }}_id);
+
+        if ($deleted) {
+            $data = [
+                'title' => trans('generic.button_delete'),
+                'message' => trans('generic.text_deletion_process'),
+            ];
+
+            return response()->json([
+                'success' => $data
+            ])->with('success', trans('{{ modelPlural }}.message_delete_success', [
+                'link' => route('admin.{{ modelPlural }}.restore', ['{{ model }}_id' => ${{ model }}_id]) . query_string(),
+            ]))->send();
+        } else {
+            $data = [
+                'title' => trans('generic.button_delete'),
+                'message' => trans('generic.text_deletion_error'),
+            ];
+
+            return response()->json([
+                'error' => $data
+            ])->send();
+        }
+    }
+}

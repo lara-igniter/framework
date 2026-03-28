@@ -1,0 +1,18 @@
+﻿<?php
+
+namespace {{ namespace }};
+
+use Elegant\Contracts\Hook\Boot;
+
+class {{ class }} implements Boot
+{
+    /**
+     * Bootstrap any application services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        //
+    }
+}

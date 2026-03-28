@@ -1,0 +1,18 @@
+<?php
+
+namespace {{ namespace }};
+
+use Elegant\Http\Resources\Json\JsonResource;
+
+class {{ class }} extends JsonResource
+{
+    /**
+     * Transform the resource into an array.
+     *
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return parent::toArray();
+    }
+}

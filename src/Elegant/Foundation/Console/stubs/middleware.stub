@@ -1,0 +1,18 @@
+<?php
+
+namespace {{ namespace }};
+
+use Elegant\Routing\Contracts\MiddlewareInterface as Middleware;
+
+class {{ class }} implements Middleware
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @return void
+     */
+    public function run($args)
+    {
+        //
+    }
+}

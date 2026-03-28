@@ -1,0 +1,20 @@
+﻿<?php
+
+namespace {{ namespace }};
+
+use CI_DB_mysqli_driver;
+use Elegant\Database\Model\Scope;
+
+class {{ class }} implements Scope
+{
+    /**
+     * Apply the scope to a given query builder.
+     *
+     * @param CI_DB_mysqli_driver $builder
+     * @return CI_DB_mysqli_driver
+     */
+    public static function apply(CI_DB_mysqli_driver $builder): CI_DB_mysqli_driver
+    {
+        return $builder;
+    }
+}

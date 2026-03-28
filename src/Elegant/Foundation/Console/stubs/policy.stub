@@ -1,0 +1,64 @@
+﻿<?php
+
+namespace {{ namespace }};
+
+class {{ class }}
+{
+    /**
+     * Determine whether the user can view the model.
+     *
+     * @param object $user
+     * @return bool
+     */
+    public function browse(object $user): bool
+    {
+        //
+    }
+
+    /**
+     * Determine whether the user can view a specific model.
+     *
+     * @param object $user
+     * @param object|null ${{ model }}
+     * @return bool
+     */
+    public function read(object $user, object ${{ model }} = null): bool
+    {
+        //
+    }
+
+    /**
+     * Determine whether the user can edit the model.
+     *
+     * @param object $user
+     * @param object|null ${{ model }}
+     * @return bool
+     */
+    public function edit(object $user, object ${{ model }} = null): bool
+    {
+        //
+    }
+
+    /**
+     * Determine whether the user can create a model.
+     *
+     * @param object $user
+     * @return bool
+     */
+    public function add(object $user): bool
+    {
+        //
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     *
+     * @param object $user
+     * @param object|null ${{ model }}
+     * @return bool
+     */
+    public function delete(object $user, object ${{ model }} = null): bool
+    {
+        //
+    }
+}
