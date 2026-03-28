@@ -256,5 +256,67 @@ abstract class GeneratorCommand extends Command
     {
         return in_array(strtolower($name), $this->reservedNames, true);
     }
+
+    /**
+     * Programmatically call another generator command.
+     *
+     * @param class-string $commandClass
+     * @param array<int, string> $arguments
+     * @param array<string, string|true> $options
+     * @return void
+     * @throws \ReflectionException
+     */
+    protected function callCommand(string $commandClass, array $arguments = [], array $options = []): void
+    {
+        $reflection = new \ReflectionClass($commandClass);
+
+        /** @var GeneratorCommand $cmd */
+        $cmd = $reflection->newInstanceWithoutConstructor();
+
+        $sigProp = $this->reflectProperty($reflection, 'signature');
+        $signature = $sigProp->getValue($cmd);
+
+        [, $argDefs] = Parser::parse($signature);
+
+        $mappedArgs = [];
+        foreach ($argDefs as $i => $def) {
+            if (isset($arguments[$i])) {
+                $mappedArgs[$def['name']] = $arguments[$i];
+            } elseif (isset($def['default'])) {
+                $mappedArgs[$def['name']] = $def['default'];
+            } elseif (empty($def['required'])) {
+                $mappedArgs[$def['name']] = null;
+            }
+        }
+
+        $this->reflectProperty($reflection, 'arguments')->setValue($cmd, $mappedArgs);
+        $this->reflectProperty($reflection, 'options')->setValue($cmd, $options);
+
+        $cmd->handle();
+    }
+
+    /**
+     * Walk the class hierarchy to find a named property and return an
+     * accessible ReflectionProperty.
+     *
+     * @param \ReflectionClass $reflection
+     * @param string $name
+     * @return \ReflectionProperty
+     */
+    private function reflectProperty(\ReflectionClass $reflection, string $name): \ReflectionProperty
+    {
+        $current = $reflection;
+
+        do {
+            if ($current->hasProperty($name)) {
+                $prop = $current->getProperty($name);
+                $prop->setAccessible(true);
+
+                return $prop;
+            }
+        } while ($current = $current->getParentClass());
+
+        throw new \RuntimeException("Property '{$name}' not found in {$reflection->getName()} hierarchy.");
+    }
 }
 

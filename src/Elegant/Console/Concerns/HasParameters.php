@@ -21,40 +21,63 @@ trait HasParameters
         $inputOptions = [];
         $currentOptionKey = null;
 
-        // Skip script name and command name
         $args = array_slice($argv, 2);
 
         foreach ($args as $arg) {
             if (preg_match('/^--([^=]+)=(.*)$/', $arg, $matches)) {
-                // --option=value format
                 $inputOptions[$matches[1]] = $matches[2];
                 $currentOptionKey = null;
             } elseif (preg_match('/^--(.+)$/', $arg, $matches)) {
-                // --option format
                 $currentOptionKey = $matches[1];
                 $inputOptions[$matches[1]] = true;
-            } elseif (preg_match('/^-([a-zA-Z])$/', $arg, $matches)) {
-                // -o format (short option)
-                $shortcut = $matches[1];
-                $optionName = $this->getOptionNameByShortcut($shortcut);
-                if ($optionName) {
-                    $inputOptions[$optionName] = true;
-                } else {
-                    $inputOptions[$shortcut] = true;
-                }
+            } elseif (preg_match('/^-([a-zA-Z])=(.+)$/', $arg, $matches)) {
+                $optionName = $this->getOptionNameByShortcut($matches[1]) ?? $matches[1];
+                $inputOptions[$optionName] = $matches[2];
                 $currentOptionKey = null;
+            } elseif (preg_match('/^-([a-zA-Z]{2,})$/', $arg, $matches)) {
+                $flags = str_split($matches[1]);
+                foreach ($flags as $sc) {
+                    $optionName = $this->getOptionNameByShortcut($sc) ?? $sc;
+                    $inputOptions[$optionName] = true;
+                    if ($sc === end($flags) && $this->optionRequiresValue($optionName)) {
+                        $currentOptionKey = $optionName;
+                    }
+                }
+                if (!$this->optionRequiresValue($this->getOptionNameByShortcut(end($flags)) ?? end($flags))) {
+                    $currentOptionKey = null;
+                }
+            } elseif (preg_match('/^-([a-zA-Z])$/', $arg, $matches)) {
+                $shortcut = $matches[1];
+                $optionName = $this->getOptionNameByShortcut($shortcut) ?? $shortcut;
+                $inputOptions[$optionName] = true;
+                $currentOptionKey = $this->optionRequiresValue($optionName) ? $optionName : null;
             } elseif ($currentOptionKey !== null) {
-                // Value for previous option
                 $inputOptions[$currentOptionKey] = $arg;
                 $currentOptionKey = null;
             } else {
-                // Regular argument
                 $inputArguments[] = $arg;
             }
         }
 
         $this->arguments = $this->mapArguments($inputArguments);
         $this->options = $this->mapOptions($inputOptions);
+    }
+
+    /**
+     * Determine whether a named option (already resolved from shortcut) requires a value.
+     *
+     * @param string $name
+     * @return bool
+     */
+    protected function optionRequiresValue(string $name): bool
+    {
+        foreach ($this->getOptions() as $definition) {
+            if (($definition['name'] ?? '') === $name) {
+                return !empty($definition['value_required']);
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -99,7 +122,6 @@ trait HasParameters
 
             if (isset($inputOptions[$name])) {
                 if ($definition['value_required'] && $inputOptions[$name] === true) {
-                    // Option expects a value but none provided, use default
                     $mappedOptions[$name] = $definition['default'];
                 } else {
                     $mappedOptions[$name] = $inputOptions[$name];
@@ -111,7 +133,6 @@ trait HasParameters
             }
         }
 
-        // Include any options not defined in the signature
         foreach ($inputOptions as $key => $value) {
             if (!isset($mappedOptions[$key])) {
                 $mappedOptions[$key] = $value;

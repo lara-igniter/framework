@@ -17,7 +17,7 @@ class ConsoleMakeCommand extends GeneratorCommand
                                     {--command= : The terminal command that should be assigned}';
 
     /**
-     * The default name (used for routing — must match the command name in $signature).
+     * The default name (used for routing).
      *
      * @var string|null
      */

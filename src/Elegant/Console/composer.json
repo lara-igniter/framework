@@ -16,6 +16,9 @@
     "require": {
         "php": "^7.3|^8.0"
     },
+    "suggest": {
+        "ext-readline": "Needed for interactive prompts with readline support."
+    },
     "autoload": {
         "psr-4": {
             "Elegant\\Console\\": ""

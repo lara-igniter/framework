@@ -136,10 +136,7 @@ class Kernel implements KernelContract
     }
 
     /**
-     * Register a command class into the discovery registry by resolving its
-     * source file via the Composer ClassLoader.
-     *
-     * Intended for use by service providers during the pre_system hook.
+     * Register a command class into the discovery registry.
      *
      * @param class-string $class
      * @return void
@@ -252,18 +249,28 @@ class Kernel implements KernelContract
             return;
         }
 
-        $_SERVER['argv'] = array_values(array_filter(
-            $_SERVER['argv'],
-            static function (string $arg, int $i): bool {
-                return $i <= 1 || strpos($arg, '-') !== 0;
-            },
-            ARRAY_FILTER_USE_BOTH
-        ));
+        $raw = $_SERVER['argv'];
+        $result = [$raw[0], $raw[1]];
+        $count = count($raw);
+
+        for ($i = 2; $i < $count; $i++) {
+            $arg = $raw[$i];
+
+            if (strpos($arg, '-') !== 0) {
+                $result[] = $arg;
+                continue;
+            }
+
+            if (preg_match('/^-([a-zA-Z])$/', $arg) && isset($raw[$i + 1]) && strpos($raw[$i + 1], '-') !== 0) {
+                $i++;
+            }
+        }
+
+        $_SERVER['argv'] = array_values($result);
     }
 
     /**
-     * Parse a command signature from file content and add the command to
-     * the discovery registry. Shared by load().
+     * Register a command from its source file content.
      *
      * @param class-string $class
      * @param string $content
@@ -290,20 +297,15 @@ class Kernel implements KernelContract
     /**
      * Resolve the command name and CI route path from a PHP source file's content.
      *
-     * Checks $defaultName first (fast path); falls back to parsing $signature.
-     *
      * @param string $content
-     * @return array{0: string, 1: string}|null  [$commandName, $routePath] or null
+     * @return array{0: string, 1: string}|null
      */
     private static function parseCommandRoute(string $content): ?array
     {
-        // Fast path: $defaultName is set — no signature parsing needed.
         if (preg_match('/protected\s+static\s+\$defaultName\s*=\s*[\'"]([^\'"]+)[\'"]\s*;/', $content, $m)) {
             return [$m[1], $m[1]];
         }
 
-        // Parse $signature from source without loading the class (CI_Controller
-        // is unavailable before bootstrap()).
         if (!preg_match('/\$signature\s*=\s*[\'"](.+?)[\'"]\s*;/s', $content, $m)) {
             return null;
         }

@@ -33,23 +33,23 @@ class OutputStyle
      * @var array<string, string>
      */
     protected static $foreground_colors = [
-        'black'        => '0;30',
-        'dark_gray'    => '1;30',
-        'blue'         => '0;34',
-        'dark_blue'    => '0;34',
-        'light_blue'   => '1;34',
-        'green'        => '0;32',
-        'light_green'  => '1;32',
-        'cyan'         => '0;36',
-        'light_cyan'   => '1;36',
-        'red'          => '0;31',
-        'light_red'    => '1;31',
-        'purple'       => '0;35',
+        'black' => '0;30',
+        'dark_gray' => '1;30',
+        'blue' => '0;34',
+        'dark_blue' => '0;34',
+        'light_blue' => '1;34',
+        'green' => '0;32',
+        'light_green' => '1;32',
+        'cyan' => '0;36',
+        'light_cyan' => '1;36',
+        'red' => '0;31',
+        'light_red' => '1;31',
+        'purple' => '0;35',
         'light_purple' => '1;35',
-        'yellow'       => '0;33',
+        'yellow' => '0;33',
         'light_yellow' => '1;33',
-        'light_gray'   => '0;37',
-        'white'        => '1;37',
+        'light_gray' => '0;37',
+        'white' => '1;37',
     ];
 
     /**
@@ -58,13 +58,13 @@ class OutputStyle
      * @var array<string, string>
      */
     protected static $background_colors = [
-        'black'      => '40',
-        'red'        => '41',
-        'green'      => '42',
-        'yellow'     => '43',
-        'blue'       => '44',
-        'magenta'    => '45',
-        'cyan'       => '46',
+        'black' => '40',
+        'red' => '41',
+        'green' => '42',
+        'yellow' => '43',
+        'blue' => '44',
+        'magenta' => '45',
+        'cyan' => '46',
         'light_gray' => '47',
     ];
 
@@ -116,24 +116,13 @@ class OutputStyle
     public static function init()
     {
         if (is_cli()) {
-            // Readline is an extension for PHP that makes interactivity with PHP
-            // much more bash-like.
-            // http://www.php.net/manual/en/readline.installation.php
             static::$readline_support = extension_loaded('readline');
-
-            // clear segments & options to keep testing clean
             static::$segments = [];
-            static::$options  = [];
-
-            // Check our stream resource for color support
+            static::$options = [];
             static::$isColored = static::hasColorSupport(STDOUT);
-
             static::parseCommandLine();
-
             static::$initialized = true;
         } else {
-            // If the command is being called from a controller
-            // we need to define STDOUT ourselves
             define('STDOUT', 'php://output'); // @codeCoverageIgnore
         }
     }
@@ -170,8 +159,8 @@ class OutputStyle
      * // Takes any input, but offers default
      * $color = CLI::prompt('What is your favourite color?', 'white');
      *
-     * @param string       $field      Output "field" question
-     * @param array|string $options    String to a default value, array to a list of options (the first option will be the default value)
+     * @param string $field Output "field" question
+     * @param array|string $options String to a default value, array to a list of options (the first option will be the default value)
      *
      * @return string The user input
      *
@@ -180,15 +169,15 @@ class OutputStyle
     public static function prompt(string $field, $options = null): string
     {
         $extraOutput = '';
-        $default     = '';
+        $default = '';
 
         if (is_string($options)) {
             $extraOutput = ' [' . static::color($options, 'green') . ']';
-            $default     = $options;
+            $default = $options;
         }
 
         if (is_array($options) && $options) {
-            $opts               = $options;
+            $opts = $options;
             $extraOutputDefault = static::color($opts[0], 'green');
 
             unset($opts[0]);
@@ -196,7 +185,7 @@ class OutputStyle
             if (empty($opts)) {
                 $extraOutput = $extraOutputDefault;
             } else {
-                $extraOutput  = '[' . $extraOutputDefault . ', ' . implode(', ', $opts) . ']';
+                $extraOutput = '[' . $extraOutputDefault . ', ' . implode(', ', $opts) . ']';
             }
 
             $default = $options[0];
@@ -210,9 +199,9 @@ class OutputStyle
     /**
      * prompt(), but based on the option's key
      *
-     * @param array|string      $text       Output "field" text or an one or two value array where the first value is the text before listing the options
+     * @param array|string $text Output "field" text or an one or two value array where the first value is the text before listing the options
      *                                      and the second value the text before asking to select one option. Provide empty string to omit
-     * @param array             $options    A list of options (array(key => description)), the first option will be the default value
+     * @param array $options A list of options (array(key => description)), the first option will be the default value
      * @param array|string|null $validation Validation rules
      *
      * @return string The selected key of $options
@@ -223,19 +212,18 @@ class OutputStyle
     {
         if (is_string($text)) {
             $text = [$text];
-        } elseif (! is_array($text)) {
-            throw new InvalidArgumentException('$text can only be of type string|array');
+        } elseif (!is_array($text)) {
+            throw new \InvalidArgumentException('$text can only be of type string|array');
         }
 
-        if (! $options) {
-            throw new InvalidArgumentException('No options to select from were provided');
+        if (!$options) {
+            throw new \InvalidArgumentException('No options to select from were provided');
         }
 
         if ($line = array_shift($text)) {
             self::write($line);
         }
 
-        // +2 for the square brackets around the key
         $keyMaxLength = max(array_map('mb_strwidth', array_keys($options))) + 2;
 
         foreach ($options as $key => $description) {
@@ -271,7 +259,7 @@ class OutputStyle
         }
 
         if (static::$lastWrite !== 'write') {
-            $text              = PHP_EOL . $text;
+            $text = PHP_EOL . $text;
             static::$lastWrite = 'write';
         }
 
@@ -283,8 +271,7 @@ class OutputStyle
      */
     public static function error(string $text, string $foreground = 'light_red', ?string $background = null)
     {
-        // Check color support for STDERR
-        $stdout            = static::$isColored;
+        $stdout = static::$isColored;
         static::$isColored = static::hasColorSupport(STDERR);
 
         if ($foreground || $background) {
@@ -293,7 +280,6 @@ class OutputStyle
 
         static::fwrite(STDERR, $text . PHP_EOL);
 
-        // return STDOUT color support
         static::$isColored = $stdout;
     }
 
@@ -311,7 +297,7 @@ class OutputStyle
      * Waits a certain number of seconds, optionally showing a wait message and
      * waiting for a key press.
      *
-     * @param int  $seconds   Number of seconds
+     * @param int $seconds Number of seconds
      * @param bool $countdown Show a countdown or not
      */
     public static function wait(int $seconds, bool $countdown = false)
@@ -329,7 +315,6 @@ class OutputStyle
         } elseif ($seconds > 0) {
             sleep($seconds);
         } else {
-            // this chunk cannot be tested because of keyboard input
             // @codeCoverageIgnoreStart
             static::write(static::$wait_msg);
             static::input();
@@ -355,9 +340,7 @@ class OutputStyle
      */
     public static function clearScreen()
     {
-        // Unix systems, and Windows with VT100 Terminal support (i.e. Win10)
-        // can handle CSI sequences. For lower than Win10 we just shove in 40 new lines.
-        windows_os() && ! static::streamSupports('sapi_windows_vt100_support', STDOUT)
+        windows_os() && !static::streamSupports('sapi_windows_vt100_support', STDOUT)
             ? static::newLine(40)
             : static::fwrite(STDOUT, "\033[H\033[2J");
     }
@@ -366,37 +349,35 @@ class OutputStyle
      * Returns the given text with the correct color codes for a foreground and
      * optionally a background color.
      *
-     * @param string $text       The text to color
+     * @param string $text The text to color
      * @param string $foreground The foreground color
      * @param string $background The background color
-     * @param string $format     Other formatting to apply. Currently only 'underline' is understood
+     * @param string $format Other formatting to apply. Currently only 'underline' is understood
      *
      * @return string The color coded string
      */
     public static function color(string $text, string $foreground, ?string $background = null, ?string $format = null): string
     {
-        if (! static::$isColored || $text === '') {
+        if (!static::$isColored || $text === '') {
             return $text;
         }
 
-        if (! array_key_exists($foreground, static::$foreground_colors)) {
+        if (!array_key_exists($foreground, static::$foreground_colors)) {
             throw CommandException::forInvalidColor('foreground', $foreground);
         }
 
-        if ($background !== null && ! array_key_exists($background, static::$background_colors)) {
+        if ($background !== null && !array_key_exists($background, static::$background_colors)) {
             throw CommandException::forInvalidColor('background', $background);
         }
 
         $newText = '';
 
-        // Detect if color method was already in use with this text
         if (strpos($text, "\033[0m") !== false) {
             $pattern = '/\\033\\[0;.+?\\033\\[0m/u';
 
             preg_match_all($pattern, $text, $matches);
             $coloredStrings = $matches[0];
 
-            // No colored string found. Invalid strings with no `\033[0;??`.
             if ($coloredStrings === []) {
                 return $newText . self::getColoredText($text, $foreground, $background, $format);
             }
@@ -495,7 +476,6 @@ class OutputStyle
      */
     public static function hasColorSupport($resource): bool
     {
-        // Follow https://no-color.org/
         if (isset($_SERVER['NO_COLOR']) || getenv('NO_COLOR') !== false) {
             return false;
         }
@@ -550,35 +530,29 @@ class OutputStyle
     {
         try {
             if (windows_os()) {
-                // Shells such as `Cygwin` and `Git bash` returns incorrect values
-                // when executing `mode CON`, so we use `tput` instead
                 if (getenv('TERM') || (($shell = getenv('SHELL')) && preg_match('/(?:bash|zsh)(?:\.exe)?$/', $shell))) {
-                    static::$height = (int) exec('tput lines');
-                    static::$width  = (int) exec('tput cols');
+                    static::$height = (int)exec('tput lines');
+                    static::$width = (int)exec('tput cols');
                 } else {
                     $return = -1;
                     $output = [];
                     exec('mode CON', $output, $return);
 
-                    // Look for the next lines ending in ": <number>"
-                    // Searching for "Columns:" or "Lines:" will fail on non-English locales
                     if ($return === 0 && $output && preg_match('/:\s*(\d+)\n[^:]+:\s*(\d+)\n/', implode("\n", $output), $matches)) {
-                        static::$height = (int) $matches[1];
-                        static::$width  = (int) $matches[2];
+                        static::$height = (int)$matches[1];
+                        static::$width = (int)$matches[2];
                     }
                 }
             } elseif (($size = exec('stty size')) && preg_match('/(\d+)\s+(\d+)/', $size, $matches)) {
-                static::$height = (int) $matches[1];
-                static::$width  = (int) $matches[2];
+                static::$height = (int)$matches[1];
+                static::$width = (int)$matches[2];
             } else {
-                static::$height = (int) exec('tput lines');
-                static::$width  = (int) exec('tput cols');
+                static::$height = (int)exec('tput lines');
+                static::$width = (int)exec('tput cols');
             }
-        } catch (Throwable $e) {
-            // Reset the dimensions so that the default values will be returned later.
-            // Then let the developer know of the error.
+        } catch (\Throwable $e) {
             static::$height = null;
-            static::$width  = null;
+            static::$width = null;
             log_message('error', $e->getMessage());
         }
     }
@@ -593,23 +567,19 @@ class OutputStyle
     {
         static $inProgress = false;
 
-        // restore cursor position when progress is continuing.
         if ($inProgress !== false && $inProgress <= $thisStep) {
             static::fwrite(STDOUT, "\033[1A");
         }
         $inProgress = $thisStep;
 
         if ($thisStep !== false) {
-            // Don't allow div by zero or negative numbers....
-            $thisStep   = abs($thisStep);
+            $thisStep = abs($thisStep);
             $totalSteps = $totalSteps < 1 ? 1 : $totalSteps;
 
-            $percent = (int) (($thisStep / $totalSteps) * 100);
-            $step    = (int) round($percent / 10);
+            $percent = (int)(($thisStep / $totalSteps) * 100);
+            $step = (int)round($percent / 10);
 
-            // Write the progress bar
             static::fwrite(STDOUT, "[\033[32m" . str_repeat('#', $step) . str_repeat('.', 10 - $step) . "\033[0m]");
-            // Textual representation...
             static::fwrite(STDOUT, sprintf(' %3d%% Complete', $percent) . PHP_EOL);
         } else {
             static::fwrite(STDOUT, "\007");
@@ -649,7 +619,7 @@ class OutputStyle
             $first = true;
 
             array_walk($lines, static function (&$line) use ($padLeft, &$first) {
-                if (! $first) {
+                if (!$first) {
                     $line = str_repeat(' ', $padLeft) . $line;
                 } else {
                     $first = false;
@@ -673,30 +643,25 @@ class OutputStyle
     protected static function parseCommandLine()
     {
         $args = $_SERVER['argv'] ?? [];
-        array_shift($args); // scrap invoking program
+        array_shift($args);
         $optionValue = false;
 
         foreach ($args as $i => $arg) {
-            // If there's no "-" at the beginning, then
-            // this is probably an argument or an option value
             if (mb_strpos($arg, '-') !== 0) {
                 if ($optionValue) {
-                    // We have already included this in the previous
-                    // iteration, so reset this flag
                     $optionValue = false;
                 } else {
-                    // Yup, it's a segment
                     static::$segments[] = $arg;
                 }
 
                 continue;
             }
 
-            $arg   = ltrim($arg, '-');
+            $arg = ltrim($arg, '-');
             $value = null;
 
             if (isset($args[$i + 1]) && mb_strpos($args[$i + 1], '-') !== 0) {
-                $value       = $args[$i + 1];
+                $value = $args[$i + 1];
                 $optionValue = true;
             }
 
@@ -748,15 +713,11 @@ class OutputStyle
      */
     public static function getOption(string $name)
     {
-        if (! array_key_exists($name, static::$options)) {
+        if (!array_key_exists($name, static::$options)) {
             return null;
         }
 
-        // If the option didn't have a value, simply return TRUE
-        // so they know it was set, otherwise return the actual value.
-        $val = static::$options[$name] ?? true;
-
-        return $val;
+        return static::$options[$name] ?? true;
     }
 
     /**
@@ -772,7 +733,7 @@ class OutputStyle
      * the CLI to other commands.
      *
      * @param bool $useLongOpts Use '--' for long options?
-     * @param bool $trim        Trim final string output?
+     * @param bool $trim Trim final string output?
      */
     public static function getOptionString(bool $useLongOpts = false, bool $trim = false): string
     {
@@ -811,11 +772,9 @@ class OutputStyle
      */
     public static function table(array $tbody, array $thead = [])
     {
-        // All the rows in the table will be here until the end
         $tableRows = [];
 
-        // We need only indexes and not keys
-        if (! empty($thead)) {
+        if (!empty($thead)) {
             $tableRows[] = array_values($thead);
         }
 
@@ -823,39 +782,25 @@ class OutputStyle
             $tableRows[] = array_values($tr);
         }
 
-        // Yes, it really is necessary to know this count
         $totalRows = count($tableRows);
 
-        // Store all columns lengths
-        // $all_cols_lengths[row][column] = length
         $allColsLengths = [];
-
-        // Store maximum lengths by column
-        // $max_cols_lengths[column] = length
         $maxColsLengths = [];
 
-        // Read row by row and define the longest columns
         for ($row = 0; $row < $totalRows; $row++) {
-            $column = 0; // Current column index
+            $column = 0;
 
             foreach ($tableRows[$row] as $col) {
-                // Sets the size of this column in the current row
                 $allColsLengths[$row][$column] = static::strlen($col);
 
-                // If the current column does not have a value among the larger ones
-                // or the value of this is greater than the existing one
-                // then, now, this assumes the maximum length
-                if (! isset($maxColsLengths[$column]) || $allColsLengths[$row][$column] > $maxColsLengths[$column]) {
+                if (!isset($maxColsLengths[$column]) || $allColsLengths[$row][$column] > $maxColsLengths[$column]) {
                     $maxColsLengths[$column] = $allColsLengths[$row][$column];
                 }
 
-                // We can go check the size of the next column...
                 $column++;
             }
         }
 
-        // Read row by row and add spaces at the end of the columns
-        // to match the exact column length
         for ($row = 0; $row < $totalRows; $row++) {
             $column = 0;
 
@@ -872,9 +817,7 @@ class OutputStyle
 
         $table = '';
 
-        // Joins columns and append the well formatted rows to the table
         for ($row = 0; $row < $totalRows; $row++) {
-            // Set the table border-top
             if ($row === 0) {
                 $cols = '+';
 
@@ -884,11 +827,9 @@ class OutputStyle
                 $table .= $cols . PHP_EOL;
             }
 
-            // Set the columns borders
             $table .= '| ' . implode(' | ', $tableRows[$row]) . ' |' . PHP_EOL;
 
-            // Set the thead and table borders-bottom
-            if (isset($cols) && (($row === 0 && ! empty($thead)) || ($row + 1 === $totalRows))) {
+            if (isset($cols) && (($row === 0 && !empty($thead)) || ($row + 1 === $totalRows))) {
                 $table .= $cols . PHP_EOL;
             }
         }
@@ -908,7 +849,7 @@ class OutputStyle
      */
     protected static function fwrite($handle, string $string)
     {
-        if (! is_cli()) {
+        if (!is_cli()) {
             // @codeCoverageIgnoreStart
             echo $string;
 

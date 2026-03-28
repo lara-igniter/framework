@@ -14,7 +14,7 @@ class Parser
     {
         $name = static::name($expression);
 
-        if (preg_match_all('/\{\s*(.*?)\s*\}/', $expression, $matches) && count($matches[1])) {
+        if (preg_match_all('/\{\s*(.*?)\s*}/', $expression, $matches) && count($matches[1])) {
             return array_merge([$name], static::parameters($matches[1]));
         }
 
@@ -89,13 +89,13 @@ class Parser
                 $argument['name'] = trim($token, '?');
                 $argument['required'] = false;
                 break;
-            case preg_match('/(.+)\=\*(.+)/', $token, $matches):
+            case preg_match('/(.+)=\*(.+)/', $token, $matches):
                 $argument['name'] = $matches[1];
                 $argument['required'] = false;
                 $argument['is_array'] = true;
                 $argument['default'] = preg_split('/,\s?/', $matches[2]);
                 break;
-            case preg_match('/(.+)\=(.+)/', $token, $matches):
+            case preg_match('/(.+)=(.+)/', $token, $matches):
                 $argument['name'] = $matches[1];
                 $argument['required'] = false;
                 $argument['default'] = $matches[2];
@@ -122,8 +122,16 @@ class Parser
         $shortcut = null;
 
         if (isset($matches[1])) {
-            $shortcut = $matches[0];
-            $token = $matches[1];
+            if (str_starts_with($matches[1], '-')) {
+                $token = $matches[0];
+                $shortcut = trim($matches[1], '-=*');
+            } elseif (str_starts_with($matches[0], '-')) {
+                $shortcut = trim($matches[0], '-=*');
+                $token = $matches[1];
+            } else {
+                $shortcut = trim($matches[0], '=*');
+                $token = $matches[1];
+            }
         }
 
         $option = [
@@ -143,13 +151,13 @@ class Parser
                 $option['value_required'] = true;
                 $option['is_array'] = true;
                 break;
-            case preg_match('/(.+)\=\*(.+)/', $token, $matches):
+            case preg_match('/(.+)=\*(.+)/', $token, $matches):
                 $option['name'] = $matches[1];
                 $option['value_required'] = true;
                 $option['is_array'] = true;
                 $option['default'] = preg_split('/,\s?/', $matches[2]);
                 break;
-            case preg_match('/(.+)\=(.+)/', $token, $matches):
+            case preg_match('/(.+)=(.+)/', $token, $matches):
                 $option['name'] = $matches[1];
                 $option['value_required'] = true;
                 $option['default'] = $matches[2];
