@@ -5,6 +5,7 @@ namespace Elegant\Foundation\Providers;
 use Elegant\Console\Kernel;
 use Elegant\Contracts\Hook\PreSystem;
 use Elegant\Database\Console\Factories\FactoryMakeCommand;
+use Elegant\Database\Console\Seeds\SeederMakeCommand;
 use Elegant\Foundation\Console\ConsoleMakeCommand;
 use Elegant\Foundation\Console\ControllerMakeCommand;
 use Elegant\Foundation\Console\JobMakeCommand;
@@ -18,7 +19,6 @@ use Elegant\Foundation\Console\RequestMakeCommand;
 use Elegant\Foundation\Console\ResourceMakeCommand;
 use Elegant\Foundation\Console\RuleMakeCommand;
 use Elegant\Foundation\Console\ScopeMakeCommand;
-use Elegant\Foundation\Console\SeederMakeCommand;
 use Elegant\Foundation\Console\VendorPublishCommand;
 use Elegant\Support\ServiceProvider;
 

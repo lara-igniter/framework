@@ -4,6 +4,8 @@ namespace Elegant\Foundation\Console;
 
 use Elegant\Console\GeneratorCommand;
 use Elegant\Database\Console\Factories\FactoryMakeCommand;
+use Elegant\Database\Console\Migrations\MigrateMakeCommand;
+use Elegant\Database\Console\Seeds\SeederMakeCommand;
 use Elegant\Support\Str;
 
 class ModelMakeCommand extends GeneratorCommand
@@ -104,6 +106,7 @@ class ModelMakeCommand extends GeneratorCommand
      * @param string $className Full class path (may include sub-namespace)
      * @param string $modelName Simple PascalCase class name
      * @return void
+     * @throws \ReflectionException
      */
     protected function createFactory(string $className, string $modelName): void
     {
@@ -115,10 +118,11 @@ class ModelMakeCommand extends GeneratorCommand
      *
      * @param string $table Snake-case plural table name
      * @return void
+     * @throws \ReflectionException
      */
     protected function createMigration(string $table): void
     {
-        $this->callCommand(MigrationMakeCommand::class, ['create_' . $table . '_table'], ['create' => $table]);
+        $this->callCommand(MigrateMakeCommand::class, ['create_' . $table . '_table'], ['create' => $table]);
     }
 
     /**
@@ -126,6 +130,7 @@ class ModelMakeCommand extends GeneratorCommand
      *
      * @param string $modelName Simple PascalCase class name
      * @return void
+     * @throws \ReflectionException
      */
     protected function createSeeder(string $modelName): void
     {
@@ -138,6 +143,7 @@ class ModelMakeCommand extends GeneratorCommand
      * @param string $className Full class path (may include sub-namespace)
      * @param string $modelName Simple PascalCase class name
      * @return void
+     * @throws \ReflectionException
      */
     protected function createController(string $className, string $modelName): void
     {
@@ -150,6 +156,7 @@ class ModelMakeCommand extends GeneratorCommand
      * @param string $className Full class path (may include sub-namespace)
      * @param string $modelName Simple PascalCase class name
      * @return void
+     * @throws \ReflectionException
      */
     protected function createPolicy(string $className, string $modelName): void
     {
