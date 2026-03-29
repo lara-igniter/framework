@@ -49,6 +49,7 @@ class ModelMakeCommand extends GeneratorCommand
      * Execute the console command.
      *
      * @return int|void
+     * @throws \ReflectionException
      */
     public function handle()
     {
