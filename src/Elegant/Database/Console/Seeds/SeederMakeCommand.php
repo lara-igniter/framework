@@ -1,6 +1,6 @@
 <?php
 
-namespace Elegant\Foundation\Console;
+namespace Elegant\Database\Console\Seeds;
 
 use Elegant\Console\GeneratorCommand;
 use Elegant\Support\Str;
@@ -48,20 +48,20 @@ class SeederMakeCommand extends GeneratorCommand
     /**
      * Resolve the stub path, checking for a published override first.
      *
-     * @param string $stub
+     * @param  string  $stub
      * @return string
      */
     protected function resolveStubPath(string $stub): string
     {
-        $published = base_path('stubs/' . $stub);
+        $published = base_path('stubs' . DIRECTORY_SEPARATOR . $stub);
 
-        return file_exists($published) ? $published : __DIR__ . '/stubs/' . $stub;
+        return file_exists($published) ? $published : __DIR__ . DIRECTORY_SEPARATOR . 'stubs' . DIRECTORY_SEPARATOR . $stub;
     }
 
     /**
      * Get the default namespace for the class.
      *
-     * @param string $rootNamespace
+     * @param  string  $rootNamespace
      * @return string
      */
     protected function getDefaultNamespace(string $rootNamespace): string
@@ -82,14 +82,14 @@ class SeederMakeCommand extends GeneratorCommand
     /**
      * Get the destination class path.
      *
-     * @param string $name
+     * @param  string  $name
      * @return string
      */
     protected function getPath(string $name): string
     {
         $name = Str::replaceFirst('Database\\Seeders\\', '', $name);
 
-        return database_path('seeders/' . str_replace('\\', DIRECTORY_SEPARATOR, $name) . '.php');
+        return database_path('seeders' . DIRECTORY_SEPARATOR . str_replace('\\', DIRECTORY_SEPARATOR, $name) . '.php');
     }
 }
 
