@@ -1,0 +1,42 @@
+<?php
+
+/**
+ * @property mixed $load
+ * @property CI_DB_forge $dbforge
+ */
+class Migration_{{ name }} extends CI_Migration
+{
+    /**
+	 * Name of the table to be used in this migration!
+	 *
+	 * @var string
+	 */
+	protected string $table = '{{ table }}';
+
+	public function __construct()
+	{
+		parent::__construct();
+
+        $this->load->dbforge();
+    }
+
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        //
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        //
+    }
+}

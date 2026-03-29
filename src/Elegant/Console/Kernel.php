@@ -100,6 +100,7 @@ class Kernel implements KernelContract
     protected function commands(): void
     {
         $this->load(__DIR__ . '/../Foundation/Console');
+        $this->load(__DIR__ . '/../Database/Console');
     }
 
     /**

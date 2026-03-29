@@ -3,6 +3,7 @@
 namespace Elegant\Foundation\Providers;
 
 use Elegant\Contracts\Hook\PreSystem;
+use Elegant\Database\MigrationServiceProvider;
 use Elegant\Support\ServiceProvider;
 
 class ConsoleSupportServiceProvider extends ServiceProvider implements PreSystem
@@ -14,6 +15,7 @@ class ConsoleSupportServiceProvider extends ServiceProvider implements PreSystem
      */
     protected array $providers = [
         ArtisanServiceProvider::class,
+        MigrationServiceProvider::class,
     ];
 
     /**
