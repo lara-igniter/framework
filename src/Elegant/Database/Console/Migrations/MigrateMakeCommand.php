@@ -42,16 +42,9 @@ class MigrateMakeCommand extends BaseCommand
     /**
      * The migration creator instance.
      *
-     * @var \Elegant\Database\Migrations\MigrationCreator
+     * @var \Elegant\Database\Migrations\MigrationCreator|null
      */
-    protected MigrationCreator $creator;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->creator = new MigrationCreator(base_path('stubs'));
-    }
+    protected ?MigrationCreator $creator = null;
 
     /**
      * Execute the console command.
@@ -60,6 +53,8 @@ class MigrateMakeCommand extends BaseCommand
      */
     public function handle()
     {
+        $this->creator ??= new MigrationCreator(base_path('stubs'));
+
         $name = Str::snake(trim($this->argument('name')));
         $table = $this->option('table');
         $create = $this->option('create') ?: false;
