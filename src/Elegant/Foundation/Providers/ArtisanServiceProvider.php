@@ -4,9 +4,9 @@ namespace Elegant\Foundation\Providers;
 
 use Elegant\Console\Kernel;
 use Elegant\Contracts\Hook\PreSystem;
+use Elegant\Database\Console\Factories\FactoryMakeCommand;
 use Elegant\Foundation\Console\ConsoleMakeCommand;
 use Elegant\Foundation\Console\ControllerMakeCommand;
-use Elegant\Foundation\Console\FactoryMakeCommand;
 use Elegant\Foundation\Console\JobMakeCommand;
 use Elegant\Foundation\Console\MailMakeCommand;
 use Elegant\Foundation\Console\MiddlewareMakeCommand;

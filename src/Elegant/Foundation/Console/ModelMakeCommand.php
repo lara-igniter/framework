@@ -3,6 +3,7 @@
 namespace Elegant\Foundation\Console;
 
 use Elegant\Console\GeneratorCommand;
+use Elegant\Database\Console\Factories\FactoryMakeCommand;
 use Elegant\Support\Str;
 
 class ModelMakeCommand extends GeneratorCommand

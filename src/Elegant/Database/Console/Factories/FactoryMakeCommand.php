@@ -1,6 +1,6 @@
 <?php
 
-namespace Elegant\Foundation\Console;
+namespace Elegant\Database\Console\Factories;
 
 use Elegant\Console\GeneratorCommand;
 use Elegant\Support\Str;
