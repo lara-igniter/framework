@@ -42,9 +42,7 @@ class RestartCommand extends Command
     {
         app('load')->driver('cache');
 
-        /** @var \CI_Cache $cache */
-        $cache = $this->cache;
-        $cache->file->save('elegant_queue_restart', $this->currentTime(), 86400);
+        app('cache')->file->save('elegant_queue_restart', $this->currentTime(), 86400);
 
         $this->info('Broadcasting queue restart signal.');
         $this->newLine();

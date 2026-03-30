@@ -72,16 +72,11 @@ class WorkCommand extends Command
      */
     public function handle(): ?int
     {
-        app('load')->driver('cache');
-
-        /** @var \CI_Cache $cache */
-        $cache = $this->cache;
-
         $connection = $this->argument('connection') ?: config('queue.default');
 
         $queue = $this->getQueue($connection);
 
-        return $this->runWorker($connection, $queue, $cache);
+        return $this->runWorker($connection, $queue);
     }
 
     /**
@@ -92,8 +87,13 @@ class WorkCommand extends Command
      * @param \CI_Cache $cache
      * @return int|null
      */
-    protected function runWorker(string $connection, string $queue, \CI_Cache $cache): ?int
+    protected function runWorker(string $connection, string $queue): ?int
     {
+        app('load')->driver('cache');
+
+        /** @var \CI_Cache $cache */
+        $cache = app('cache');
+
         return $this->worker
             ->setName($this->option('name'))
             ->setCache($cache)
