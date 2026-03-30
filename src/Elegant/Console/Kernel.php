@@ -102,6 +102,7 @@ class Kernel implements KernelContract
         $this->load(__DIR__ . '/../Cache/Console');
         $this->load(__DIR__ . '/../Database/Console');
         $this->load(__DIR__ . '/../Foundation/Console');
+        $this->load(__DIR__ . '/../Queue/Console');
         $this->load(__DIR__ . '/../Session/Console');
     }
 

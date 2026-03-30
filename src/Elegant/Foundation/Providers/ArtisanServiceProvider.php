@@ -32,6 +32,8 @@ use Elegant\Foundation\Console\ScopeMakeCommand;
 use Elegant\Foundation\Console\StorageLinkCommand;
 use Elegant\Foundation\Console\UpCommand;
 use Elegant\Foundation\Console\VendorPublishCommand;
+use Elegant\Queue\Console\RestartCommand as QueueRestartCommand;
+use Elegant\Queue\Console\WorkCommand as QueueWorkCommand;
 use Elegant\Session\Console\ClearCommand as SessionClearCommand;
 use Elegant\Session\Console\SessionTableCommand;
 use Elegant\Support\ServiceProvider;
@@ -51,6 +53,8 @@ class ArtisanServiceProvider extends ServiceProvider implements PreSystem
         // 'List' => ListCommand::class,
         'LogClear' => LogClearCommand::class,
         'OptimizeClear' => OptimizeClearCommand::class,
+        'QueueRestart' => QueueRestartCommand::class,
+        'QueueWork' => QueueWorkCommand::class,
         'RouteList' => RouteListCommand::class,
         'Seed' => SeedCommand::class,
         'SessionClear' => SessionClearCommand::class,
@@ -401,6 +405,26 @@ class ArtisanServiceProvider extends ServiceProvider implements PreSystem
     protected function registerVendorPublishCommand(): void
     {
         Kernel::registerCommand(VendorPublishCommand::class);
+    }
+
+    /**
+     * Register the command.
+     *
+     * @return void
+     */
+    protected function registerQueueRestartCommand()
+    {
+        Kernel::registerCommand(QueueRestartCommand::class);
+    }
+
+    /**
+     * Register the command.
+     *
+     * @return void
+     */
+    protected function registerQueueWorkCommand()
+    {
+        Kernel::registerCommand(QueueWorkCommand::class);
     }
 
     /**
