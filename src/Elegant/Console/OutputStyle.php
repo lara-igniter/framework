@@ -765,10 +765,10 @@ class OutputStyle
     }
 
     /**
-     * Returns a well formatted table
+     * Returns a well formatted table using Unicode box-drawing characters.
      *
      * @param array $tbody List of rows
-     * @param array $thead List of columns
+     * @param array $thead List of column headers
      */
     public static function table(array $tbody, array $thead = [])
     {
@@ -784,54 +784,66 @@ class OutputStyle
 
         $totalRows = count($tableRows);
 
-        $allColsLengths = [];
+        if ($totalRows === 0) {
+            return;
+        }
+
+        // Determine max column widths (ANSI-aware)
         $maxColsLengths = [];
 
         for ($row = 0; $row < $totalRows; $row++) {
-            $column = 0;
-
-            foreach ($tableRows[$row] as $col) {
-                $allColsLengths[$row][$column] = static::strlen($col);
-
-                if (!isset($maxColsLengths[$column]) || $allColsLengths[$row][$column] > $maxColsLengths[$column]) {
-                    $maxColsLengths[$column] = $allColsLengths[$row][$column];
+            foreach ($tableRows[$row] as $col => $cell) {
+                $len = static::strlen((string)$cell);
+                if (!isset($maxColsLengths[$col]) || $len > $maxColsLengths[$col]) {
+                    $maxColsLengths[$col] = $len;
                 }
-
-                $column++;
             }
         }
 
+        // Pad each cell to the column width
         for ($row = 0; $row < $totalRows; $row++) {
-            $column = 0;
-
-            foreach ($tableRows[$row] as $col) {
-                $diff = $maxColsLengths[$column] - static::strlen($col);
-
-                if ($diff) {
-                    $tableRows[$row][$column] = $tableRows[$row][$column] . str_repeat(' ', $diff);
+            foreach ($tableRows[$row] as $col => $cell) {
+                $diff = $maxColsLengths[$col] - static::strlen((string)$cell);
+                if ($diff > 0) {
+                    $tableRows[$row][$col] = $cell . str_repeat(' ', $diff);
                 }
-
-                $column++;
             }
+        }
+
+        // Build border segments
+        $totalCols = count($maxColsLengths);
+        $borderTop = '┌';
+        $borderMid = '├';
+        $borderBot = '└';
+
+        for ($c = 0; $c < $totalCols; $c++) {
+            $bar = str_repeat('─', $maxColsLengths[$c] + 2);
+            $borderTop .= $bar . ($c < $totalCols - 1 ? '┬' : '┐');
+            $borderMid .= $bar . ($c < $totalCols - 1 ? '┼' : '┤');
+            $borderBot .= $bar . ($c < $totalCols - 1 ? '┴' : '┘');
         }
 
         $table = '';
 
         for ($row = 0; $row < $totalRows; $row++) {
+            // Top border before the very first row
             if ($row === 0) {
-                $cols = '+';
-
-                foreach ($tableRows[$row] as $col) {
-                    $cols .= str_repeat('-', static::strlen($col) + 2) . '+';
-                }
-                $table .= $cols . PHP_EOL;
+                $table .= $borderTop . PHP_EOL;
             }
 
-            $table .= '| ' . implode(' | ', $tableRows[$row]) . ' |' . PHP_EOL;
+            $table .= '│ ' . implode(' │ ', $tableRows[$row]) . ' │' . PHP_EOL;
 
-            if (isset($cols) && (($row === 0 && !empty($thead)) || ($row + 1 === $totalRows))) {
-                $table .= $cols . PHP_EOL;
+            // Separator after header row; bottom border after the last row
+            if ($row === 0 && !empty($thead) && $totalRows > 1) {
+                $table .= $borderMid . PHP_EOL;
+            } elseif ($row + 1 === $totalRows) {
+                $table .= $borderBot . PHP_EOL;
             }
+        }
+
+        // If there were no body rows the bottom border hasn't been added yet
+        if ($totalRows === 1) {
+            $table .= $borderBot . PHP_EOL;
         }
 
         static::write($table);
