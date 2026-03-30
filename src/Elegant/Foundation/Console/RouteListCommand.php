@@ -52,12 +52,13 @@ class RouteListCommand extends Command
      */
     public function handle(): void
     {
+        $this->loadWebRoutes();
+
         $seen = [];
         $routes = [];
 
         foreach (RouteBuilder::$compiled['paths'] as $routeObjects) {
             foreach ($routeObjects as $route) {
-                // Skip CLI routes — only show web/api routes
                 if ($route->isCli) {
                     continue;
                 }
@@ -69,7 +70,6 @@ class RouteListCommand extends Command
                 }
                 $seen[$key] = true;
 
-                // Color each HTTP verb individually
                 $methodStr = implode(OutputStyle::color('|', 'dark_gray'), array_map(
                     fn(string $m) => OutputStyle::color($m, static::$methodColors[$m] ?? 'light_gray'),
                     $route->getMethods()
@@ -80,10 +80,9 @@ class RouteListCommand extends Command
                     $action = OutputStyle::color('Closure', 'light_purple');
                 }
 
-                $middlewareList = $route->getMiddleware();
                 $middlewareStr = implode(', ', array_map(
                     fn($m) => is_object($m) ? (new \ReflectionClass($m))->getShortName() : $m,
-                    $middlewareList
+                    $route->getMiddleware()
                 ));
 
                 $routes[] = [
@@ -116,5 +115,33 @@ class RouteListCommand extends Command
 
         $this->line('  ' . OutputStyle::color(count($routes) . ' route(s) total', 'dark_gray'));
         $this->newLine();
+    }
+
+    /**
+     * Load and compile web and API routes, while handling any exceptions gracefully.
+     *
+     * @return void
+     */
+    private function loadWebRoutes(): void
+    {
+        RouteBuilder::$inspecting = true;
+
+        try {
+            if (file_exists(base_path('routes/web.php'))) {
+                require_once base_path('routes/web.php');
+            }
+
+            if (file_exists(base_path('routes/api.php'))) {
+                RouteBuilder::group('/api', function () {
+                    require_once base_path('routes/api.php');
+                });
+            }
+
+            RouteBuilder::compileAll();
+        } catch (\Throwable $e) {
+            $this->line('  ' . OutputStyle::color('Warning: ' . $e->getMessage(), 'yellow'));
+        } finally {
+            RouteBuilder::$inspecting = false;
+        }
     }
 }
