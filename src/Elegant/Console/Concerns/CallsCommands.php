@@ -74,6 +74,8 @@ trait CallsCommands
             $instance = new $class();
             Command::$skipCiConstruct = false;
 
+            $instance->bindToCiSuperObject();
+
             $instance->handle();
         } finally {
             Command::$skipCiConstruct = false;

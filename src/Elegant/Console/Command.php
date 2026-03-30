@@ -83,6 +83,8 @@ class Command extends CI_Controller
      */
     final public function execute(): void
     {
+        $this->bindToCiSuperObject();
+
         if ($this->option('h') || $this->option('help')) {
             $this->printHelp();
             exit(0);
@@ -93,6 +95,33 @@ class Command extends CI_Controller
         $statusCode = $this->$method();
 
         exit(is_numeric($statusCode) ? (int) $statusCode : 0);
+    }
+
+    /**
+     * Copy every property from the current CI superobject
+     *
+     * @return void
+     */
+    public function bindToCiSuperObject(): void
+    {
+        try {
+            $ref = new \ReflectionProperty(\CI_Controller::class, 'instance');
+            $ref->setAccessible(true);
+
+            /** @var \CI_Controller|null $CI */
+            $CI = $ref->getValue(null);
+
+            if ($CI !== null) {
+                foreach (get_object_vars($CI) as $key => $value) {
+                    $this->$key = $CI->$key;
+                }
+            }
+
+            $ref->setValue(null, $this);
+
+        } catch (\ReflectionException $e) {
+            // Silently ignore if reflection is unavailable.
+        }
     }
 
     /**
