@@ -81,7 +81,22 @@ class RouteListCommand extends Command
                 }
 
                 $middlewareStr = implode(', ', array_map(
-                    fn($m) => is_object($m) ? (new \ReflectionClass($m))->getShortName() : $m,
+                    function ($m) {
+                        if (is_object($m)) {
+                            return (new \ReflectionClass($m))->getShortName();
+                        }
+
+                        if (is_array($m)) {
+                            return implode('|', array_map(function ($item) {
+                                if (is_object($item)) {
+                                    return (new \ReflectionClass($item))->getShortName();
+                                }
+                                return (string) $item;
+                            }, $m));
+                        }
+
+                        return (string) $m;
+                    },
                     $route->getMiddleware()
                 ));
 

@@ -231,7 +231,7 @@ class Route
                 : RouteBuilder::DEFAULT_CONTROLLER;
         }
 
-        $this->isCli = is_cli();
+        $this->isCli = in_array('CLI', $this->methods);
     }
 
     /**
