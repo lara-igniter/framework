@@ -3,7 +3,6 @@
 namespace Elegant\Console\Concerns;
 
 use Elegant\Console\Kernel;
-use Elegant\Console\Command;
 
 trait CallsCommands
 {
@@ -70,16 +69,10 @@ trait CallsCommands
                 ob_start();
             }
 
-            Command::$skipCiConstruct = true;
             $instance = new $class();
-            Command::$skipCiConstruct = false;
-
-            $instance->bindToCiSuperObject();
 
             $instance->handle();
         } finally {
-            Command::$skipCiConstruct = false;
-
             if ($silent) {
                 ob_end_clean();
             }

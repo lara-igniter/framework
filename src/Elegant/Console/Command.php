@@ -38,21 +38,11 @@ class Command extends CI_Controller
      */
     protected string $description = '';
 
-    /**
-     * When true the CI_Controller parent constructor is skipped.
-     * Set by CallsCommands::runCommand() for nested (inner) command calls so that
-     * instantiating a command inside another command's handle() does not trigger
-     * CI's library-loading chain (which fails for drivers like Cache).
-     *
-     * @var bool
-     */
-    public static bool $skipCiConstruct = false;
-
     public function __construct()
     {
         if (isset($this->signature)) {
             $this->configureUsingFluentDefinition();
-        } elseif (! self::$skipCiConstruct) {
+        } else {
             parent::__construct();
         }
     }
@@ -71,8 +61,58 @@ class Command extends CI_Controller
 
         $this->specifyParameters();
 
-        if (! self::$skipCiConstruct) {
-            parent::__construct();
+        $this->initializeCi();
+    }
+
+    /**
+     * Boot CI properties for this command without re-running the full autoloader.
+     *
+     * For top-level commands (no active Command singleton yet) we run the
+     * standard CI boot chain: core classes + $this->load->initialize().
+     *
+     * For nested commands (called via $this->call() while another Command is
+     * already the CI singleton) we skip initialize() entirely and simply copy
+     * every already-loaded library/driver from the outer command.  Re-running
+     * _ci_autoloader() inside a nested constructor crashes certain drivers
+     * (e.g. CI_Cache_file calls get_instance() before the new singleton is
+     * fully set up).
+     *
+     * @return void
+     */
+    protected function initializeCi(): void
+    {
+        try {
+            $ref = new \ReflectionProperty(\CI_Controller::class, 'instance');
+            $ref->setAccessible(true);
+            $existingCI = $ref->getValue(null);
+
+            // Register this command as the active CI singleton (mirrors the
+            // first line of CI_Controller::__construct).
+            $ref->setValue(null, $this);
+        } catch (\ReflectionException $e) {
+            $existingCI = null;
+        }
+
+        // Copy every already-bootstrapped core class (config, router, input …).
+        foreach (is_loaded() as $var => $class) {
+            $this->$var =& load_class($class);
+        }
+
+        // Grab the shared Loader instance.
+        $this->load =& load_class('Loader', 'core');
+
+        if ($existingCI instanceof Command) {
+            // ── Nested command ──────────────────────────────────────────────
+            // The outer command already ran initialize(); copy its loaded
+            // libraries (db, cache, session …) instead of re-autoloading.
+            foreach (get_object_vars($existingCI) as $key => $value) {
+                $this->$key = $existingCI->$key;
+            }
+        } else {
+            // ── Top-level command ────────────────────────────────────────────
+            // First command in the chain: run the normal autoloader so that
+            // everything in config/autoload.php is available inside handle().
+            $this->load->initialize();
         }
     }
 
@@ -83,8 +123,6 @@ class Command extends CI_Controller
      */
     final public function execute(): void
     {
-        $this->bindToCiSuperObject();
-
         if ($this->option('h') || $this->option('help')) {
             $this->printHelp();
             exit(0);
@@ -95,33 +133,6 @@ class Command extends CI_Controller
         $statusCode = $this->$method();
 
         exit(is_numeric($statusCode) ? (int) $statusCode : 0);
-    }
-
-    /**
-     * Copy every property from the current CI superobject
-     *
-     * @return void
-     */
-    public function bindToCiSuperObject(): void
-    {
-        try {
-            $ref = new \ReflectionProperty(\CI_Controller::class, 'instance');
-            $ref->setAccessible(true);
-
-            /** @var \CI_Controller|null $CI */
-            $CI = $ref->getValue(null);
-
-            if ($CI !== null) {
-                foreach (get_object_vars($CI) as $key => $value) {
-                    $this->$key = $CI->$key;
-                }
-            }
-
-            $ref->setValue(null, $this);
-
-        } catch (\ReflectionException $e) {
-            // Silently ignore if reflection is unavailable.
-        }
     }
 
     /**
