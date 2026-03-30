@@ -36,7 +36,7 @@ class RouteListCommand extends Command
     public function handle(): void
     {
         $routes = collect(Route::getRoutes())->map(function ($route, $uri) {
-            if (empty(key($route))) {
+            if (!is_array($route) || empty(key($route))) {
                 return 0;
             }
 

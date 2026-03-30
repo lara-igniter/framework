@@ -35,15 +35,12 @@ class StorageLinkCommand extends Command
     public function handle(): void
     {
         $links = config('filesystems.links') ?? [public_path('storage') => storage_path('app/public')];
-
         foreach ($links as $link => $target) {
-            if (file_exists($link) && !is_link($link)) {
-                $this->error("The [{$link}] link already exists.");
+            if (is_link($link) || @readlink($link) !== false) {
+                is_link($link) ? File::delete($link) : @rmdir($link);
+            } elseif (file_exists($link)) {
+                $this->warn("The [{$link}] link already exists and is not a symbolic link.");
                 continue;
-            }
-
-            if (is_link($link)) {
-                File::delete($link);
             }
 
             File::link($target, $link);
