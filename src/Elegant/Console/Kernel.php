@@ -196,7 +196,9 @@ class Kernel implements KernelContract
     public static function registerDiscoveredRoutes(): void
     {
         foreach (static::$discovered as $routePath => $commandClass) {
-            Route::cli($routePath, [$commandClass, 'execute']);
+            Route::cli($routePath, static function () use ($commandClass) {
+                (new $commandClass())->execute();
+            });
         }
     }
 
