@@ -85,26 +85,45 @@ class Command extends CI_Controller
             $ref = new \ReflectionProperty(\CI_Controller::class, 'instance');
             $ref->setAccessible(true);
             $existingCI = $ref->getValue(null);
-
-            // Register this command as the active CI singleton (mirrors the
-            // first line of CI_Controller::__construct).
+            // Register this command as the active CI singleton.
             $ref->setValue(null, $this);
         } catch (\ReflectionException $e) {
-            $existingCI = null;
+            // Reflection unavailable – fall back to the standard CI boot chain.
+            parent::__construct();
+            return;
         }
 
-        // Copy every already-bootstrapped core class (config, router, input …).
+        if ($existingCI === null) {
+            // No CI singleton exists yet – standard boot chain.
+            parent::__construct();
+            return;
+        }
+
+        // Copy core class references (config, router, input, output …) from
+        // the existing CI singleton.
+        //
+        // We intentionally do NOT call load_class($class) here because that
+        // function defaults to the 'libraries/' directory.  Any class that was
+        // loaded via load_class() with a different directory (e.g. 'core') but
+        // whose name also maps to a driver/library (e.g. 'Cache') would cause
+        // "Unable to locate the specified class: Cache.php".
         foreach (is_loaded() as $var => $class) {
-            $this->$var =& load_class($class);
+            if (isset($existingCI->$var)) {
+                $this->$var = $existingCI->$var;
+            }
         }
 
-        // Grab the shared Loader instance.
+        // Grab the shared Loader instance (safe: 'Loader' is always in
+        // load_class()'s internal $_classes cache from the CI bootstrap).
         $this->load =& load_class('Loader', 'core');
 
         if ($existingCI instanceof Command) {
             // ── Nested command ──────────────────────────────────────────────
             // The outer command already ran initialize(); copy its loaded
             // libraries (db, cache, session …) instead of re-autoloading.
+            // Re-running _ci_autoloader() in a nested constructor crashes
+            // drivers like CI_Cache_file which call get_instance() before
+            // the new singleton is fully set up.
             foreach (get_object_vars($existingCI) as $key => $value) {
                 $this->$key = $existingCI->$key;
             }
