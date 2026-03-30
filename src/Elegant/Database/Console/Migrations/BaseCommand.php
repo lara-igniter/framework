@@ -3,9 +3,27 @@
 namespace Elegant\Database\Console\Migrations;
 
 use Elegant\Console\Command;
+use Elegant\Database\Migrations\Migrator;
 
 class BaseCommand extends Command
 {
+    /**
+     * The migrator instance (lazily resolved).
+     *
+     * @var \Elegant\Database\Migrations\Migrator|null
+     */
+    protected ?Migrator $migrator = null;
+
+    /**
+     * Get the migrator instance, creating it lazily if needed.
+     *
+     * @return \Elegant\Database\Migrations\Migrator
+     */
+    protected function migrator(): Migrator
+    {
+        return $this->migrator ??= new Migrator();
+    }
+
     /**
      * Get all of the migration paths.
      *
@@ -49,4 +67,3 @@ class BaseCommand extends Command
         return database_path('migrations');
     }
 }
-

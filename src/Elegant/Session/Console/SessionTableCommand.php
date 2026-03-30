@@ -58,7 +58,7 @@ class SessionTableCommand extends BaseCommand
     /**
      * Resolve the stub path, checking for a published override first.
      *
-     * @param  string  $stub
+     * @param string $stub
      * @return string
      */
     protected function resolveStubPath(string $stub): string

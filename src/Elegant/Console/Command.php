@@ -6,7 +6,8 @@ use CI_Controller;
 
 class Command extends CI_Controller
 {
-    use Concerns\HasParameters,
+    use Concerns\CallsCommands,
+        Concerns\HasParameters,
         Concerns\InteractsWithIO;
 
     /**

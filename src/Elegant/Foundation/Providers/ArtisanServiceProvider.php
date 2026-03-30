@@ -2,24 +2,38 @@
 
 namespace Elegant\Foundation\Providers;
 
+use Elegant\Cache\Console\ClearCommand as CacheClearCommand;
 use Elegant\Console\Kernel;
 use Elegant\Contracts\Hook\PreSystem;
 use Elegant\Database\Console\Factories\FactoryMakeCommand;
+use Elegant\Database\Console\Seeds\SeedCommand;
 use Elegant\Database\Console\Seeds\SeederMakeCommand;
+use Elegant\Foundation\Console\LogClearCommand;
+use Elegant\Foundation\Console\ViewClearCommand;
 use Elegant\Foundation\Console\ConsoleMakeCommand;
 use Elegant\Foundation\Console\ControllerMakeCommand;
+use Elegant\Foundation\Console\DownCommand;
+use Elegant\Foundation\Console\EnvironmentCommand;
 use Elegant\Foundation\Console\JobMakeCommand;
+use Elegant\Foundation\Console\KeyGenerateCommand;
+use Elegant\Foundation\Console\ListCommand;
 use Elegant\Foundation\Console\MailMakeCommand;
 use Elegant\Foundation\Console\MiddlewareMakeCommand;
 use Elegant\Foundation\Console\ModelMakeCommand;
+use Elegant\Foundation\Console\OptimizeClearCommand;
 use Elegant\Foundation\Console\PolicyMakeCommand;
 use Elegant\Foundation\Console\ProviderMakeCommand;
 use Elegant\Foundation\Console\RepositoryMakeCommand;
 use Elegant\Foundation\Console\RequestMakeCommand;
 use Elegant\Foundation\Console\ResourceMakeCommand;
+use Elegant\Foundation\Console\RouteListCommand;
 use Elegant\Foundation\Console\RuleMakeCommand;
 use Elegant\Foundation\Console\ScopeMakeCommand;
+use Elegant\Foundation\Console\StorageLinkCommand;
+use Elegant\Foundation\Console\UpCommand;
 use Elegant\Foundation\Console\VendorPublishCommand;
+use Elegant\Session\Console\ClearCommand as SessionClearCommand;
+use Elegant\Session\Console\SessionTableCommand;
 use Elegant\Support\ServiceProvider;
 
 class ArtisanServiceProvider extends ServiceProvider implements PreSystem
@@ -30,7 +44,19 @@ class ArtisanServiceProvider extends ServiceProvider implements PreSystem
      * @var array
      */
     protected array $commands = [
-
+        'CacheClear' => CacheClearCommand::class,
+        'Down' => DownCommand::class,
+        'Environment' => EnvironmentCommand::class,
+        'KeyGenerate' => KeyGenerateCommand::class,
+        // 'List' => ListCommand::class,
+        'LogClear' => LogClearCommand::class,
+        'OptimizeClear' => OptimizeClearCommand::class,
+        'RouteList' => RouteListCommand::class,
+        'Seed' => SeedCommand::class,
+        'SessionClear' => SessionClearCommand::class,
+        'StorageLink' => StorageLinkCommand::class,
+        'Up' => UpCommand::class,
+        'ViewClear' => ViewClearCommand::class,
     ];
 
     /**
@@ -54,6 +80,7 @@ class ArtisanServiceProvider extends ServiceProvider implements PreSystem
         'RuleMake' => RuleMakeCommand::class,
         'ScopeMake' => ScopeMakeCommand::class,
         'SeederMake' => SeederMakeCommand::class,
+        'SessionTable' => SessionTableCommand::class,
         'VendorPublish' => VendorPublishCommand::class,
     ];
 
@@ -91,6 +118,16 @@ class ArtisanServiceProvider extends ServiceProvider implements PreSystem
      *
      * @return void
      */
+    protected function registerCacheClearCommand()
+    {
+        Kernel::registerCommand(CacheClearCommand::class);
+    }
+
+    /**
+     * Register the command.
+     *
+     * @return void
+     */
     protected function registerConsoleMakeCommand()
     {
         Kernel::registerCommand(ConsoleMakeCommand::class);
@@ -121,9 +158,59 @@ class ArtisanServiceProvider extends ServiceProvider implements PreSystem
      *
      * @return void
      */
+    protected function registerDownCommand()
+    {
+        Kernel::registerCommand(DownCommand::class);
+    }
+
+    /**
+     * Register the command.
+     *
+     * @return void
+     */
+    protected function registerEnvironmentCommand()
+    {
+        Kernel::registerCommand(EnvironmentCommand::class);
+    }
+
+    /**
+     * Register the command.
+     *
+     * @return void
+     */
     protected function registerJobMakeCommand()
     {
         Kernel::registerCommand(JobMakeCommand::class);
+    }
+
+    /**
+     * Register the command.
+     *
+     * @return void
+     */
+    protected function registerKeyGenerateCommand()
+    {
+        Kernel::registerCommand(KeyGenerateCommand::class);
+    }
+
+    /**
+     * Register the command.
+     *
+     * @return void
+     */
+    protected function registerListCommand()
+    {
+        Kernel::registerCommand(ListCommand::class);
+    }
+
+    /**
+     * Register the command.
+     *
+     * @return void
+     */
+    protected function registerLogClearCommand()
+    {
+        Kernel::registerCommand(LogClearCommand::class);
     }
 
     /**
@@ -154,6 +241,16 @@ class ArtisanServiceProvider extends ServiceProvider implements PreSystem
     protected function registerModelMakeCommand()
     {
         Kernel::registerCommand(ModelMakeCommand::class);
+    }
+
+    /**
+     * Register the command.
+     *
+     * @return void
+     */
+    protected function registerOptimizeClearCommand()
+    {
+        Kernel::registerCommand(OptimizeClearCommand::class);
     }
 
     /**
@@ -211,6 +308,16 @@ class ArtisanServiceProvider extends ServiceProvider implements PreSystem
      *
      * @return void
      */
+    protected function registerRouteListCommand()
+    {
+        Kernel::registerCommand(RouteListCommand::class);
+    }
+
+    /**
+     * Register the command.
+     *
+     * @return void
+     */
     protected function registerRuleMakeCommand()
     {
         Kernel::registerCommand(RuleMakeCommand::class);
@@ -241,8 +348,68 @@ class ArtisanServiceProvider extends ServiceProvider implements PreSystem
      *
      * @return void
      */
+    protected function registerSeedCommand()
+    {
+        Kernel::registerCommand(SeedCommand::class);
+    }
+
+    /**
+     * Register the command.
+     *
+     * @return void
+     */
+    protected function registerSessionTableCommand()
+    {
+        Kernel::registerCommand(SessionTableCommand::class);
+    }
+
+    /**
+     * Register the command.
+     *
+     * @return void
+     */
+    protected function registerStorageLinkCommand()
+    {
+        Kernel::registerCommand(StorageLinkCommand::class);
+    }
+
+    /**
+     * Register the command.
+     *
+     * @return void
+     */
+    protected function registerSessionClearCommand()
+    {
+        Kernel::registerCommand(SessionClearCommand::class);
+    }
+
+    /**
+     * Register the command.
+     *
+     * @return void
+     */
+    protected function registerUpCommand()
+    {
+        Kernel::registerCommand(UpCommand::class);
+    }
+
+    /**
+     * Register the command.
+     *
+     * @return void
+     */
     protected function registerVendorPublishCommand(): void
     {
         Kernel::registerCommand(VendorPublishCommand::class);
+    }
+
+    /**
+     * Register the command.
+     *
+     * @return void
+     */
+    protected function registerViewClearCommand()
+    {
+        Kernel::registerCommand(ViewClearCommand::class);
     }
 }
