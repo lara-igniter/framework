@@ -770,6 +770,36 @@ class OutputStyle
      * @param array $tbody List of rows
      * @param array $thead List of column headers
      */
+    /**
+     * Truncate a plain (non-ANSI) string to fit within $maxWidth visible chars,
+     * appending '…' when truncation occurs. Multibyte-safe.
+     *
+     * @param string $value
+     * @param int $maxWidth Maximum visible character width
+     * @return string
+     */
+    public static function truncate(string $value, int $maxWidth): string
+    {
+        if (mb_strwidth($value) <= $maxWidth) {
+            return $value;
+        }
+
+        $result = '';
+        $width = 0;
+        $limit = $maxWidth - 1; // reserve 1 char for '…'
+
+        foreach (preg_split('//u', $value, -1, PREG_SPLIT_NO_EMPTY) as $char) {
+            $charWidth = mb_strwidth($char);
+            if ($width + $charWidth > $limit) {
+                break;
+            }
+            $result .= $char;
+            $width += $charWidth;
+        }
+
+        return $result . '…';
+    }
+
     public static function table(array $tbody, array $thead = [])
     {
         $tableRows = [];

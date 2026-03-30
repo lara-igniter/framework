@@ -91,11 +91,11 @@ class RouteListCommand extends Command
                                 if (is_object($item)) {
                                     return (new \ReflectionClass($item))->getShortName();
                                 }
-                                return (string) $item;
+                                return (string)$item;
                             }, $m));
                         }
 
-                        return (string) $m;
+                        return (string)$m;
                     },
                     $route->getMiddleware()
                 ));
@@ -114,6 +114,55 @@ class RouteListCommand extends Command
             $this->line('  ' . OutputStyle::color('No web/api routes registered.', 'yellow'));
             return;
         }
+
+        // Terminal width (default 120 if detection fails)
+        $termWidth = OutputStyle::getWidth(120);
+
+        // Overhead: 6 border chars (│×6) + 10 padding spaces (2 per col × 5) = 16
+        $available = max(60, $termWidth - 16);
+
+        // Column keys and their header label lengths
+        $colKeys = ['method', 'uri', 'name', 'action', 'middleware'];
+        $hdrWidths = ['method' => 6, 'uri' => 3, 'name' => 4, 'action' => 6, 'middleware' => 10];
+
+        // Natural widths = max(header width, longest data value)
+        $naturalWidths = $hdrWidths;
+        foreach ($routes as $row) {
+            foreach ($colKeys as $key) {
+                $len = OutputStyle::strlen((string)($row[$key] ?? ''));
+                if ($len > $naturalWidths[$key]) {
+                    $naturalWidths[$key] = $len;
+                }
+            }
+        }
+
+        if (array_sum($naturalWidths) > $available) {
+            // Keep method and middleware capped; distribute the rest to uri/name/action
+            $naturalWidths['method'] = min($naturalWidths['method'], 20);
+            $naturalWidths['middleware'] = min($naturalWidths['middleware'], 30);
+
+            $fixed = $naturalWidths['method'] + $naturalWidths['middleware'];
+            $flex = max(40, $available - $fixed);
+
+            // URI 40% · Name 20% · Action 40%
+            $naturalWidths['uri'] = max(15, (int)floor($flex * 0.40));
+            $naturalWidths['name'] = max(10, (int)floor($flex * 0.20));
+            $naturalWidths['action'] = max(15, $flex - $naturalWidths['uri'] - $naturalWidths['name']);
+
+            // Truncate plain-text columns that exceed their allotted width
+            foreach ($routes as &$row) {
+                foreach (['uri', 'name', 'middleware'] as $key) {
+                    $row[$key] = OutputStyle::truncate((string)$row[$key], $naturalWidths[$key]);
+                }
+                // Only truncate action when it is a plain string (no ANSI codes)
+                $actionVal = (string)$row['action'];
+                if (!str_contains($actionVal, "\033[")) {
+                    $row['action'] = OutputStyle::truncate($actionVal, $naturalWidths['action']);
+                }
+            }
+            unset($row);
+        }
+        // ─────────────────────────────────────────────────────────────────
 
         $this->newLine();
 
