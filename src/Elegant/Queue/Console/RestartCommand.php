@@ -40,7 +40,7 @@ class RestartCommand extends Command
      */
     public function handle(): void
     {
-        $this->load->driver('cache');
+        app('load')->driver('cache');
 
         /** @var \CI_Cache $cache */
         $cache = $this->cache;
