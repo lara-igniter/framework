@@ -197,7 +197,12 @@ class Kernel implements KernelContract
     {
         foreach (static::$discovered as $routePath => $commandClass) {
             Route::cli($routePath, static function () use ($commandClass) {
-                (new $commandClass())->execute();
+                Command::$skipCiConstruct = true;
+                try {
+                    (new $commandClass())->execute();
+                } finally {
+                    Command::$skipCiConstruct = false;
+                }
             });
         }
     }
