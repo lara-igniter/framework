@@ -3,6 +3,7 @@
 namespace Elegant\Console\Concerns;
 
 use Elegant\Console\Kernel;
+use Elegant\Console\Command;
 
 trait CallsCommands
 {
@@ -10,7 +11,7 @@ trait CallsCommands
      * Call another console command.
      *
      * @param string $command
-     * @param array  $arguments
+     * @param array $arguments
      * @return void
      */
     public function call(string $command, array $arguments = []): void
@@ -22,7 +23,7 @@ trait CallsCommands
      * Call another console command without output.
      *
      * @param string $command
-     * @param array  $arguments
+     * @param array $arguments
      * @return void
      */
     public function callSilent(string $command, array $arguments = []): void
@@ -34,8 +35,8 @@ trait CallsCommands
      * Run the given console command.
      *
      * @param string $command
-     * @param array  $arguments
-     * @param bool   $silent
+     * @param array $arguments
+     * @param bool $silent
      * @return void
      */
     protected function runCommand(string $command, array $arguments, bool $silent): void
@@ -49,7 +50,7 @@ trait CallsCommands
 
         $argv = array_merge(['artisan', $command], $this->buildArgv($arguments));
 
-        $savedArgv       = $GLOBALS['argv'] ?? [];
+        $savedArgv = $GLOBALS['argv'] ?? [];
         $savedServerArgv = $_SERVER['argv'] ?? [];
 
         $GLOBALS['argv'] = $_SERVER['argv'] = $argv;
@@ -59,9 +60,14 @@ trait CallsCommands
                 ob_start();
             }
 
+            Command::$skipCiConstruct = true;
             $instance = new $class();
+            Command::$skipCiConstruct = false;
+
             $instance->handle();
         } finally {
+            Command::$skipCiConstruct = false;
+
             if ($silent) {
                 ob_end_clean();
             }
@@ -85,7 +91,7 @@ trait CallsCommands
 
         foreach ($arguments as $key => $value) {
             if (is_int($key)) {
-                $argv[] = (string) $value;
+                $argv[] = (string)$value;
             } elseif ($value === true) {
                 $argv[] = '--' . $key;
             } elseif ($value !== false && $value !== null) {

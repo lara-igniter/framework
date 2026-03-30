@@ -38,11 +38,21 @@ class Command extends CI_Controller
      */
     protected string $description = '';
 
+    /**
+     * When true the CI_Controller parent constructor is skipped.
+     * Set by CallsCommands::runCommand() for nested (inner) command calls so that
+     * instantiating a command inside another command's handle() does not trigger
+     * CI's library-loading chain (which fails for drivers like Cache).
+     *
+     * @var bool
+     */
+    public static bool $skipCiConstruct = false;
+
     public function __construct()
     {
         if (isset($this->signature)) {
             $this->configureUsingFluentDefinition();
-        } else {
+        } elseif (! self::$skipCiConstruct) {
             parent::__construct();
         }
     }
@@ -61,7 +71,9 @@ class Command extends CI_Controller
 
         $this->specifyParameters();
 
-        parent::__construct();
+        if (! self::$skipCiConstruct) {
+            parent::__construct();
+        }
     }
 
     /**
