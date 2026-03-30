@@ -41,14 +41,24 @@ trait CallsCommands
      */
     protected function runCommand(string $command, array $arguments, bool $silent): void
     {
-        $class = Kernel::discovered()[$command] ?? null;
+        $class = null;
+        $routePath = null;
+
+        foreach (Kernel::discovered() as $path => $commandClass) {
+            $name = strstr($path, '/', true) ?: $path;
+            if ($name === $command) {
+                $class = $commandClass;
+                $routePath = $path;
+                break;
+            }
+        }
 
         if (!$class) {
             $this->error("Command [{$command}] not found.");
             return;
         }
 
-        $argv = array_merge(['artisan', $command], $this->buildArgv($arguments));
+        $argv = array_merge(['artisan', $command], $this->buildArgv($arguments, $routePath));
 
         $savedArgv = $GLOBALS['argv'] ?? [];
         $savedServerArgv = $_SERVER['argv'] ?? [];
@@ -83,23 +93,38 @@ trait CallsCommands
      * Build an argv array from an associative arguments map.
      *
      * @param array $arguments
+     * @param string|null $routePath Route path as stored in Kernel::discovered()
      * @return array
      */
-    protected function buildArgv(array $arguments): array
+    protected function buildArgv(array $arguments, ?string $routePath = null): array
     {
-        $argv = [];
+        // Extract ordered positional-argument names from the route path.
+        $argNames = [];
+        if ($routePath !== null) {
+            preg_match_all('/\{(\w+)\??}/', $routePath, $matches);
+            $argNames = $matches[1];
+        }
+
+        $positional = [];
+        $opts = [];
 
         foreach ($arguments as $key => $value) {
             if (is_int($key)) {
-                $argv[] = (string)$value;
+                // Already positional (int index)
+                $positional[$key] = (string)$value;
+            } elseif (($pos = array_search($key, $argNames, true)) !== false) {
+                // Named key matches a known positional argument → emit positionally
+                $positional[$pos] = (string)$value;
             } elseif ($value === true) {
-                $argv[] = '--' . $key;
+                $opts[] = '--' . $key;
             } elseif ($value !== false && $value !== null) {
-                $argv[] = '--' . $key . '=' . $value;
+                $opts[] = '--' . $key . '=' . $value;
             }
         }
 
-        return $argv;
+        ksort($positional);
+
+        return array_merge(array_values($positional), $opts);
     }
 
     /**
