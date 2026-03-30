@@ -72,7 +72,7 @@ class WorkCommand extends Command
      */
     public function handle(): ?int
     {
-        $this->load->driver('cache');
+        app('load')->driver('cache');
 
         /** @var \CI_Cache $cache */
         $cache = $this->cache;
