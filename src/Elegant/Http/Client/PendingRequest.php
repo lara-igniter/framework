@@ -733,6 +733,11 @@ class PendingRequest
      */
     protected function parseRequestData($method, $url, array $options)
     {
+        // Raw body (withBody()) is not key-value data — skip parse_str entirely.
+        if ($this->bodyFormat === 'body') {
+            return [];
+        }
+
         $laraigniterData = $options[$this->bodyFormat] ?? $options['query'] ?? [];
 
         $urlString = Str::of($url);
@@ -745,6 +750,10 @@ class PendingRequest
             parse_str($laraigniterData, $parsedData);
 
             $laraigniterData = is_array($parsedData) ? $parsedData : [];
+        }
+
+        if (!is_array($laraigniterData)) {
+            $laraigniterData = [];
         }
 
         return $laraigniterData;
