@@ -5,6 +5,7 @@ namespace Elegant\Console;
 use Elegant\Console\Input\ArgvInput;
 use Elegant\Console\Output\ConsoleOutput;
 use Elegant\Contracts\Console\Kernel as KernelContract;
+use Elegant\Foundation\Application;
 use Elegant\Support\Facades\Route;
 use RuntimeException;
 
@@ -51,6 +52,36 @@ class Kernel implements KernelContract
     {
         try {
             $this->commands();
+
+            // ── Built-in global options ──────────────────────────────────────
+            // These are handled before bootstrapping the full CI application so
+            // that no unnecessary overhead is incurred.
+
+            if ($input->hasParameterOption('-v') || $input->hasParameterOption('--version')) {
+                if (!function_exists('is_cli')) {
+                    function is_cli(): bool
+                    {
+                        return PHP_SAPI === 'cli' || defined('STDIN');
+                    }
+                }
+
+                defined('ENVIRONMENT') || define('ENVIRONMENT', 'production');
+
+                OutputStyle::write(
+                    OutputStyle::color("  ", 'white') . OutputStyle::color(" INFO ", 'white', 'blue') . " Laraigniter Framework " . Application::VERSION,
+                    'white'
+                );
+                OutputStyle::newLine();
+
+                return 0;
+            }
+
+            // No positional command given (bare `php artisan`, or flags only
+            // like `php artisan --help`) → show the command list.
+            if ($input->getFirstArgument() === null) {
+                $_SERVER['argv'] = [$_SERVER['argv'][0], 'list'];
+            }
+
             $this->prepareArgv($input);
             $this->bootstrap();
 

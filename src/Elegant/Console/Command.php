@@ -129,8 +129,14 @@ class Command extends CI_Controller
             }
         } else {
             // ── Top-level command ────────────────────────────────────────────
-            // First command in the chain: run the normal autoloader so that
-            // everything in config/autoload.php is available inside handle().
+            // Copy dynamic properties (view, mailer, gate …) that service
+            // providers set via app($key, $value) and are not in is_loaded().
+            foreach (get_object_vars($existingCI) as $key => $value) {
+                if (!isset($this->$key)) {
+                    $this->$key = $value;
+                }
+            }
+
             $this->load->initialize();
         }
     }
