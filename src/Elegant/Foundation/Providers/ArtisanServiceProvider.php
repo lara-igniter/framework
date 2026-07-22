@@ -33,6 +33,7 @@ use Elegant\Foundation\Console\StorageLinkCommand;
 use Elegant\Foundation\Console\UpCommand;
 use Elegant\Foundation\Console\VendorPublishCommand;
 use Elegant\Queue\Console\RestartCommand as QueueRestartCommand;
+use Elegant\Queue\Console\TableCommand;
 use Elegant\Queue\Console\WorkCommand as QueueWorkCommand;
 use Elegant\Session\Console\ClearCommand as SessionClearCommand;
 use Elegant\Session\Console\SessionTableCommand;
@@ -78,6 +79,7 @@ class ArtisanServiceProvider extends ServiceProvider implements PreSystem
         'ModelMake' => ModelMakeCommand::class,
         'PolicyMake' => PolicyMakeCommand::class,
         'ProviderMake' => ProviderMakeCommand::class,
+        'QueueTable' => TableCommand::class,
         'RepositoryMake' => RepositoryMakeCommand::class,
         'RequestMake' => RequestMakeCommand::class,
         'ResourceMake' => ResourceMakeCommand::class,
@@ -415,6 +417,16 @@ class ArtisanServiceProvider extends ServiceProvider implements PreSystem
     protected function registerQueueRestartCommand()
     {
         Kernel::registerCommand(QueueRestartCommand::class);
+    }
+
+    /**
+     * Register the command.
+     *
+     * @return void
+     */
+    protected function registerQueueTableCommand()
+    {
+        Kernel::registerCommand(TableCommand::class);
     }
 
     /**

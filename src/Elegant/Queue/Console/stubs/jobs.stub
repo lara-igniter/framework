@@ -1,0 +1,51 @@
+<?php
+
+/**
+ * @property mixed $load
+ * @property CI_DB_forge $dbforge
+ */
+class Migration_create_jobs_table extends CI_Migration
+{
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->load->dbforge();
+    }
+
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        $this->dbforge->id();
+        $this->dbforge->string('queue')->index();
+        $this->dbforge->longText('payload');
+        $this->dbforge->unsignedTinyInteger('attempts');
+        $this->dbforge->unsignedInteger('reserved_at')->nullable();
+        $this->dbforge->unsignedInteger('available_at');
+        $this->dbforge->unsignedInteger('created_at');
+        $this->dbforge->create_table('jobs');
+
+        $this->dbforge->id();
+        $this->dbforge->text('connection');
+        $this->dbforge->text('queue');
+        $this->dbforge->longText('payload');
+        $this->dbforge->longText('exception');
+        $this->dbforge->timestamp('failed_at', 0, true)->useCurrent();
+        $this->dbforge->create_table('failed_jobs');
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        $this->dbforge->drop_table('jobs');
+        $this->dbforge->drop_table('failed_jobs');
+    }
+}
