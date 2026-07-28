@@ -107,50 +107,22 @@ class VerifyCsrfToken implements Middleware
     /**
      * Determine if the session and input CSRF tokens match.
      *
+     * The session token is always the single source of truth. The XSRF-TOKEN
+     * cookie is only ever used to *transport* the token (e.g. for AJAX
+     * clients that echo it back via the X-XSRF-TOKEN header); it must never
+     * be trusted on its own, otherwise a stale cookie left over from a
+     * destroyed/expired session (e.g. after logout) could satisfy the check
+     * without ever matching the current session.
+     *
      * @param \MY_Input $request
      * @return bool
      */
     protected function tokensMatch(MY_Input $request): bool
     {
         $token = $this->getTokenFromRequest($request);
-        $cookieToken = $_COOKIE['XSRF-TOKEN'] ?? null;
-        $sessionToken = app('session')->userdata('_token');
+        $sessionToken = app('session')->token();
 
-        if (empty($sessionToken) && empty($cookieToken)) {
-            app('session')->token();
-            return true;
-        }
-
-        if (!empty($token)) {
-            if ((!empty($cookieToken) && hash_equals($token, $cookieToken)) ||
-                (!empty($sessionToken) && hash_equals($token, $sessionToken))) {
-                return true;
-            }
-        }
-
-        // If no form token but we have both cookie and session, they should match
-        if (empty($token) && !empty($cookieToken) && !empty($sessionToken)) {
-            return hash_equals($cookieToken, $sessionToken);
-        }
-
-        return false;
-
-//        $token = $this->getTokenFromRequest($request);
-//        $cookieToken = $_COOKIE['XSRF-TOKEN'] ?? null;
-//
-//        if (
-////            !is_string(app('session')->userdata('_token')) ||
-//            !is_string($token) ||
-//            !is_string($cookieToken)
-//        ) {
-//            dd('edw mpainw', app('session')->userdata('_token'), $_SESSION['_token'], $token, $cookieToken);
-//            return false;
-//        }
-//
-//        dd('edw', app('session')->userdata('_token'), $token, $cookieToken);
-//
-//        return hash_equals(app('session')->token(), $token)
-//            && hash_equals(app('session')->token(), $cookieToken);
+        return is_string($sessionToken) && is_string($token) && hash_equals($sessionToken, $token);
     }
 
 
@@ -164,23 +136,9 @@ class VerifyCsrfToken implements Middleware
     {
         $token = $request->input('_token') ?: $request->get_request_header('X-CSRF-TOKEN');
 
-//        if (empty($token)) {
-//            $payload = json_decode(file_get_contents('php://input'), true);
-//            if (is_array($payload) && isset($payload['_token'])) {
-//                $token = $payload['_token'];
-//            }
-//        }
-//
-//        if (empty($token)) {
-//            $token = $request->get_request_header('X-CSRF-TOKEN', true)
-//                ?: $request->get_request_header('X-XSRF-TOKEN', true);
-//        }
-
         if (! $token && $header = $request->get_request_header('X-XSRF-TOKEN')) {
             $token = $header;
         }
-
-//        unset($_POST['_token']);
 
         return $token;
     }
