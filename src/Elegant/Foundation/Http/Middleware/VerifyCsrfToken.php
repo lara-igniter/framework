@@ -228,7 +228,8 @@ class VerifyCsrfToken implements Middleware
             . '; Path=' . config_item('cookie_path')
             . '; Domain=' . config_item('cookie_domain')
             . $secure
-            . '; SameSite=Lax'
+            . '; SameSite=Lax',
+            false
         );
 
         $_COOKIE['XSRF-TOKEN'] = $token;
