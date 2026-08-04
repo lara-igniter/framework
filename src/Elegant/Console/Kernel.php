@@ -282,11 +282,12 @@ class Kernel implements KernelContract
     {
         $command = $input->getFirstArgument();
 
-        if ($command === null || !in_array($command, $this->getCommands(), true)) {
+        if ($command === null) {
             return;
         }
 
         $raw = $_SERVER['argv'];
+        $_SERVER['_laraigniter_command_argv'] = $raw;
         $result = [$raw[0], $raw[1]];
         $count = count($raw);
 
@@ -304,6 +305,9 @@ class Kernel implements KernelContract
         }
 
         $_SERVER['argv'] = array_values($result);
+
+        global $argv;
+        $argv = $_SERVER['argv'];
     }
 
     /**

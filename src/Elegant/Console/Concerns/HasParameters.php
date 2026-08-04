@@ -21,7 +21,7 @@ trait HasParameters
         $inputOptions = [];
         $currentOptionKey = null;
 
-        $args = array_slice($argv, 2);
+        $args = array_slice($_SERVER['_laraigniter_command_argv'] ?? $argv, 2);
 
         foreach ($args as $arg) {
             if (preg_match('/^--([^=]+)=(.*)$/', $arg, $matches)) {
