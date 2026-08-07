@@ -200,8 +200,6 @@ class VerifyCsrfToken implements Middleware
      */
     protected function tokenMismatch(): void
     {
-        log_message('error', 'CSRF token mismatch.');
-
         abort(419);
     }
 }
