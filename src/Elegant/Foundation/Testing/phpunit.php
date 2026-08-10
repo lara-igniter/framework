@@ -1,10 +1,13 @@
 <?php
 
 /**
- * Elegant PHPUnit bootstrap helpers (Composer autoload-dev).
+ * Elegant PHPUnit bootstrap helpers (Composer autoload files).
  *
  * Loaded with vendor/autoload.php — no per-project tests/bootstrap.php needed.
  * Only activates when the current process is PHPUnit.
+ *
+ * Must live in the package's autoload.files (not only autoload-dev): Composer
+ * never loads dependency autoload-dev into consuming apps.
  */
 
 if (defined('ELEGANT_PHPUNIT_BOOTSTRAPPED')) {

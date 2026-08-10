@@ -531,8 +531,8 @@ class Kernel implements KernelContract
      */
     protected function forceWebMode()
     {
-        // is_cli() is forced false by packages/Elegant/Foundation/Testing/phpunit.php
-        // when PHPUnit runs (Composer autoload-dev). Keep a defensive define here.
+        // is_cli() is forced false by Elegant/Foundation/Testing/phpunit.php when
+        // PHPUnit runs (Composer autoload files). Keep a defensive define here.
         if (! function_exists('is_cli')) {
             function is_cli()
             {

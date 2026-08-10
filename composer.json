@@ -71,7 +71,8 @@
         "files": [
             "src/Elegant/Collections/helpers.php",
             "src/Elegant/Foundation/helpers.php",
-            "src/Elegant/Support/helpers.php"
+            "src/Elegant/Support/helpers.php",
+            "src/Elegant/Foundation/Testing/phpunit.php"
         ],
         "psr-4": {
             "Elegant\\": "src/Elegant/",
@@ -83,9 +84,6 @@
         }
     },
     "autoload-dev": {
-        "files": [
-            "src/Elegant/Foundation/Testing/phpunit.php"
-        ],
         "psr-4": {
             "Elegant\\Tests\\": "tests/"
         }

@@ -111,11 +111,26 @@ class OutputStyle
     protected static $isColored = false;
 
     /**
+     * Whether the current SAPI should be treated as CLI.
+     *
+     * Prefer CodeIgniter's is_cli() when available; fall back to PHP_SAPI so this
+     * class can load before Common.php (e.g. PHPUnit printer bootstrap).
+     */
+    protected static function runningInConsole(): bool
+    {
+        if (\function_exists('is_cli')) {
+            return \is_cli();
+        }
+
+        return \PHP_SAPI === 'cli' || \PHP_SAPI === 'phpdbg';
+    }
+
+    /**
      * Static "constructor".
      */
     public static function init()
     {
-        if (is_cli()) {
+        if (static::runningInConsole()) {
             static::$readline_support = extension_loaded('readline');
             static::$segments = [];
             static::$options = [];
@@ -891,7 +906,7 @@ class OutputStyle
      */
     protected static function fwrite($handle, string $string)
     {
-        if (!is_cli()) {
+        if (! static::runningInConsole()) {
             // @codeCoverageIgnoreStart
             echo $string;
 
