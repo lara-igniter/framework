@@ -2,7 +2,6 @@
 
 namespace Elegant\Foundation\Testing;
 
-use Elegant\Foundation\Testing\Concerns\CreatesApplication;
 use Elegant\Foundation\Testing\Concerns\InteractsWithAuthentication;
 use Elegant\Foundation\Testing\Concerns\InteractsWithMiddleware;
 use Elegant\Foundation\Testing\Concerns\InteractsWithSession;
@@ -11,11 +10,19 @@ use PHPUnit\Framework\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
-    use CreatesApplication;
     use MakesHttpRequests;
     use InteractsWithAuthentication;
     use InteractsWithMiddleware;
     use InteractsWithSession;
+
+    /**
+     * Creates the application.
+     *
+     * Implemented by the application's Tests\CreatesApplication trait
+     *
+     * @return \Elegant\Foundation\Application
+     */
+    abstract public function createApplication();
 
     /**
      * The application instance.
