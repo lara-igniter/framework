@@ -2,6 +2,7 @@
 
 namespace Elegant\Routing\Middleware;
 
+use Elegant\Foundation\Http\Kernel as HttpKernel;
 use Elegant\Routing\Contracts\MiddlewareInterface;
 
 class Middleware
@@ -46,16 +47,26 @@ class Middleware
     /**
      * Runs middleware
      *
-     * @param string|callable $middleware
+     * @param string|callable|object|array $middleware
      * @param array $args
      *
      * @return void
      */
     final public function run($middleware, array $args = [])
     {
+        $kernel = HttpKernel::getInstance();
+
+        if ($kernel) {
+            $kernel->applyPendingAuthentication();
+        }
+
+        if ($this->shouldSkip($middleware)) {
+            return;
+        }
+
         if (is_callable($middleware)) {
             call_user_func_array($middleware, $args);
-        } else if (is_object($middleware)) {
+        } elseif (is_object($middleware)) {
             if (!$middleware instanceof MiddlewareInterface) {
                 if (method_exists($middleware, 'run')) {
                     show_error('Your "' . get_class($middleware) . '" middleware does not have a run() public method');
@@ -63,12 +74,11 @@ class Middleware
             }
 
             $middleware->run(app('input'), $args);
-        } else if (is_array($middleware)) {
+        } elseif (is_array($middleware)) {
             foreach ($middleware as $run) {
                 $this->run($run, $args);
             }
-            return;
-        } else if (is_string($middleware)) {
+        } elseif (is_string($middleware)) {
             if (isset(\App\Kernel::$routeMiddleware[$middleware])) {
                 $middleware = new \App\Kernel::$routeMiddleware[$middleware]();
 
@@ -90,11 +100,56 @@ class Middleware
     }
 
     /**
+     * @param mixed $middleware
+     * @return bool
+     */
+    protected function shouldSkip($middleware): bool
+    {
+        $kernel = HttpKernel::getInstance();
+
+        if ($kernel && $kernel->shouldSkipAllMiddleware()) {
+            return true;
+        }
+
+        $skipList = $kernel ? $kernel->middlewareToSkip() : [];
+
+        if ($skipList === [] || $skipList === null) {
+            return false;
+        }
+
+        if (is_object($middleware)) {
+            $candidates = [get_class($middleware)];
+        } elseif (is_string($middleware)) {
+            $candidates = [$middleware];
+
+            if (isset(\App\Kernel::$routeMiddleware[$middleware])) {
+                $candidates[] = \App\Kernel::$routeMiddleware[$middleware];
+            }
+        } else {
+            return false;
+        }
+
+        foreach ($skipList as $item) {
+            foreach ($candidates as $candidate) {
+                if ($item === $candidate || ltrim((string) $candidate, '\\') === ltrim((string) $item, '\\')) {
+                    return true;
+                }
+
+                if (is_string($candidate) && class_exists($candidate) && class_exists($item) && is_a($candidate, $item, true)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Binds a middleware to CodeIgniter hook at runtime
      *
      * @param string $hook Hook name
      * @param callable $middleware Middleware callable
-     * @param array[] ...$args Middleware ars
+     * @param array[] ...$args Middleware args
      *
      * @return void
      */
@@ -112,7 +167,7 @@ class Middleware
 
             app('hooks')->hooks[$hook][] = call_user_func_array($middleware, $args);
         } else {
-            app('hooks')->hooks[$hook][] = call_user_function_array([$this, 'run'], [$middleware, $args]);
+            app('hooks')->hooks[$hook][] = call_user_func_array([$this, 'run'], [$middleware, $args]);
         }
     }
 }
