@@ -110,9 +110,17 @@ class MailManager implements FactoryContract
         // Once we have created the mailer instance we will set a container instance
         // on the mailer. This allows us to resolve mailer classes via containers
         // for maximum testability on said classes instead of passing Closures.
+        $views = app('view');
+
+        if (is_null($views)) {
+            throw new InvalidArgumentException(
+                'View factory [view] is not registered. Ensure Elegant\\View\\ViewServiceProvider has run before resolving mailer [' . $name . '].'
+            );
+        }
+
         $mailer = new Mailer(
             $name,
-            app('view'),
+            $views,
             $this->createSwiftMailer($config)
         );
 

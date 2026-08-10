@@ -2,8 +2,6 @@
 
 namespace Elegant\Support\Facades;
 
-use Elegant\Mail\MailManager;
-
 /**
  * @method static \Elegant\Mail\Mailer mailer(string|null $name = null)
  * @method static \Elegant\Mail\PendingMail bcc($users)
@@ -16,18 +14,23 @@ use Elegant\Mail\MailManager;
  * @method static void send(\Elegant\Contracts\Mail\Mailable|string|array $view, array $data = [], \Closure|string $callback = null)
  *
  * @see \Elegant\Mail\Mailer
+ * @see \Elegant\Mail\MailManager
  */
 class Mail extends Facade
 {
     /**
      * Get the registered name of the component.
      *
-     * @return MailManager
+     * Must return the container binding key so the facade reuses the
+     * MailManager registered by MailServiceProvider (with its cached mailers
+     * and View factory). Returning a new MailManager on every call forced
+     * resolve() to call app('view') again and failed in long-running queue workers
+     * when the CI singleton's view property was no longer available.
+     *
+     * @return string
      */
     protected static function getFacadeAccessor()
     {
-        app('load')->config('mail', true);
-
-        return new MailManager(app('config'));
+        return 'mail.manager';
     }
 }
