@@ -141,11 +141,17 @@ class Gate implements GateContract
     /**
      * Resolve the user from auth session.
      *
+     * Prefer the live session user over the constructor snapshot.
+     *
      * @return object|null
      */
     protected function resolveUser(): ?object
     {
-        $user = $this->userResolver ?? auth();
+        $user = auth();
+
+        if (! is_object($user)) {
+            $user = $this->userResolver;
+        }
 
         return is_object($user) ? $user : null;
     }

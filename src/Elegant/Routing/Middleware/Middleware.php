@@ -64,8 +64,10 @@ class Middleware
             return;
         }
 
+        $result = null;
+
         if (is_callable($middleware)) {
-            call_user_func_array($middleware, $args);
+            $result = call_user_func_array($middleware, $args);
         } elseif (is_object($middleware)) {
             if (!$middleware instanceof MiddlewareInterface) {
                 if (method_exists($middleware, 'run')) {
@@ -73,11 +75,13 @@ class Middleware
                 }
             }
 
-            $middleware->run(app('input'), $args);
+            $result = $middleware->run(app('input'), $args);
         } elseif (is_array($middleware)) {
             foreach ($middleware as $run) {
                 $this->run($run, $args);
             }
+
+            return;
         } elseif (is_string($middleware)) {
             if (isset(\App\Kernel::$routeMiddleware[$middleware])) {
                 $middleware = new \App\Kernel::$routeMiddleware[$middleware]();
@@ -88,14 +92,20 @@ class Middleware
                     }
                 }
 
-                $middleware->run($args);
+                $result = $middleware->run($args);
             } else {
                 show_error('Route middleware {' . $middleware . '} does not exist in application\Kernel.php');
             }
         } else {
             $middlewareInstance = self::load($middleware);
 
-            call_user_func([$middlewareInstance, 'run'], $args);
+            $result = call_user_func([$middlewareInstance, 'run'], $args);
+        }
+
+        // Middleware may already have send()'d a redirect; stop the request so the
+        // controller does not keep running after fastcgi_finish_request().
+        if ($result instanceof \Symfony\Component\HttpFoundation\Response) {
+            exit;
         }
     }
 
