@@ -25,6 +25,15 @@ foreach ($_SERVER['argv'] ?? [] as $arg) {
     }
 }
 
+// PHPUnit process-isolation children may not keep "phpunit" in argv; phpunit.xml sets these.
+if (! $runningPhpunit) {
+    $appEnv = getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? ($_SERVER['APP_ENV'] ?? ''));
+    $ciEnv = getenv('CI_ENV') ?: ($_ENV['CI_ENV'] ?? ($_SERVER['CI_ENV'] ?? ''));
+    if ($appEnv === 'testing' || $ciEnv === 'testing') {
+        $runningPhpunit = true;
+    }
+}
+
 if (! $runningPhpunit) {
     return;
 }

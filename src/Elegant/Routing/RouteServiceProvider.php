@@ -134,6 +134,12 @@ class RouteServiceProvider implements PreSystem, PreController, PostControllerCo
 
     public function preController(&$params, &$URI, &$class, &$method)
     {
+        $kernel = \Elegant\Foundation\Http\Kernel::getInstance();
+        if ($kernel) {
+            // Apply actingAs() before postControllerConstructor view shares run.
+            $kernel->applyPendingAuthentication();
+        }
+
         $route = Route::getCurrentRoute();
 
         // Is a 404 route? stop this hook

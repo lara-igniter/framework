@@ -358,6 +358,14 @@ class Kernel implements KernelContract
             $uriString = trim($uriString, '/');
         }
 
+        // Clear previous request segments so they do not bleed into the next URI.
+        if (property_exists($URI, 'segments')) {
+            $URI->segments = [];
+        }
+        if (property_exists($URI, 'rsegments')) {
+            $URI->rsegments = [];
+        }
+
         $method = new \ReflectionMethod($URI, '_set_uri_string');
         $method->setAccessible(true);
         $method->invoke($URI, $uriString);
@@ -438,6 +446,11 @@ class Kernel implements KernelContract
                 'App\\Controllers\\' . str_replace('/', '\\', $class),
             ];
 
+            $namespace = $route->getNamespace();
+            if (is_string($namespace) && $namespace !== '') {
+                $candidates[] = 'App\\Controllers\\' . str_replace('/', '\\', trim($namespace, '/\\')) . '\\' . ltrim($class, '\\');
+            }
+
             foreach ($candidates as $candidate) {
                 if (class_exists($candidate)) {
                     $class = $candidate;
@@ -453,8 +466,10 @@ class Kernel implements KernelContract
             return;
         }
 
-        $controller = new $class();
+        $controller = $this->resolveControllerInstance($class);
         $this->applyPendingAuthentication();
+        $this->bindRouteParametersFromUri($route);
+        $this->callPostControllerConstructorHook();
 
         // Setting / menu models expect the cache driver; load_class('Cache') looks for
         // libraries/Cache.php (missing) while driver() loads libraries/Cache/Cache.php.
@@ -480,7 +495,13 @@ class Kernel implements KernelContract
         }
 
         if (method_exists($controller, $method)) {
-            call_user_func([$controller, $method]);
+            $args = [];
+            foreach ($route->params as $param) {
+                if (isset($param->value) && $param->value !== null && $param->value !== '') {
+                    $args[] = $param->value;
+                }
+            }
+            call_user_func_array([$controller, $method], $args);
         }
 
         if (function_exists('get_instance')) {
@@ -491,6 +512,120 @@ class Kernel implements KernelContract
                     echo $output;
                 }
             }
+        }
+    }
+
+    /**
+     * Reuse or rebuild a controller without re-entering CI_Controller's
+     * is_loaded() → load_class('Cache') path (which looks for the wrong file).
+     *
+     * @param string $class
+     * @return object
+     */
+    protected function resolveControllerInstance(string $class)
+    {
+        $existing = function_exists('get_instance') ? get_instance() : null;
+
+        if ($existing && get_class($existing) === $class) {
+            return $existing;
+        }
+
+        $this->scrubLoaderIsLoadedPollution();
+
+        $ref = new \ReflectionClass($class);
+        $controller = $ref->newInstanceWithoutConstructor();
+
+        if (class_exists('CI_Controller', false)) {
+            $prop = new \ReflectionProperty(\CI_Controller::class, 'instance');
+            $prop->setAccessible(true);
+            $prop->setValue(null, $controller);
+        }
+
+        if ($existing) {
+            foreach (get_object_vars($existing) as $key => $value) {
+                $controller->$key = $existing->$key;
+            }
+        }
+
+        $ref->getMethod('__construct')->invoke($controller);
+
+        return $controller;
+    }
+
+    /**
+     * Drop Loader-registered libraries/drivers from is_loaded() so a fresh
+     * CI_Controller::__construct() does not call load_class('Cache') etc.
+     *
+     * @return void
+     */
+    protected function scrubLoaderIsLoadedPollution()
+    {
+        if (! function_exists('is_loaded') || ! function_exists('load_class')) {
+            return;
+        }
+
+        $ref = new \ReflectionFunction('load_class');
+        $statics = $ref->getStaticVariables();
+        $coreClasses = $statics['_classes'] ?? [];
+
+        $isLoaded =& is_loaded();
+
+        foreach ($isLoaded as $key => $loadedClass) {
+            if (! isset($coreClasses[$loadedClass])) {
+                unset($isLoaded[$key]);
+            }
+        }
+    }
+
+    /**
+     * Bind route placeholders from the current CI URI segments.
+     *
+     * @param \Elegant\Routing\Route $route
+     * @return void
+     */
+    protected function bindRouteParametersFromUri($route)
+    {
+        if (! function_exists('load_class') || empty($route->params)) {
+            return;
+        }
+
+        $URI =& load_class('URI', 'core');
+        $segments = explode('/', trim($route->getFullPath(), '/'));
+        $pCount = 0;
+
+        foreach ($segments as $currentSegmentIndex => $segment) {
+            if (! preg_match('/^\{(.*)\}$/', $segment)) {
+                continue;
+            }
+
+            if (! isset($route->params[$pCount])) {
+                break;
+            }
+
+            $route->params[$pCount]->value = $URI->segment($currentSegmentIndex + 1);
+            $pCount++;
+        }
+    }
+
+    /**
+     * Re-run post_controller_constructor hooks (view shares, etc.) on subsequent
+     * in-process requests — CodeIgniter.php only does this on the first boot.
+     *
+     * @return void
+     */
+    protected function callPostControllerConstructorHook()
+    {
+        if (! function_exists('get_instance')) {
+            return;
+        }
+
+        try {
+            $CI = get_instance();
+            if ($CI && isset($CI->hooks) && method_exists($CI->hooks, 'call_hook')) {
+                $CI->hooks->call_hook('post_controller_constructor');
+            }
+        } catch (Throwable $e) {
+            //
         }
     }
 

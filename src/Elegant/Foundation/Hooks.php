@@ -146,6 +146,12 @@ class Hooks
     {
         Facade::setFacadeApplication(app());
 
+        // Feature tests: apply actingAs() before providers that share auth-dependent view data.
+        $kernel = \Elegant\Foundation\Http\Kernel::getInstance();
+        if ($kernel) {
+            $kernel->applyPendingAuthentication();
+        }
+
         // Alias classes to use standalone name inside blade without a namespace
         if(array_key_exists('aliases', $hooks)) {
             AliasLoader::getInstance($hooks['aliases'])->register();
