@@ -113,6 +113,12 @@ class Gate implements GateContract
     {
         $arguments = Arr::wrap($arguments);
 
+        $user = $this->resolveUser();
+
+        if ($user === null) {
+            return false;
+        }
+
         // if (class_exists(is_array($arguments) ? $arguments[0] : $arguments)) {
         $className = 'App\\Policies\\' . Str::studly(Str::afterLast($arguments[0], '\\')) . 'Policy';
 
@@ -122,7 +128,7 @@ class Gate implements GateContract
             throw new Exception('Policy with name ' . $className . ' does not exist!');
         }
 
-        $arguments[0] = $this->resolveUser();
+        $arguments[0] = $user;
 
         return method_exists($policy, $ability)
             ? call_user_func_array([$policy, $ability], $arguments)

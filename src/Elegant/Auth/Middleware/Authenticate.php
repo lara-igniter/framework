@@ -18,7 +18,9 @@ class Authenticate implements Middleware
      */
     public function run(MY_Input $request, $args)
     {
-        if (!app('ion_auth')->logged_in()) {
+        // ion_auth->logged_in() only checks session identity; auth() needs logged_user.
+        // Require both so half-sessions redirect to login instead of breaking policies.
+        if (!app('ion_auth')->logged_in() || !auth()) {
             try {
                 $this->unauthenticated($request);
             } catch (AuthenticationException $e) {
