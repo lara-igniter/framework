@@ -143,8 +143,10 @@ class Gate implements GateContract
      *
      * @return object|null
      */
-    protected function resolveUser()
+    protected function resolveUser(): ?object
     {
-        return $this->userResolver ?? (auth() ?? null);
+        $user = $this->userResolver ?? auth();
+
+        return is_object($user) ? $user : null;
     }
 }

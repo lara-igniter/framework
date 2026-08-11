@@ -19,6 +19,8 @@ class AuthServiceProvider implements PostControllerConstructor
      */
     protected function registerAccessGate()
     {
-        app('gate', new Gate(auth()));
+        $user = auth();
+
+        app('gate', new Gate(is_object($user) ? $user : null));
     }
 }
