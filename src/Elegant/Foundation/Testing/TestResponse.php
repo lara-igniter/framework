@@ -84,7 +84,10 @@ class TestResponse
 
     public function assertRedirect(?string $uri = null): self
     {
-        \PHPUnit\Framework\Assert::assertTrue($this->isRedirection(), 'Response is not a redirect');
+        \PHPUnit\Framework\Assert::assertTrue(
+            $this->isRedirection(),
+            'Response status code [' . $this->status . '] is not a redirect status code.'
+        );
 
         if ($uri !== null) {
             \PHPUnit\Framework\Assert::assertEquals(
@@ -112,7 +115,7 @@ class TestResponse
         return $this->assertStatus(404);
     }
 
-    protected function getContent(): string
+    public function getContent(): string
     {
         if (isset($this->response->content) && is_string($this->response->content)) {
             return $this->response->content;

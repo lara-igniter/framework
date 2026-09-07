@@ -3,6 +3,7 @@
 namespace Elegant\Foundation\Testing;
 
 use Elegant\Foundation\Testing\Concerns\InteractsWithAuthentication;
+use Elegant\Foundation\Testing\Concerns\InteractsWithDatabase;
 use Elegant\Foundation\Testing\Concerns\InteractsWithMiddleware;
 use Elegant\Foundation\Testing\Concerns\InteractsWithSession;
 use Elegant\Foundation\Testing\Concerns\MakesHttpRequests;
@@ -12,6 +13,7 @@ abstract class TestCase extends BaseTestCase
 {
     use MakesHttpRequests;
     use InteractsWithAuthentication;
+    use InteractsWithDatabase;
     use InteractsWithMiddleware;
     use InteractsWithSession;
 

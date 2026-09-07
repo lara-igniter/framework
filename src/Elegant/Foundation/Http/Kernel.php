@@ -8,6 +8,7 @@ use Elegant\Routing\Exceptions\RouteNotFoundException;
 use Elegant\Routing\Middleware\Middleware;
 use Elegant\Routing\RouteBuilder as Route;
 use Elegant\Support\Utils;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Throwable;
 
 class Kernel implements KernelContract
@@ -56,6 +57,20 @@ class Kernel implements KernelContract
      * @var bool
      */
     protected $withoutMiddlewareAll = false;
+
+    /**
+     * Last value returned by a subsequent in-process controller dispatch.
+     *
+     * @var mixed
+     */
+    protected $lastControllerResult;
+
+    /**
+     * Request currently being handled (used to rematch routes in-process).
+     *
+     * @var \Elegant\Foundation\Http\Request|null
+     */
+    protected $currentRequest;
 
     /**
      * @param \Elegant\Foundation\Application $app
@@ -208,6 +223,7 @@ class Kernel implements KernelContract
     public function handle($request)
     {
         $this->bootstrap();
+        $this->currentRequest = $request;
         $this->applyRequestGlobals($request);
 
         if (! self::$codeIgniterLoaded) {
@@ -242,13 +258,24 @@ class Kernel implements KernelContract
             }
 
             require_once BASEPATH . 'core' . DIRECTORY_SEPARATOR . 'CodeIgniter.php';
-            self::$codeIgniterLoaded = true;
         } catch (Throwable $e) {
             $error = $e;
         } finally {
             $buffered = ob_get_clean();
             if ($previous) {
                 chdir($previous);
+            }
+
+            // Mark loaded even if the first view throws — get_instance() already exists
+            // and subsequent in-process requests must rematch instead of re-entering CI.
+            if (function_exists('get_instance')) {
+                try {
+                    if (get_instance()) {
+                        self::$codeIgniterLoaded = true;
+                    }
+                } catch (Throwable $e) {
+                    //
+                }
             }
         }
 
@@ -268,9 +295,12 @@ class Kernel implements KernelContract
     {
         ob_start();
         $error = null;
+        $this->lastControllerResult = null;
 
         try {
             $this->resetOutput();
+            $this->resetQueryBuilder();
+            $this->resetFormValidation();
             $this->resetUriFromGlobals();
             $this->rematchCurrentRoute();
             $this->dispatchCurrentRoute();
@@ -282,6 +312,27 @@ class Kernel implements KernelContract
 
         if ($error) {
             return new Response($error->getMessage(), 500, []);
+        }
+
+        if ($this->lastControllerResult instanceof SymfonyResponse) {
+            $headers = [];
+            foreach ($this->lastControllerResult->headers->all() as $name => $values) {
+                $headers[$name] = implode(', ', $values);
+            }
+
+            return new Response(
+                (string) $this->lastControllerResult->getContent(),
+                $this->lastControllerResult->getStatusCode(),
+                $headers
+            );
+        }
+
+        if (is_object($this->lastControllerResult) && method_exists($this->lastControllerResult, 'render')) {
+            try {
+                $buffered = (string) $this->lastControllerResult->render();
+            } catch (Throwable $e) {
+                return new Response($e->getMessage(), 500, []);
+            }
         }
 
         return $this->captureResponse($buffered);
@@ -320,6 +371,11 @@ class Kernel implements KernelContract
             $headers[$name] = $value;
         }
 
+        // CLI / PHPUnit often cannot apply header(); treat Location as a redirect.
+        if ($status < 300 && $this->headerValue($headers, 'Location') !== null) {
+            $status = 302;
+        }
+
         return new Response($content, $status, $headers);
     }
 
@@ -345,12 +401,84 @@ class Kernel implements KernelContract
     }
 
     /**
+     * MY_Model shares one CI DB singleton; leftover WHERE clauses bleed across requests.
+     *
+     * @return void
+     */
+    protected function resetQueryBuilder()
+    {
+        if (! function_exists('get_instance')) {
+            return;
+        }
+
+        try {
+            $ci = get_instance();
+        } catch (Throwable $e) {
+            return;
+        }
+
+        if ($ci && isset($ci->db) && method_exists($ci->db, 'reset_query')) {
+            $ci->db->reset_query();
+        }
+    }
+
+    /**
+     * CI form_validation is a process singleton; leftover rules bleed across in-process requests.
+     *
+     * @return void
+     */
+    protected function resetFormValidation()
+    {
+        if (! function_exists('get_instance')) {
+            return;
+        }
+
+        try {
+            $ci = get_instance();
+        } catch (Throwable $e) {
+            return;
+        }
+
+        if ($ci && isset($ci->form_validation) && method_exists($ci->form_validation, 'reset_validation')) {
+            $ci->form_validation->reset_validation();
+        }
+    }
+
+    /**
+     * Path used to rematch in-process requests (compiled routes have no leading slash).
+     *
+     * @return string
+     */
+    protected function currentRequestPath()
+    {
+        if ($this->currentRequest && is_string($this->currentRequest->uri) && $this->currentRequest->uri !== '') {
+            $path = trim($this->currentRequest->uri, '/');
+
+            return $path === '' ? '/' : $path;
+        }
+
+        return Utils::currentUrl();
+    }
+
+    /**
+     * @return string
+     */
+    protected function currentRequestMethod()
+    {
+        if ($this->currentRequest && is_string($this->currentRequest->method) && $this->currentRequest->method !== '') {
+            return strtoupper($this->currentRequest->method);
+        }
+
+        return strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+    }
+
+    /**
      * @return void
      */
     protected function resetUriFromGlobals()
     {
         $URI =& load_class('URI', 'core');
-        $uriString = Utils::currentUrl();
+        $uriString = $this->currentRequestPath();
 
         if ($uriString === '/') {
             $uriString = '';
@@ -376,8 +504,8 @@ class Kernel implements KernelContract
      */
     protected function rematchCurrentRoute()
     {
-        $url = Utils::currentUrl();
-        $requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        $url = $this->currentRequestPath();
+        $requestMethod = $this->currentRequestMethod();
 
         try {
             $currentRoute = Route::getByUrl($url, $requestMethod);
@@ -494,6 +622,7 @@ class Kernel implements KernelContract
             }
         }
 
+        $result = null;
         if (method_exists($controller, $method)) {
             $args = [];
             foreach ($route->params as $param) {
@@ -501,8 +630,11 @@ class Kernel implements KernelContract
                     $args[] = $param->value;
                 }
             }
-            call_user_func_array([$controller, $method], $args);
+            $result = call_user_func_array([$controller, $method], $args);
         }
+
+        $this->lastControllerResult = $result;
+        $this->emitControllerResult($result);
 
         if (function_exists('get_instance')) {
             $CI = get_instance();
@@ -513,6 +645,52 @@ class Kernel implements KernelContract
                 }
             }
         }
+    }
+
+    /**
+     * Controller return values are discarded by CI; apply them so in-process
+     * PHPUnit requests see redirects/views the same way a real HTTP SAPI would.
+     *
+     * @param mixed $result
+     * @return void
+     */
+    protected function emitControllerResult($result)
+    {
+        if ($result instanceof SymfonyResponse) {
+            http_response_code($result->getStatusCode());
+
+            $location = $result->headers->get('Location');
+            if (is_string($location) && $location !== '') {
+                header('Location: ' . $location);
+            }
+
+            $content = $result->getContent();
+            if (is_string($content) && $content !== '') {
+                echo $content;
+            }
+
+            return;
+        }
+
+        if (is_object($result) && method_exists($result, '__toString')) {
+            echo (string) $result;
+        }
+    }
+
+    /**
+     * @param array<string, string> $headers
+     * @param string $name
+     * @return string|null
+     */
+    protected function headerValue(array $headers, string $name)
+    {
+        foreach ($headers as $header => $value) {
+            if (strcasecmp((string) $header, $name) === 0) {
+                return $value;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -639,6 +817,8 @@ class Kernel implements KernelContract
 
         $_SERVER['REQUEST_METHOD'] = $request->method;
         $_SERVER['REQUEST_URI'] = $request->getRequestUri();
+        $_SERVER['PATH_INFO'] = $request->uri;
+        $_SERVER['ORIG_PATH_INFO'] = $request->uri;
         $_SERVER['QUERY_STRING'] = $queryString;
         $_SERVER['SCRIPT_NAME'] = $request->server['SCRIPT_NAME'] ?? '/index.php';
         $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];

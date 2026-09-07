@@ -114,6 +114,13 @@ class FormRequest
      */
     public function valid(): bool
     {
+        // CI3 set_rules() is a no-op unless method is POST or validation_data is set.
+        // In-process PUT/PATCH tests (and real REST clients) still put fields in $_POST.
+        $method = strtolower((string) ($_SERVER['REQUEST_METHOD'] ?? 'post'));
+        if (in_array($method, ['put', 'patch', 'delete'], true) && ! empty($_POST)) {
+            $this->form_validation->set_data($_POST);
+        }
+
         if (isset($_FILES)) {
             foreach ($_FILES as $key => $input) {
                 $check_key = is_array($input[array_key_first($input)]) ? $key . '[]' : $key;

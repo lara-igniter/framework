@@ -11,7 +11,13 @@ class Utils
      */
     public static function currentUrl(): string
     {
-        if (is_cli()) {
+        $testingWebRequest = (
+            (getenv('APP_ENV') === 'testing' || getenv('CI_ENV') === 'testing')
+            && ! empty($_SERVER['REQUEST_URI'])
+        );
+
+        // PHPUnit runs in CLI; in-process HTTP tests still set REQUEST_URI.
+        if (is_cli() && ! $testingWebRequest) {
             $args = array_slice($_SERVER['argv'], 1);
             return $args ? implode('/', $args) : '/';
         }
