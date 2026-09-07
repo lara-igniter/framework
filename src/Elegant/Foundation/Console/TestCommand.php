@@ -99,7 +99,16 @@ class TestCommand extends Command
         $_SERVER['DB_DATABASE'] = ':memory:';
 
         $command = array_merge(
-            [PHP_BINARY, '-d', 'error_reporting=' . $phpunitErrorReporting, $phpunit, '--configuration', $config],
+            [
+                PHP_BINARY,
+                '-d',
+                'error_reporting=' . $phpunitErrorReporting,
+                '-d',
+                'output_buffering=0',
+                $phpunit,
+                '--configuration',
+                $config,
+            ],
             $args
         );
 

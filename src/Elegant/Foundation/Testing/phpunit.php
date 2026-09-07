@@ -55,11 +55,6 @@ set_error_handler(static function (int $severity, string $message, string $file 
     return false;
 });
 
-// Absorb PHPUnit progress output so CI session_start()/ini_set() do not hit "headers already sent".
-if (ob_get_level() === 0) {
-    ob_start();
-}
-
 if (! function_exists('str_contains')) {
     function str_contains($haystack, $needle)
     {

@@ -23,14 +23,19 @@ class Printer extends TestDoxPrinter
     private $bufferClass = '';
 
     /**
-     * @var array<int, array>
-     */
-    private $bufferTests = [];
-
-    /**
      * @var bool
      */
     private $bufferFailed = false;
+
+    /**
+     * @var int
+     */
+    private $printedTestsInClass = 0;
+
+    /**
+     * @var int
+     */
+    private $lastMessageLines = 0;
 
     /**
      * @param null|resource|string $out
@@ -60,27 +65,56 @@ class Printer extends TestDoxPrinter
     }
 
     /**
+     * Print the class badge as soon as the first test in that class starts.
+     *
+     * @param Test $test
+     * @return void
+     */
+    public function startTest(Test $test): void
+    {
+        if ($test instanceof TestCase) {
+            $class = get_class($test);
+
+            if ($this->bufferClass !== $class) {
+                if ($this->bufferClass !== '') {
+                    $this->write(PHP_EOL);
+                }
+
+                $this->bufferClass = $class;
+                $this->bufferFailed = false;
+                $this->printedTestsInClass = 0;
+                $this->lastMessageLines = 0;
+                $this->writeClassHeader(true);
+                $this->flushStdout();
+            }
+        }
+
+        parent::startTest($test);
+    }
+
+    /**
      * @param array $prevResult
      * @param array $result
      * @return void
      */
     protected function writeTestResult(array $prevResult, array $result): void
     {
-        if ($this->bufferClass !== '' && $prevResult['className'] !== $result['className']) {
-            $this->flushClassBuffer();
+        $this->write($this->formatTestLine($result, $this->terminalColumns()) . PHP_EOL);
+        $this->printedTestsInClass++;
+        $this->lastMessageLines = 0;
+
+        if (! empty($result['message'])) {
+            $message = rtrim((string) $result['message']);
+            $this->write(OutputStyle::color($message, 'light_gray') . PHP_EOL);
+            $this->lastMessageLines = substr_count($message, "\n") + 1;
         }
 
-        if ($this->bufferClass !== $result['className']) {
-            $this->bufferClass = $result['className'];
-            $this->bufferTests = [];
-            $this->bufferFailed = false;
-        }
-
-        $this->bufferTests[] = $result;
-
-        if ($result['status'] !== BaseTestRunner::STATUS_PASSED) {
+        if ($result['status'] !== BaseTestRunner::STATUS_PASSED && ! $this->bufferFailed) {
             $this->bufferFailed = true;
+            $this->rewriteClassHeaderAsFailed();
         }
+
+        $this->flushStdout();
     }
 
     /**
@@ -89,22 +123,17 @@ class Printer extends TestDoxPrinter
      */
     public function printResult(TestResult $result): void
     {
-        $this->flushClassBuffer();
-
         $this->write(PHP_EOL);
         $this->printFooter($result);
+        $this->flushStdout();
     }
 
     /**
+     * @param bool $passed
      * @return void
      */
-    private function flushClassBuffer(): void
+    private function writeClassHeader(bool $passed): void
     {
-        if ($this->bufferClass === '' || $this->bufferTests === []) {
-            return;
-        }
-
-        $passed = ! $this->bufferFailed;
         $badge = $passed ? ' PASS ' : ' FAIL ';
         $badgeFg = $passed ? 'dark_gray' : 'white';
         $badgeBg = $passed ? 'green' : 'red';
@@ -116,22 +145,43 @@ class Printer extends TestDoxPrinter
             . OutputStyle::color($this->bufferClass, 'white')
             . PHP_EOL
         );
+    }
 
-        $columns = $this->terminalColumns();
+    /**
+     * Collision-style: turn the live PASS badge into FAIL when the first test fails.
+     *
+     * @return void
+     */
+    private function rewriteClassHeaderAsFailed(): void
+    {
+        $up = $this->printedTestsInClass + $this->lastMessageLines;
 
-        foreach ($this->bufferTests as $test) {
-            $this->write($this->formatTestLine($test, $columns) . PHP_EOL);
-
-            if (! empty($test['message'])) {
-                $this->write(OutputStyle::color($test['message'], 'light_gray') . PHP_EOL);
-            }
+        if ($up < 1) {
+            return;
         }
 
-        $this->write(PHP_EOL);
+        $this->write(sprintf("\033[%dA\r", $up));
+        $this->write("\033[2K");
+        $this->writeClassHeader(false);
 
-        $this->bufferClass = '';
-        $this->bufferTests = [];
-        $this->bufferFailed = false;
+        $down = $up - 1;
+        if ($down > 0) {
+            $this->write(sprintf("\033[%dB", $down));
+        }
+    }
+
+    /**
+     * @return void
+     */
+    private function flushStdout(): void
+    {
+        if (defined('STDOUT') && is_resource(STDOUT)) {
+            fflush(STDOUT);
+        }
+
+        if (function_exists('flush')) {
+            flush();
+        }
     }
 
     /**
