@@ -4,7 +4,8 @@
  * Elegant PHPUnit bootstrap helpers (Composer autoload files).
  *
  * Loaded with vendor/autoload.php — no per-project tests/bootstrap.php needed.
- * Only activates when the current process is PHPUnit.
+ * Must be the first package autoload.files entry so error_reporting is set
+ * before helpers.php is parsed (PHP 8.4 implicit-nullable deprecations).
  *
  * Must live in the package's autoload.files (not only autoload-dev): Composer
  * never loads dependency autoload-dev into consuming apps.
@@ -14,7 +15,7 @@ if (defined('ELEGANT_PHPUNIT_BOOTSTRAPPED')) {
     return;
 }
 
-$runningPhpunit = false;
+$runningPhpunit = defined('PHPUNIT_COMPOSER_INSTALL') || defined('__PHPUNIT_PHAR__');
 
 foreach ($_SERVER['argv'] ?? [] as $arg) {
     $normalized = str_replace('\\', '/', (string) $arg);
@@ -25,7 +26,7 @@ foreach ($_SERVER['argv'] ?? [] as $arg) {
     }
 }
 
-// PHPUnit process-isolation children may not keep "phpunit" in argv; phpunit.xml sets these.
+// Isolated children often have neither "phpunit" in argv nor the parent env.
 if (! $runningPhpunit) {
     $appEnv = getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? ($_SERVER['APP_ENV'] ?? ''));
     $ciEnv = getenv('CI_ENV') ?: ($_ENV['CI_ENV'] ?? ($_SERVER['CI_ENV'] ?? ''));
@@ -44,6 +45,16 @@ if (! defined('ENVIRONMENT')) {
     define('ENVIRONMENT', getenv('APP_ENV') ?: 'testing');
 }
 
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
+
+set_error_handler(static function (int $severity, string $message, string $file = '', int $line = 0): bool {
+    if ($severity === E_DEPRECATED || $severity === E_USER_DEPRECATED) {
+        return true;
+    }
+
+    return false;
+});
+
 // Absorb PHPUnit progress output so CI session_start()/ini_set() do not hit "headers already sent".
 if (ob_get_level() === 0) {
     ob_start();
@@ -54,6 +65,23 @@ if (! function_exists('str_contains')) {
     {
         return $needle === '' || strpos($haystack, $needle) !== false;
     }
+}
+
+/*
+ * Artisan subprocesses (migrate, etc.) may inherit APP_ENV=testing. Keep a
+ * real CLI is_cli() so console commands still boot as CLI.
+ */
+$isArtisan = false;
+
+foreach ($_SERVER['argv'] ?? [] as $arg) {
+    if (stripos(str_replace('\\', '/', (string) $arg), 'artisan') !== false) {
+        $isArtisan = true;
+        break;
+    }
+}
+
+if ($isArtisan) {
+    return;
 }
 
 /*

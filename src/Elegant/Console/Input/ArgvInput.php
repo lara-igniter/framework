@@ -16,7 +16,7 @@ class ArgvInput
      *
      * @param string[]|null $argv
      */
-    public function __construct(array $argv = null)
+    public function __construct(?array $argv = null)
     {
         $this->tokens = $argv ?? $_SERVER['argv'] ?? [];
     }

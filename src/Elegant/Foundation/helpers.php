@@ -326,7 +326,7 @@ if (!function_exists('factory')) {
      *
      * @return \Elegant\Database\Model\Factories\Factory
      */
-    function factory(string $abstract, int $count = null): Factory
+    function factory(string $abstract, ?int $count = null): Factory
     {
         return (new $abstract($count));
     }
@@ -339,7 +339,7 @@ if (!function_exists('fake') && class_exists(\Faker\Factory::class)) {
      * @param string|null $locale
      * @return \Faker\Generator
      */
-    function fake(string $locale = null): \Faker\Generator
+    function fake(?string $locale = null): \Faker\Generator
     {
         if (app('config')) {
             $locale ??= app('config')->config['faker_locale'];
@@ -371,7 +371,7 @@ if (!function_exists('logger')) {
      * @param string|null $message
      * @return array|void
      */
-    function logger(string $message = null)
+    function logger(?string $message = null)
     {
         if (is_null($message)) {
             return app('log');
@@ -554,7 +554,7 @@ if (!function_exists('redirect')) {
      * @param bool|null $secure
      * @return \Elegant\Routing\Redirector|\Elegant\Http\RedirectResponse
      */
-    function redirector(string $to = null, int $status = 302, array $headers = [], bool $secure = null)
+    function redirector(?string $to = null, int $status = 302, array $headers = [], ?bool $secure = null)
     {
         if (is_null($to)) {
             return app('redirect');
@@ -730,7 +730,7 @@ if (!function_exists('session')) {
      * @param string|null $key
      * @return array|string
      */
-    function session(string $key = null)
+    function session(?string $key = null)
     {
         if (is_null($key)) {
             return app('session')->userdata();
@@ -841,7 +841,7 @@ if (!function_exists('__')) {
      * @param array $replace
      * @return string|null
      */
-    function __(string $key = null, array $replace = [])
+    function __(?string $key = null, array $replace = [])
     {
         if (is_null($key)) {
             return $key;
@@ -861,7 +861,7 @@ if (! function_exists('url')) {
      * @param  bool|null  $secure
      * @return \Elegant\Contracts\Routing\UrlGenerator|string
      */
-    function url(string $path = null, $parameters = [], bool $secure = null)
+    function url(?string $path = null, $parameters = [], ?bool $secure = null)
     {
         if (is_null($path)) {
             return app(UrlGenerator::class);
@@ -880,7 +880,7 @@ if (!function_exists('view')) {
      *
      * @return \Elegant\Contracts\View\View|\Elegant\Contracts\View\Factory|void
      */
-    function view(string $view = null, array $data = [])
+    function view(?string $view = null, array $data = [])
     {
         $factory = app('view');
 

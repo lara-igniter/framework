@@ -84,8 +84,22 @@ class TestCommand extends Command
             $args[] = '--colors=always';
         }
 
+        $phpunitErrorReporting = (string) (E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
+
+        putenv('APP_ENV=testing');
+        $_ENV['APP_ENV'] = 'testing';
+        $_SERVER['APP_ENV'] = 'testing';
+
+        putenv('DB_CONNECTION=sqlite');
+        $_ENV['DB_CONNECTION'] = 'sqlite';
+        $_SERVER['DB_CONNECTION'] = 'sqlite';
+
+        putenv('DB_DATABASE=:memory:');
+        $_ENV['DB_DATABASE'] = ':memory:';
+        $_SERVER['DB_DATABASE'] = ':memory:';
+
         $command = array_merge(
-            [PHP_BINARY, $phpunit, '--configuration', $config],
+            [PHP_BINARY, '-d', 'error_reporting=' . $phpunitErrorReporting, $phpunit, '--configuration', $config],
             $args
         );
 

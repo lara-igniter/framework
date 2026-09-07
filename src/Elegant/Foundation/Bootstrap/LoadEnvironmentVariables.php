@@ -18,7 +18,7 @@ class LoadEnvironmentVariables
     {
         $this->checkForSpecificEnvironmentFile($app);
 
-        $this->createDotenv($app)->load();
+        $this->createDotenv($app)->safeLoad();
     }
 
     /**

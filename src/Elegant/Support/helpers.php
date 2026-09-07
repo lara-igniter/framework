@@ -428,7 +428,7 @@ if (!function_exists('with')) {
      * @param (callable(TValue): TValue)|null $callback
      * @return TValue
      */
-    function with($value, callable $callback = null)
+    function with($value, ?callable $callback = null)
     {
         return is_null($callback) ? $value : $callback($value);
     }

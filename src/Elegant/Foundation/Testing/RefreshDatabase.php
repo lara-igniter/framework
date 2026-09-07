@@ -92,11 +92,91 @@ trait RefreshDatabase
             return;
         }
 
-        $this->get('/login');
+        $response = $this->get('/login');
 
-        if (! $this->codeIgniterDatabaseIsReady()) {
-            $this->fail('CodeIgniter did not boot a database connection; cannot refresh the sqlite test database.');
+        if ($this->codeIgniterDatabaseIsReady()) {
+            return;
         }
+
+        $this->connectCodeIgniterDatabase();
+
+        if ($this->codeIgniterDatabaseIsReady()) {
+            return;
+        }
+
+        $this->fail(
+            'CodeIgniter did not boot a database connection; cannot refresh the sqlite test database.'
+            . $this->describeCodeIgniterDatabaseFailure($response)
+        );
+    }
+
+    /**
+     * Autoload may have failed before DB connected; retry on the live CI instance.
+     *
+     * @return void
+     */
+    protected function connectCodeIgniterDatabase(): void
+    {
+        if (! function_exists('get_instance')) {
+            return;
+        }
+
+        try {
+            $ci = get_instance();
+        } catch (\Throwable $e) {
+            return;
+        }
+
+        if (! $ci || ! isset($ci->load) || ! method_exists($ci->load, 'database')) {
+            return;
+        }
+
+        try {
+            $ci->load->database();
+        } catch (\Throwable $e) {
+            // Failure details are appended to the PHPUnit message.
+        }
+    }
+
+    /**
+     * @param mixed $response
+     * @return string
+     */
+    protected function describeCodeIgniterDatabaseFailure($response): string
+    {
+        $parts = [];
+
+        if (is_object($response) && method_exists($response, 'getStatusCode')) {
+            $parts[] = 'login status ' . $response->getStatusCode();
+        }
+
+        if (is_object($response) && method_exists($response, 'getContent')) {
+            $content = trim(preg_replace('/\s+/', ' ', strip_tags((string) $response->getContent())));
+            if ($content !== '') {
+                $parts[] = substr($content, 0, 500);
+            }
+        }
+
+        $ciState = 'no CI instance';
+
+        if (function_exists('get_instance')) {
+            try {
+                $ci = get_instance();
+                if ($ci && isset($ci->db) && is_object($ci->db)) {
+                    $driver = (string) ($ci->db->dbdriver ?? '');
+                    $connected = ! empty($ci->db->conn_id) ? 'yes' : 'no';
+                    $ciState = "dbdriver [{$driver}] connected [{$connected}]";
+                } elseif ($ci) {
+                    $ciState = 'CI booted without $db';
+                }
+            } catch (\Throwable $e) {
+                $ciState = $e->getMessage();
+            }
+        }
+
+        $parts[] = $ciState;
+
+        return ' (' . implode('; ', $parts) . ')';
     }
 
     /**
@@ -114,7 +194,11 @@ trait RefreshDatabase
             return false;
         }
 
-        return $ci && isset($ci->db);
+        return $ci
+            && isset($ci->db)
+            && is_object($ci->db)
+            && ! empty($ci->db->dbdriver)
+            && ! empty($ci->db->conn_id);
     }
 
     /**

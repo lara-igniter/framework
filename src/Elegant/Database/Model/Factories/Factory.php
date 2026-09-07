@@ -59,7 +59,7 @@ abstract class Factory
      * @param int|null $count
      * @param Collection|null $states
      */
-    public function __construct(int $count = null,
+    public function __construct(?int $count = null,
                                 ?Collection $states = null)
     {
         $this->count = $count;
@@ -74,7 +74,7 @@ abstract class Factory
      * @param array|null $parent
      * @return mixed
      */
-    public function create(array $attributes = [], array $parent = null)
+    public function create(array $attributes = [], ?array $parent = null)
     {
         if (!empty($attributes)) {
             return $this->state($attributes)->create([], $parent);
