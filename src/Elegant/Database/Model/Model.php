@@ -407,9 +407,20 @@ abstract class Model extends \CI_Model
 
         $saved = $this->performInsert($attributes);
 
-        static::created($this->where($saved)->first());
+        $keyName = $this->getKeyName();
+        $lookup = array_key_exists($keyName, $attributes) && $attributes[$keyName] !== null && $attributes[$keyName] !== ''
+            ? $attributes[$keyName]
+            : ($saved ?: $attributes);
 
-        return $this->where($saved);
+        $this->database->reset_query();
+
+        $created = $this->where($lookup)->first();
+
+        if (!is_null($created)) {
+            static::created($created);
+        }
+
+        return $this->where($lookup);
     }
 
     /**
