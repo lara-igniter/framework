@@ -5,8 +5,8 @@ namespace Elegant\Http;
 use Elegant\Support\Str;
 use Elegant\Support\Traits\ForwardsCalls;
 use Elegant\Support\Traits\Macroable;
-use MY_Input;
-use MY_Session;
+use Elegant\Http\Request;
+use Elegant\Session\Store;
 use Symfony\Component\HttpFoundation\RedirectResponse as BaseRedirectResponse;
 
 class RedirectResponse extends BaseRedirectResponse
@@ -18,16 +18,16 @@ class RedirectResponse extends BaseRedirectResponse
     /**
      * The request instance.
      *
-     * @var \MY_Input $request
+     * @var \Elegant\Http\Request $request
      */
-    protected MY_Input $request;
+    protected Request $request;
 
     /**
      * The session store instance.
      *
-     * @var \MY_Session
+     * @var \Elegant\Session\Store
      */
-    protected MY_Session $session;
+    protected Store $session;
 
 
     /**
@@ -93,9 +93,9 @@ class RedirectResponse extends BaseRedirectResponse
     /**
      * Get the request instance.
      *
-     * @return \MY_Input|null
+     * @return \Elegant\Http\Request|null
      */
-    public function getRequest(): ?MY_Input
+    public function getRequest(): ?Request
     {
         return $this->request;
     }
@@ -103,10 +103,10 @@ class RedirectResponse extends BaseRedirectResponse
     /**
      * Set the request instance.
      *
-     * @param \MY_Input $request
+     * @param \Elegant\Http\Request $request
      * @return void
      */
-    public function setRequest(MY_Input $request)
+    public function setRequest(Request $request)
     {
         $this->request = $request;
     }
@@ -114,9 +114,9 @@ class RedirectResponse extends BaseRedirectResponse
     /**
      * Get the session store instance.
      *
-     * @return \MY_Session|null
+     * @return \Elegant\Session\Store|null
      */
-    public function getSession(): ?MY_Session
+    public function getSession(): ?Store
     {
         return $this->session;
     }
@@ -124,10 +124,10 @@ class RedirectResponse extends BaseRedirectResponse
     /**
      * Set the session store instance.
      *
-     * @param \MY_Session $session
+     * @param \Elegant\Session\Store $session
      * @return void
      */
-    public function setSession(MY_Session $session)
+    public function setSession(Store $session)
     {
         $this->session = $session;
     }

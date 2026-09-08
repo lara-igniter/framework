@@ -72,6 +72,8 @@
             "src/Elegant/Collections/helpers.php",
             "src/Elegant/Foundation/helpers.php",
             "src/Elegant/Support/helpers.php",
+            "src/Elegant/Foundation/Compatibility.php",
+            "src/Elegant/Database/helpers.php",
             "src/Elegant/Foundation/Testing/phpunit.php"
         ],
         "psr-4": {

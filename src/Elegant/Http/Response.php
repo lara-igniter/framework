@@ -3,8 +3,8 @@
 namespace Elegant\Http;
 
 use CI_Output;
+use Elegant\Session\Store;
 use Elegant\Support\Str;
-use MY_Session;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class Response
@@ -12,9 +12,9 @@ class Response
     /**
      * The session store instance.
      *
-     * @var \MY_Session $session
+     * @var \Elegant\Session\Store $session
      */
-    protected MY_Session $session;
+    protected Store $session;
 
     /**
      * The URL generator instance.
@@ -23,7 +23,7 @@ class Response
      */
     protected CI_Output $output;
 
-    public function __construct(CI_Output $output, MY_Session $session)
+    public function __construct(CI_Output $output, Store $session)
     {
         $this->output = $output;
         $this->session = $session;

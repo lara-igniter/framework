@@ -7,8 +7,8 @@ use Elegant\Routing\Exceptions\RouteNotFoundException;
 use Elegant\Support\Arr;
 use Elegant\Support\Str;
 use Elegant\Support\Traits\Macroable;
-use MY_Input;
-use MY_Session;
+use Elegant\Http\Request;
+use Elegant\Session\Store;
 
 class UrlGenerator implements UrlGeneratorContract
 {
@@ -24,9 +24,9 @@ class UrlGenerator implements UrlGeneratorContract
     /**
      * The request instance.
      *
-     * @var \MY_Input $request
+     * @var \Elegant\Http\Request $request
      */
-    protected MY_Input $request;
+    protected Request $request;
 
     /**
      * The forced URL root.
@@ -74,10 +74,10 @@ class UrlGenerator implements UrlGeneratorContract
      * Create a new URL Generator instance.
      *
      * @param \Elegant\Routing\RouteBuilder $route
-     * @param \MY_Input $request
+     * @param \Elegant\Http\Request $request
      * @return void
      */
-    public function __construct(RouteBuilder $route, MY_Input $request)
+    public function __construct(RouteBuilder $route, Request $request)
     {
         $this->route = $route;
 
@@ -322,9 +322,9 @@ class UrlGenerator implements UrlGeneratorContract
     /**
      * Get the request instance.
      *
-     * @return \MY_Input $request
+     * @return \Elegant\Http\Request $request
      */
-    public function getRequest(): MY_Input
+    public function getRequest(): Request
     {
         return $this->request;
     }
@@ -332,10 +332,10 @@ class UrlGenerator implements UrlGeneratorContract
     /**
      * Set the current request instance.
      *
-     * @param \MY_Input $request
+     * @param \Elegant\Http\Request $request
      * @return void
      */
-    public function setRequest(MY_Input $request)
+    public function setRequest(Request $request)
     {
         $this->request = $request;
     }
@@ -343,9 +343,9 @@ class UrlGenerator implements UrlGeneratorContract
     /**
      * Get the session implementation from the resolver.
      *
-     * @return \MY_Session|null
+     * @return \Elegant\Session\Store|null
      */
-    protected function getSession(): ?MY_Session
+    protected function getSession(): ?Store
     {
         if ($this->sessionResolver) {
             return call_user_func($this->sessionResolver);

@@ -2,19 +2,19 @@
 
 namespace Elegant\Routing\Middleware;
 
-use MY_Input;
+use Elegant\Http\Request;
 
 class RouteAjaxMiddleware
 {
     /**
      * Handle an incoming request.
      *
-     * @param \MY_Input $request
+     * @param \Elegant\Http\Request $request
      * @param mixed $args
      *
      * @see \Elegant\Routing\Contracts\MiddlewareInterface::run()
      */
-    public function run(MY_Input $request, $args = [])
+    public function run(Request $request, $args = [])
     {
         if (!$request->is_ajax_request()) {
             trigger_404();

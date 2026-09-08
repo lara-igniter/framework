@@ -10,7 +10,7 @@ use Elegant\Support\Traits\ForwardsCalls;
 use Elegant\Support\Traits\Macroable;
 use InvalidArgumentException;
 use JsonSerializable;
-use MY_Session;
+use Elegant\Session\Store;
 use Symfony\Component\HttpFoundation\JsonResponse as BaseJsonResponse;
 
 class JsonResponse extends BaseJsonResponse
@@ -22,9 +22,9 @@ class JsonResponse extends BaseJsonResponse
     /**
      * The session store instance.
      *
-     * @var \MY_Session
+     * @var \Elegant\Session\Store
      */
-    protected MY_Session $session;
+    protected Store $session;
 
     /**
      * The request instance.
@@ -203,9 +203,9 @@ class JsonResponse extends BaseJsonResponse
     /**
      * Get the session store instance.
      *
-     * @return \MY_Session|null
+     * @return \Elegant\Session\Store|null
      */
-    public function getSession(): ?MY_Session
+    public function getSession(): ?Store
     {
         return $this->session;
     }
@@ -213,10 +213,10 @@ class JsonResponse extends BaseJsonResponse
     /**
      * Set the session store instance.
      *
-     * @param \MY_Session $session
+     * @param \Elegant\Session\Store $session
      * @return void
      */
-    public function setSession(MY_Session $session): void
+    public function setSession(Store $session): void
     {
         $this->session = $session;
     }

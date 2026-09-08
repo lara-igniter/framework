@@ -9,7 +9,7 @@ namespace Elegant\Support\Facades;
  * @method static \Elegant\Http\RedirectResponse route(string $route, array $parameters = [], int $status = 302, array $headers = [])
  * @method static \Elegant\Http\RedirectResponse to(string $path, int $status = 302, array $headers = [], bool $secure = null)
  * @method static \Elegant\Routing\UrlGenerator getUrlGenerator()
- * @method static void setSession(\MY_Session $session)
+ * @method static void setSession(\Elegant\Session\Store $session)
  * @method static void setIntendedUrl(string $url)
  *
  * @see \Elegant\Routing\Redirector

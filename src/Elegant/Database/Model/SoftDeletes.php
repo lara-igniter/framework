@@ -16,6 +16,7 @@ trait SoftDeletes
      */
     protected string $deleted_at_column;
 
+
     /**
      * Initialize the soft deleting trait for an instance.
      *
@@ -23,6 +24,10 @@ trait SoftDeletes
      */
     protected function initializeSoftDeletes()
     {
+        if(isset($this->soft_deletes) && $this->soft_deletes) {
+            $this->setDeletedAtColumn($this->getDeletedAtColumn());
+        }
+
         if (!isset($this->casts[$this->getDeletedAtColumn()])) {
             $this->casts[$this->getDeletedAtColumn()] = 'datetime';
         }
@@ -34,17 +39,47 @@ trait SoftDeletes
      * @param null $where
      * @return bool|null
      */
-    public function forceDelete($where = null): ?bool
+    public function forceDelete($where = null): bool
     {
         if (isset($where)) {
             $this->where($where);
         }
 
-        if ($this->database->delete($this->table)) {
-            return $this->database->affected_rows();
+        // Read through a clone so the original builder preserves any chained
+        // where clauses for the subsequent DELETE statement.
+        $query = (clone $this->database)->get($this->table);
+        $models = $query->result();
+
+        foreach ($models as $model) {
+            static::forceDeleting((array) $model);
         }
 
-        return false;
+        try {
+            if (! $this->database->delete($this->table)) {
+                return false;
+            }
+
+            if ($this->database->affected_rows() > 0 && $models !== []) {
+                static::forceDeleted($models);
+            }
+
+            return $this->database->affected_rows() > 0;
+        } finally {
+            $this->database->reset_query();
+        }
+    }
+
+    /**
+     * Force delete the model in the database without raising any events.
+     *
+     * @param null $where
+     * @return bool|null
+     */
+    public function forceDeleteQuietly($where = null): bool
+    {
+        return static::withoutEvents(function () use ($where) {
+            return $this->forceDelete($where);
+        });
     }
 
     /**
@@ -55,14 +90,74 @@ trait SoftDeletes
      */
     public function restore($where = null): bool
     {
-        $this->with_trashed();
+        $this->withTrashed();
 
         if (isset($where)) {
             $this->where($where);
         }
 
-        if ($affected_rows = $this->database->update($this->table, [$this->getDeletedAtColumn() => null])) {
-            return $affected_rows;
+        // Read through a clone so the original builder preserves any chained
+        // where clauses for the subsequent UPDATE statement. Only rows that
+        // are actually soft-deleted can produce a restored activity.
+        $restoredQuery = clone $this->database;
+        $restoredQuery->where(
+            $restoredQuery->dbprefix($this->getTable()) . '.' . $this->getDeletedAtColumn() . ' IS NOT NULL',
+            null,
+            false
+        );
+        $models = $restoredQuery->get($this->table)->result();
+
+        $data = static::restoring([
+            $this->getDeletedAtColumn() => null
+        ]);
+
+        try {
+            if (! $this->database->update($this->table, $data)) {
+                return false;
+            }
+
+            if ($this->database->affected_rows() > 0 && $models !== []) {
+                static::restored($models);
+            }
+
+            return true;
+        } finally {
+            $this->database->reset_query();
+        }
+    }
+
+    /**
+     * Restore a soft-deleted model instance without raising any events.
+     *
+     * @param null $where
+     * @return bool
+     */
+    public function restoreQuietly($where = null): bool
+    {
+        return self::withoutEvents(function () use ($where) {
+            return $this->restore($where);
+        });
+    }
+
+    /**
+     * Determine if the model instance has been soft-deleted.
+     *
+     * @return bool
+     */
+    public function trashed($where = null)
+    {
+        $this->onlyTrashed();
+
+        if (isset($where)) {
+            $this->where($where);
+        }
+
+        $this->limit(1);
+
+        $query = $this->database->get($this->table);
+
+        if ($query->num_rows() == 1) {
+            return true;
         }
 
         return false;
@@ -85,6 +180,6 @@ trait SoftDeletes
      */
     public function setDeletedAtColumn($value)
     {
-        $this->{$this->getDeletedAtColumn() . '_column'} = $value;
+        $this->{$this->getDeletedAtColumn(). '_column'} = $value;
     }
 }

@@ -3,8 +3,8 @@
 namespace Elegant\Routing;
 
 use Elegant\Http\RedirectResponse;
+use Elegant\Session\Store;
 use Elegant\Support\Traits\Macroable;
-use MY_Session;
 
 class Redirector
 {
@@ -20,11 +20,11 @@ class Redirector
     /**
      * The session store instance.
      *
-     * @var \MY_Session $session
+     * @var \Elegant\Session\Store $session
      */
-    protected MY_Session $session;
+    protected Store $session;
 
-    public function __construct(UrlGenerator $generator, MY_Session $session)
+    public function __construct(UrlGenerator $generator, Store $session)
     {
         $this->generator = $generator;
         $this->session = $session;
@@ -168,10 +168,10 @@ class Redirector
     /**
      * Set the session store instance.
      *
-     * @param \MY_Session $session
+     * @param \Elegant\Session\Store $session
      * @return void
      */
-    public function setSession(MY_Session $session)
+    public function setSession(Store $session)
     {
         $this->session = $session;
     }

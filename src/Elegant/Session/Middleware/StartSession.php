@@ -4,26 +4,26 @@ namespace Elegant\Session\Middleware;
 
 use Elegant\Routing\Contracts\MiddlewareInterface as Middleware;
 use Elegant\Routing\Route;
-use MY_Input;
+use Elegant\Http\Request;
 
 class StartSession implements Middleware
 {
     /**
      * Handle an incoming request.
      *
-     * @param \MY_Input $request
+     * @param \Elegant\Http\Request $request
      * @param mixed $args
      * @return void
      * @throws \Exception
      */
-    public function run(MY_Input $request, $args)
+    public function run(Request $request, $args)
     {
         $this->collectGarbage(app('session'));
         $this->storeCurrentUrl($request);
     }
 
 
-    protected function storeCurrentUrl(MY_Input $request)
+    protected function storeCurrentUrl(Request $request)
     {
         if ($request->method(true) === 'GET' &&
             $request->route() instanceof Route &&

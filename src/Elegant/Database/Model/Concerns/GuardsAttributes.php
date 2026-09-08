@@ -2,6 +2,8 @@
 
 namespace Elegant\Database\Model\Concerns;
 
+use Elegant\Database\Model\Model;
+use Elegant\Foundation\Exceptions\MassAssignmentException;
 use Elegant\Support\Str;
 
 trait GuardsAttributes
@@ -52,6 +54,74 @@ trait GuardsAttributes
     public function fillable(array $fillable)
     {
         $this->fillable = $fillable;
+    }
+
+    /**
+     * Disable all mass assignable restrictions.
+     *
+     * @param bool $state
+     * @return \Elegant\Database\Model\Model
+     */
+    public function unguard(bool $state = true): Model
+    {
+        static::$unguarded = $state;
+
+        return $this;
+    }
+
+    /**
+     * Enable the mass assignment restrictions.
+     *
+     * @return \Elegant\Database\Model\Model
+     */
+    public function reguard(): Model
+    {
+        static::$unguarded = false;
+
+        return $this;
+    }
+
+    /**
+     * Get data based on fillable attributes
+     *
+     * @param array $attributes
+     * @return array
+     *
+     * @throws \Elegant\Foundation\Exceptions\MassAssignmentException
+     */
+    protected function fillableData(array $attributes): array
+    {
+        $data = [];
+
+        foreach ($attributes as $fieldName => $attribute) {
+            if ($this->isFillable($fieldName) || in_array($fieldName, [$this->getCreatedAtColumn(), $this->getUpdatedAtColumn()])) {
+                $data[$fieldName] = $attribute;
+            } else {
+                if(static::$modelsShouldPreventAccessingMissingAttributes) {
+                    throw new MassAssignmentException(sprintf(
+                        'Add fillable property [%s] to allow mass assignment on [%s] model.',
+                        $fieldName, get_class($this)
+                    ));
+                }
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Get the fillable attributes of a given array.
+     *
+     * @param array $attributes
+     * @return array
+     */
+    protected function fillableFromArray(array $attributes): array
+    {
+        if (count($this->getFillable()) > 0 && !static::$unguarded) {
+            return array_intersect_key($attributes, array_flip($this->getFillable()));
+        }
+
+        return $attributes;
     }
 
     /**
@@ -137,20 +207,5 @@ trait GuardsAttributes
     public function totallyGuarded(): bool
     {
         return count($this->getFillable()) === 0 && $this->getGuarded() == ['*'];
-    }
-
-    /**
-     * Get the fillable attributes of a given array.
-     *
-     * @param array $attributes
-     * @return array
-     */
-    protected function fillableFromArray(array $attributes): array
-    {
-        if (count($this->getFillable()) > 0 && !static::$unguarded) {
-            return array_intersect_key($attributes, array_flip($this->getFillable()));
-        }
-
-        return $attributes;
     }
 }

@@ -307,7 +307,7 @@ abstract class Factory
     /**
      * Get a new factory instance for the given model name.
      *
-     * @param class-string<\App\Core\MY_Model> $modelName
+     * @param class-string<\Elegant\Database\Model\Model> $modelName
      * @return \Elegant\Database\Factory>
      */
     public static function factoryForModel(string $modelName)
@@ -330,7 +330,7 @@ abstract class Factory
     /**
      * Get the factory name for the given model name.
      *
-     * @param  class-string<\App\Core\MY_Model>  $modelName
+     * @param  class-string<\Elegant\Database\Model\Model>  $modelName
      * @return class-string<\Elegant\Database\Factory>
      */
     public static function resolveFactoryName(string $modelName)

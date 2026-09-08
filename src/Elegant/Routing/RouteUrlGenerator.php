@@ -2,7 +2,7 @@
 
 namespace Elegant\Routing;
 
-use MY_Input;
+use Elegant\Http\Request;
 
 class RouteUrlGenerator
 {
@@ -16,9 +16,9 @@ class RouteUrlGenerator
     /**
      * The request instance.
      *
-     * @var \MY_Input $request
+     * @var \Elegant\Http\Request $request
      */
-    protected MY_Input $request;
+    protected Request $request;
 
     /**
      * Characters that should not be URL encoded.
@@ -46,11 +46,11 @@ class RouteUrlGenerator
      * Create a new Route URL generator.
      *
      * @param \Elegant\Routing\UrlGenerator $url
-     * @param \MY_Input $request
+     * @param \Elegant\Http\Request $request
      *
      * @return void
      */
-    public function __construct(UrlGenerator $url, MY_Input $request)
+    public function __construct(UrlGenerator $url, Request $request)
     {
         $this->url = $url;
         $this->request = $request;

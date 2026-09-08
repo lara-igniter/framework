@@ -2,10 +2,15 @@
 
 namespace Elegant\Database\Model\Concerns;
 
+use Elegant\Database\Model\Model;
+use App\Enums\AbstractEnum;
 use Elegant\Support\Carbon;
+use Elegant\Support\Collection;
 use Elegant\Support\Facades\Date;
 use InvalidArgumentException;
-use Elegant\Database\Model\Model;
+use Laraigniter\Enum\BaseEnum;
+use Laraigniter\Enum\Exceptions\InvalidClassTypeException;
+use Laraigniter\Enum\Exceptions\InvalidEnumValueException;
 
 trait HasAttributes
 {
@@ -58,6 +63,27 @@ trait HasAttributes
         }
 
         switch ($castType) {
+            case 'int':
+            case 'integer':
+                return (int)$value;
+            case 'real':
+            case 'float':
+            case 'double':
+                return $this->fromFloat($value);
+            case 'decimal':
+                return $this->asDecimal($value, explode(':', $this->getCasts()[$key], 2)[1]);
+            case 'string':
+                return (string)$value;
+            case 'bool':
+            case 'boolean':
+                return (bool)$value;
+            case 'object':
+                return $this->fromJson($value, true);
+            case 'array':
+            case 'json':
+                return $this->fromJson($value);
+            case 'collection':
+                return new Collection($this->fromJson($value));
             case 'date':
                 return $this->asDate($value);
             case 'datetime':
@@ -67,7 +93,66 @@ trait HasAttributes
                 return $this->asTimestamp($value);
         }
 
+        if ($this->isEnumCastable($key)) {
+            return $this->getEnumCastableAttributeValue($key, $value);
+        }
+
         return $value;
+    }
+
+    /**
+     * Encode the given value as JSON.
+     *
+     * @param mixed $value
+     * @return string
+     */
+    protected function asJson($value): string
+    {
+        return json_encode($value);
+    }
+
+    /**
+     * Decode the given JSON back into an array or object.
+     *
+     * @param string $value
+     * @param bool $asObject
+     * @return mixed
+     */
+    public function fromJson(string $value, bool $asObject = false)
+    {
+        return json_decode($value, !$asObject);
+    }
+
+    /**
+     * Decode the given float.
+     *
+     * @param mixed $value
+     * @return mixed
+     */
+    public function fromFloat($value)
+    {
+        switch ((string)$value) {
+            case 'Infinity':
+                return INF;
+            case '-Infinity':
+                return -INF;
+            case 'NaN':
+                return NAN;
+            default:
+                return (float)$value;
+        }
+    }
+
+    /**
+     * Return a decimal as string.
+     *
+     * @param float $value
+     * @param int $decimals
+     * @return string
+     */
+    protected function asDecimal(float $value, int $decimals): string
+    {
+        return number_format($value, $decimals, '.', '');
     }
 
     /**
@@ -164,6 +249,30 @@ trait HasAttributes
             $this->getDateFormat()
         );
     }
+
+    /**
+     * Determine if the given key is cast using an enum.
+     *
+     * @param string $key
+     * @return bool
+     */
+    protected function isEnumCastable(string $key): bool
+    {
+        $casts = $this->getCasts();
+
+        if (! array_key_exists($key, $casts)) {
+            return false;
+        }
+
+        $castType = $casts[$key];
+
+        if (in_array($castType, static::$primitiveCastTypes)) {
+            return false;
+        }
+
+        return class_exists($castType);
+    }
+
     /**
      * Get a given attribute on the model.
      *
@@ -215,6 +324,48 @@ trait HasAttributes
     }
 
     /**
+     * Cast the given attribute to an enum.
+     *
+     * @param  string  $key
+     * @param  mixed  $value
+     * @return mixed
+     */
+    protected function getEnumCastableAttributeValue($key, $value)
+    {
+        if (is_null($value)) {
+            return;
+        }
+
+        $castType = $this->getCasts()[$key];
+
+        if ($value instanceof $castType) {
+            return $value;
+        }
+
+        return $this->getEnumCaseFromValue($castType, $value);
+    }
+
+    /**
+     * Get an enum case instance from a given class and value.
+     *
+     * @param  string  $enumClass
+     * @param  string|int  $value
+     * @return \App\Enums\AbstractEnum|\Laraigniter\Enum\BaseEnum
+     *
+     * @throws InvalidEnumValueException|InvalidClassTypeException
+     */
+    protected function getEnumCaseFromValue($enumClass, $value)
+    {
+        if (is_subclass_of($enumClass, AbstractEnum::class)) {
+            return $enumClass::tryFrom($value);
+        } elseif (is_subclass_of($enumClass, BaseEnum::class)) {
+            return $enumClass::from(is_numeric($value) ? (int) $value : $value);
+        } else {
+            return constant($enumClass.'::'.$value);
+        }
+    }
+
+    /**
      * Get the type of cast for a model attribute.
      *
      * @param  string  $key
@@ -226,11 +377,17 @@ trait HasAttributes
             return '';
         }
 
-        if ($this->isCustomDateTimeCast($this->getCasts()[$key])) {
+        $castType = $this->getCasts()[$key];
+
+        if ($this->isCustomDateTimeCast($castType)) {
             return 'custom_datetime';
         }
 
-        return trim(strtolower($this->getCasts()[$key]));
+        if (class_exists($castType)) {
+            return $castType;
+        }
+
+        return trim(strtolower($castType));
     }
 
     /**
@@ -261,7 +418,7 @@ trait HasAttributes
      * Set the date format used by the model.
      *
      * @param string $format
-     * @return Model
+     * @return \Elegant\Database\Model\Model
      */
     public function setDateFormat(string $format): Model
     {

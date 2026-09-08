@@ -4,7 +4,7 @@ namespace Elegant\Foundation\Http\Middleware;
 
 use Elegant\Routing\Contracts\MiddlewareInterface as Middleware;
 use Elegant\Support\InteractsWithTime;
-use MY_Input;
+use Elegant\Http\Request;
 
 class VerifyCsrfToken implements Middleware
 {
@@ -29,11 +29,11 @@ class VerifyCsrfToken implements Middleware
     /**
      * Handle an incoming request.
      *
-     * @param \MY_Input $request
+     * @param \Elegant\Http\Request $request
      * @param mixed $args
      * @return void
      */
-    public function run(MY_Input $request, $args)
+    public function run(Request $request, $args)
     {
         if (
             $this->isReading($request) ||
@@ -55,10 +55,10 @@ class VerifyCsrfToken implements Middleware
     /**
      * Determine if the HTTP request uses a 'read' verb.
      *
-     * @param \MY_Input $request
+     * @param \Elegant\Http\Request $request
      * @return bool
      */
-    protected function isReading(MY_Input $request): bool
+    protected function isReading(Request $request): bool
     {
         return in_array($request->method(true), ['HEAD', 'GET', 'OPTIONS']);
     }
@@ -86,10 +86,10 @@ class VerifyCsrfToken implements Middleware
     /**
      * Determine if the request has a URI that should pass through CSRF verification.
      *
-     * @param \MY_Input $request
+     * @param \Elegant\Http\Request $request
      * @return bool
      */
-    protected function inExceptArray(MY_Input $request): bool
+    protected function inExceptArray(Request $request): bool
     {
         foreach ($this->except as $except) {
             if ($except !== '/') {
@@ -114,10 +114,10 @@ class VerifyCsrfToken implements Middleware
      * destroyed/expired session (e.g. after logout) could satisfy the check
      * without ever matching the current session.
      *
-     * @param \MY_Input $request
+     * @param \Elegant\Http\Request $request
      * @return bool
      */
-    protected function tokensMatch(MY_Input $request): bool
+    protected function tokensMatch(Request $request): bool
     {
         $token = $this->getTokenFromRequest($request);
         $sessionToken = app('session')->token();
@@ -129,10 +129,10 @@ class VerifyCsrfToken implements Middleware
     /**
      * Get the CSRF token from the request.
      *
-     * @param \MY_Input $request
+     * @param \Elegant\Http\Request $request
      * @return string|null
      */
-    protected function getTokenFromRequest(MY_Input $request): ?string
+    protected function getTokenFromRequest(Request $request): ?string
     {
         $token = $request->input('_token') ?: $request->get_request_header('X-CSRF-TOKEN');
 

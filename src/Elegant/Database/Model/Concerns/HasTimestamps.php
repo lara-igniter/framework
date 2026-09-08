@@ -7,13 +7,6 @@ use Elegant\Support\Facades\Date;
 trait HasTimestamps
 {
     /**
-     * Indicates if the model should be timestamped.
-     *
-     * @var bool
-     */
-    public bool $timestamps = true;
-
-    /**
      * The "created at" attribute.
      *
      * @var string
@@ -21,20 +14,18 @@ trait HasTimestamps
     protected string $created_at_column;
 
     /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public bool $timestamps = true;
+
+    /**
      * The "updated at" attribute.
      *
      * @var string
      */
     protected string $updated_at_column;
-
-    protected function initializeHasTimestamps()
-    {
-        foreach ($this->getDates() as $date) {
-            if (!isset($this->casts[$this->{$date . '_column'}])) {
-                $this->casts[$this->{$date . '_column'}] = 'datetime';
-            }
-        }
-    }
 
     /**
      * Get a fresh timestamp for the model.
@@ -54,6 +45,31 @@ trait HasTimestamps
     public function freshTimestampString(): string
     {
         return $this->fromDateTime($this->freshTimestamp());
+    }
+
+    /**
+     * Update the creation and update timestamps.
+     *
+     * @return array
+     */
+    public function updateTimestamps(): array
+    {
+        return [
+            $this->{$this->getCreatedAtColumn() . '_column'} => $this->freshTimestampString(),
+            $this->{$this->getUpdatedAtColumn() . '_column'} => $this->freshTimestampString(),
+        ];
+    }
+
+    /**
+     * Update the update timestamp.
+     *
+     * @return array
+     */
+    public function updateTimestampUpdatedAt(): array
+    {
+        return [
+            $this->{$this->getUpdatedAtColumn() . '_column'} => $this->freshTimestampString(),
+        ];
     }
 
     /**
@@ -94,6 +110,25 @@ trait HasTimestamps
     public function getUpdatedAtColumn(): ?string
     {
         return static::UPDATED_AT;
+    }
+
+    /**
+     * Initialize the "updated at" & "created at" timestamps
+     *
+     * @return void
+     */
+    protected function initializeHasTimestamps()
+    {
+        if ($this->timestamps) {
+            $this->setCreatedAtColumn($this->getCreatedAtColumn());
+            $this->setUpdatedAtColumn($this->getUpdatedAtColumn());
+
+            foreach ($this->getDates() as $date) {
+                if (!isset($this->casts[$this->{$date . '_column'}])) {
+                    $this->casts[$this->{$date . '_column'}] = 'datetime';
+                }
+            }
+        }
     }
 
     /**

@@ -257,7 +257,7 @@ class Kernel implements KernelContract
                 define('SELF', 'index.php');
             }
 
-            require_once BASEPATH . 'core' . DIRECTORY_SEPARATOR . 'CodeIgniter.php';
+            require_once $this->basePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'lara-igniter' . DIRECTORY_SEPARATOR . 'framework' . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'Elegant' . DIRECTORY_SEPARATOR . 'Foundation' . DIRECTORY_SEPARATOR . 'Http' . DIRECTORY_SEPARATOR . 'start.php';
         } catch (Throwable $e) {
             $error = $e;
         } finally {
