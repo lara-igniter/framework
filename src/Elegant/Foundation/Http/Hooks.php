@@ -58,21 +58,21 @@ class Hooks extends \CI_Hooks {
      *
      * @var	bool
      */
-    public $enabled = FALSE;
+    public $enabled = false;
 
     /**
      * List of all hooks set in config/hooks.php
      *
      * @var	array
      */
-    public $hooks =	array();
+    public $hooks =	[];
 
     /**
      * Array with class objects to use hooks methods
      *
      * @var array
      */
-    protected $_objects = array();
+    protected $_objects = [];
 
     /**
      * In progress flag
@@ -81,7 +81,7 @@ class Hooks extends \CI_Hooks {
      *
      * @var	bool
      */
-    protected $_in_progress = FALSE;
+    protected $_in_progress = false;
 
     /**
      * Class constructor
@@ -95,7 +95,7 @@ class Hooks extends \CI_Hooks {
 
         // If hooks are not enabled in the config file
         // there is nothing else to do
-        if ($CFG->item('enable_hooks') === FALSE)
+        if ($CFG->item('enable_hooks') === false)
         {
             return;
         }
@@ -118,7 +118,7 @@ class Hooks extends \CI_Hooks {
         }
 
         $this->hooks =& $hook;
-        $this->enabled = TRUE;
+        $this->enabled = true;
     }
 
     // --------------------------------------------------------------------
@@ -137,7 +137,7 @@ class Hooks extends \CI_Hooks {
     {
         if ( ! $this->enabled OR ! isset($this->hooks[$which]))
         {
-            return FALSE;
+            return false;
         }
 
         if (is_array($this->hooks[$which]) && ! isset($this->hooks[$which]['function']))
@@ -152,7 +152,7 @@ class Hooks extends \CI_Hooks {
             $this->_run_hook($this->hooks[$which]);
         }
 
-        return TRUE;
+        return true;
     }
 
     // --------------------------------------------------------------------
@@ -174,11 +174,11 @@ class Hooks extends \CI_Hooks {
                 ? $data[0]->{$data[1]}()
                 : $data();
 
-            return TRUE;
+            return true;
         }
         elseif ( ! is_array($data))
         {
-            return FALSE;
+            return false;
         }
 
         // -----------------------------------
@@ -187,7 +187,7 @@ class Hooks extends \CI_Hooks {
 
         // If the script being called happens to have the same
         // hook call within it a loop can happen
-        if ($this->_in_progress === TRUE)
+        if ($this->_in_progress === true)
         {
             return;
         }
@@ -198,31 +198,31 @@ class Hooks extends \CI_Hooks {
 
         if ( ! isset($data['filepath'], $data['filename']))
         {
-            return FALSE;
+            return false;
         }
 
         $filepath = APPPATH.$data['filepath'].'/'.$data['filename'];
 
         if ( ! file_exists($filepath))
         {
-            return FALSE;
+            return false;
         }
 
         // Determine and class and/or function names
-        $class		= empty($data['class']) ? FALSE : $data['class'];
-        $function	= empty($data['function']) ? FALSE : $data['function'];
+        $class		= empty($data['class']) ? false : $data['class'];
+        $function	= empty($data['function']) ? false : $data['function'];
         $params		= isset($data['params']) ? $data['params'] : '';
 
         if (empty($function))
         {
-            return FALSE;
+            return false;
         }
 
         // Set the _in_progress flag
-        $this->_in_progress = TRUE;
+        $this->_in_progress = true;
 
         // Call the requested class and/or function
-        if ($class !== FALSE)
+        if ($class !== false)
         {
             // The object is stored?
             if (isset($this->_objects[$class]))
@@ -233,16 +233,16 @@ class Hooks extends \CI_Hooks {
                 }
                 else
                 {
-                    return $this->_in_progress = FALSE;
+                    return $this->_in_progress = false;
                 }
             }
             else
             {
-                class_exists($class, FALSE) OR require_once($filepath);
+                class_exists($class, false) OR require_once($filepath);
 
-                if ( ! class_exists($class, FALSE) OR ! method_exists($class, $function))
+                if ( ! class_exists($class, false) OR ! method_exists($class, $function))
                 {
-                    return $this->_in_progress = FALSE;
+                    return $this->_in_progress = false;
                 }
 
                 // Store the object and execute the method
@@ -256,14 +256,14 @@ class Hooks extends \CI_Hooks {
 
             if ( ! function_exists($function))
             {
-                return $this->_in_progress = FALSE;
+                return $this->_in_progress = false;
             }
 
             $function($params);
         }
 
-        $this->_in_progress = FALSE;
-        return TRUE;
+        $this->_in_progress = false;
+        return true;
     }
 
 }

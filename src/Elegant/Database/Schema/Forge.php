@@ -21,7 +21,7 @@ abstract class Forge
      *
      * @var    array
      */
-    public $fields = array();
+    public $fields = [];
 
     /**
      * Last inserted field name
@@ -35,21 +35,21 @@ abstract class Forge
      *
      * @var    array
      */
-    public $keys = array();
+    public $keys = [];
 
     /**
      * Primary Keys data
      *
      * @var    array
      */
-    public $primary_keys = array();
+    public $primary_keys = [];
 
     /**
      * Foreign Keys data
      *
      * @var    array
      */
-    public $foreign_keys = array();
+    public $foreign_keys = [];
 
     /**
      * Database character set
@@ -315,22 +315,22 @@ abstract class Forge
 
         if (is_string($field)) {
             if ($field === 'id') {
-                $this->add_field(array(
-                    'id' => array(
+                $this->add_field([
+                    'id' => [
                         'type' => 'BIGINT',
                         'unsigned' => true,
                         'auto_increment' => true
-                    )
-                ));
+                    ]
+                ]);
                 $this->add_key('id', true);
             } elseif (substr($field, -2) === 'id') {
-                $this->add_field(array(
-                    '' . $field . '' => array(
+                $this->add_field([
+                    '' . $field . '' => [
                         'type' => 'BIGINT',
                         'unsigned' => true,
                         'auto_increment' => true
-                    )
-                ));
+                    ]
+                ]);
                 $this->add_key('' . $field . '', true);
             } else {
                 if (strpos($field, ' ') === false) {
@@ -574,7 +574,7 @@ abstract class Forge
      * @return    bool
      * @todo    Remove deprecated $_after option in 3.1+
      */
-    public function add_column($table = '', $field = array(), $_after = null)
+    public function add_column($table = '', $field = [], $_after = null)
     {
         if ($table === '') {
             show_error('A table name is required for that operation.');
@@ -582,7 +582,7 @@ abstract class Forge
 
         // Work-around for literal column definitions
         if (!is_array($field)) {
-            $field = array($field);
+            $field = [$field];
         }
 
         foreach (array_keys($field) as $k) {
@@ -591,7 +591,7 @@ abstract class Forge
                 $field[$k]['after'] = $_after;
             }
 
-            $this->add_field(array($k => $field[$k]));
+            $this->add_field([$k => $field[$k]]);
         }
 
         $sqls = $this->_alter_table('ADD', $this->db->dbprefix . $table, $this->_process_fields_custom());
@@ -1559,7 +1559,7 @@ abstract class Forge
     public function default($value): self
     {
         $this->fields[$this->last_field] = array_merge($this->fields[$this->last_field], [
-            'default' => $value || $value == 0 ? ($this->db->dbdriver === 'sqlite3' ? NULL : $value) : NULL
+            'default' => $value || $value == 0 ? ($this->db->dbdriver === 'sqlite3' ? null : $value) : null
         ]);
 
         return $this;
@@ -1590,7 +1590,7 @@ abstract class Forge
     {
         $this->fields[$this->last_field] = array_merge($this->fields[$this->last_field], [
             'null' => $value,
-            'default' => NULL
+            'default' => null
         ]);
 
         return $this;
@@ -1605,7 +1605,7 @@ abstract class Forge
     public function comment(string $comment): self
     {
         $this->fields[$this->last_field] = array_merge($this->fields[$this->last_field], [
-            'comment' => $comment || $comment == 0 ? ($this->db->dbdriver === 'sqlite3' ? NULL : $comment) : NULL
+            'comment' => $comment || $comment == 0 ? ($this->db->dbdriver === 'sqlite3' ? null : $comment) : null
         ]);
 
         return $this;
@@ -2141,7 +2141,7 @@ abstract class Forge
      * @param string $field Column definition
      * @return    bool
      */
-    public function modify_column($table = '', $field = array())
+    public function modify_column($table = '', $field = [])
     {
         if ($table === '') {
             show_error('A table name is required for that operation.');
@@ -2149,11 +2149,11 @@ abstract class Forge
 
         // Work-around for literal column definitions
         if (!is_array($field)) {
-            $field = array($field);
+            $field = [$field];
         }
 
         foreach (array_keys($field) as $k) {
-            $this->add_field(array($k => $field[$k]));
+            $this->add_field([$k => $field[$k]]);
         }
 
         if (count($this->fields) === 0) {
@@ -2196,7 +2196,7 @@ abstract class Forge
             return $sql . implode(', ', $columns);
         }
 
-        $sqls = array();
+        $sqls = [];
         for ($i = 0, $c = count($field), $sql .= $alter_type . ' COLUMN '; $i < $c; $i++) {
             $sqls[] = $sql
                 . ($field[$i]['_literal'] !== false ? $field[$i]['_literal'] : $this->_process_column($field[$i]));
@@ -2272,11 +2272,11 @@ abstract class Forge
      */
     protected function _process_fields($create_table = false)
     {
-        $fields = array();
+        $fields = [];
 
         foreach ($this->fields as $key => $attributes) {
             if (is_int($key) && !is_array($attributes)) {
-                $fields[] = array('_literal' => $attributes);
+                $fields[] = ['_literal' => $attributes];
                 continue;
             }
 
@@ -2290,7 +2290,7 @@ abstract class Forge
 
             isset($attributes['TYPE']) && $this->_attr_type($attributes);
 
-            $field = array(
+            $field = [
                 'name' => $key,
                 'new_name' => isset($attributes['NAME']) ? $attributes['NAME'] : null,
                 'type' => isset($attributes['TYPE']) ? $attributes['TYPE'] : null,
@@ -2301,7 +2301,7 @@ abstract class Forge
                 'default' => '',
                 'auto_increment' => '',
                 '_literal' => false
-            );
+            ];
 
             isset($attributes['TYPE']) && $this->_attr_unsigned($attributes, $field);
 
@@ -2348,19 +2348,19 @@ abstract class Forge
      * @param bool $create_table
      * @return    array
      */
-    protected function _process_fields_custom($create_table = FALSE)
+    protected function _process_fields_custom($create_table = false)
     {
-        $fields = array();
+        $fields = [];
 
         foreach ($this->fields as $key => $attributes) {
             if (is_int($key) && !is_array($attributes)) {
-                $fields[] = array('_literal' => $attributes);
+                $fields[] = ['_literal' => $attributes];
                 continue;
             }
 
             $attributes = array_change_key_case($attributes, CASE_UPPER);
 
-            if ($create_table === TRUE && empty($attributes['TYPE'])) {
+            if ($create_table === true && empty($attributes['TYPE'])) {
                 continue;
             }
 
@@ -2368,22 +2368,22 @@ abstract class Forge
 
             isset($attributes['TYPE']) && $this->_attr_type($attributes);
 
-            $field = array(
+            $field = [
                 'name' => $key,
-                'new_name' => isset($attributes['NAME']) ? $attributes['NAME'] : NULL,
-                'type' => isset($attributes['TYPE']) ? $attributes['TYPE'] : NULL,
+                'new_name' => isset($attributes['NAME']) ? $attributes['NAME'] : null,
+                'type' => isset($attributes['TYPE']) ? $attributes['TYPE'] : null,
                 'length' => '',
                 'unsigned' => '',
-                'null' => NULL,
+                'null' => null,
                 'unique' => '',
                 'default' => '',
                 'auto_increment' => '',
-                '_literal' => FALSE
-            );
+                '_literal' => false
+            ];
 
             isset($attributes['TYPE']) && $this->_attr_unsigned($attributes, $field);
 
-            if ($create_table === FALSE) {
+            if ($create_table === false) {
                 if (isset($attributes['AFTER'])) {
                     $field['after'] = $attributes['AFTER'];
                 } elseif (isset($attributes['FIRST'])) {
@@ -2394,12 +2394,12 @@ abstract class Forge
             $this->_attr_default($attributes, $field);
 
             if (isset($attributes['NULL'])) {
-                if ($attributes['NULL'] === TRUE) {
+                if ($attributes['NULL'] === true) {
                     $field['null'] = empty($this->_null) ? '' : ' ' . $this->_null;
                 } else {
                     $field['null'] = ' NOT NULL';
                 }
-            } elseif ($create_table === TRUE) {
+            } elseif ($create_table === true) {
                 $field['null'] = ' NOT NULL';
             }
 
@@ -2469,7 +2469,7 @@ abstract class Forge
      * @param array<string, mixed> $attributes
      * @return void
      */
-    protected function normalizeSqliteColumnType(array &$attributes): void
+    protected function normalizeSqliteColumnType(array&$attributes): void
     {
         if ($this->db->dbdriver !== 'sqlite3' || empty($attributes['TYPE'])) {
             return;
@@ -2637,7 +2637,7 @@ abstract class Forge
                 //  If this is an array, construct the statement
                 if (is_array($foreign_key)) {
                     // Initialize update and delete actions with default values
-                    $array_init = array('delete' => 'NO ACTION', 'update' => 'NO ACTION');
+                    $array_init = ['delete' => 'NO ACTION', 'update' => 'NO ACTION'];
 
                     // Add the default values if needed
                     $foreign_key = array_merge($array_init, $foreign_key);
@@ -2672,7 +2672,7 @@ abstract class Forge
                 //  If this is an array, construct the statement
                 if (is_array($foreign_key)) {
                     // Initialize update and delete actions with default values
-                    $array_init = array('delete' => 'NO ACTION', 'update' => 'NO ACTION');
+                    $array_init = ['delete' => 'NO ACTION', 'update' => 'NO ACTION'];
 
                     // Add the default values if needed
                     $foreign_key = array_merge($array_init, $foreign_key);
@@ -2708,7 +2708,7 @@ abstract class Forge
     protected function _process_indexes($table)
     {
         $table = $this->db->escape_identifiers($table);
-        $sqls = array();
+        $sqls = [];
 
         for ($i = 0, $c = count($this->keys); $i < $c; $i++) {
             if (is_array($this->keys[$i])) {
@@ -2723,7 +2723,7 @@ abstract class Forge
                 continue;
             }
 
-            is_array($this->keys[$i]) or $this->keys[$i] = array($this->keys[$i]);
+            is_array($this->keys[$i]) or $this->keys[$i] = [$this->keys[$i]];
 
             $indexName = implode('_', $this->keys[$i]);
             if ($this->db->dbdriver === 'sqlite3') {
@@ -2750,7 +2750,7 @@ abstract class Forge
      */
     protected function _reset()
     {
-        $this->fields = $this->keys = $this->primary_keys = array();
+        $this->fields = $this->keys = $this->primary_keys = [];
     }
 
     /**

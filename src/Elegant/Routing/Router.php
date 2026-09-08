@@ -65,7 +65,7 @@ class Router extends \CI_Router {
      *
      * @var	array
      */
-    public $routes =	array();
+    public $routes =	[];
 
     /**
      * Current class name
@@ -103,7 +103,7 @@ class Router extends \CI_Router {
      *
      * @var	bool
      */
-    public $translate_uri_dashes = FALSE;
+    public $translate_uri_dashes = false;
 
     /**
      * Enable query strings flag
@@ -112,7 +112,7 @@ class Router extends \CI_Router {
      *
      * @var	bool
      */
-    public $enable_query_strings = FALSE;
+    public $enable_query_strings = false;
 
     // --------------------------------------------------------------------
 
@@ -124,12 +124,12 @@ class Router extends \CI_Router {
      * @param	array	$routing
      * @return	void
      */
-    public function __construct($routing = NULL)
+    public function __construct($routing = null)
     {
         $this->config =& load_class('Config', 'core');
         $this->uri =& load_class('URI', 'core');
 
-        $this->enable_query_strings = ( ! is_cli() && $this->config->item('enable_query_strings') === TRUE);
+        $this->enable_query_strings = ( ! is_cli() && $this->config->item('enable_query_strings') === true);
 
         // If a directory override is configured, it has to be set before any dynamic routing logic
         is_array($routing) && isset($routing['directory']) && $this->set_directory($routing['directory']);
@@ -210,10 +210,10 @@ class Router extends \CI_Router {
                     $this->set_method($_GET[$_f]);
                 }
 
-                $this->uri->rsegments = array(
+                $this->uri->rsegments = [
                     1 => $this->class,
                     2 => $this->method
-                );
+                ];
             }
             else
             {
@@ -248,7 +248,7 @@ class Router extends \CI_Router {
      * @param	array	$segments	URI segments
      * @return	void
      */
-    protected function _set_request($segments = array())
+    protected function _set_request($segments = [])
     {
         $segments = $this->_validate_request($segments);
         // If we don't have any segments left - try the default controller;
@@ -259,7 +259,7 @@ class Router extends \CI_Router {
             return;
         }
 
-        if ($this->translate_uri_dashes === TRUE)
+        if ($this->translate_uri_dashes === true)
         {
             $segments[0] = str_replace('-', '_', $segments[0]);
             if (isset($segments[1]))
@@ -278,7 +278,7 @@ class Router extends \CI_Router {
             $segments[1] = 'index';
         }
 
-        array_unshift($segments, NULL);
+        array_unshift($segments, null);
         unset($segments[0]);
         $this->uri->rsegments = $segments;
     }
@@ -313,10 +313,10 @@ class Router extends \CI_Router {
         $this->set_method($method);
 
         // Assign routed segments, index starting from 1
-        $this->uri->rsegments = array(
+        $this->uri->rsegments = [
             1 => $class,
             2 => $method
-        );
+        ];
 
         log_message('debug', 'No URI present. Default controller set.');
     }
@@ -342,14 +342,14 @@ class Router extends \CI_Router {
         while ($c-- > 0)
         {
             $test = $this->directory
-                .ucfirst($this->translate_uri_dashes === TRUE ? str_replace('-', '_', $segments[0]) : $segments[0]);
+                .ucfirst($this->translate_uri_dashes === true ? str_replace('-', '_', $segments[0]) : $segments[0]);
 
             if ( ! file_exists(app_path('Controllers/' . $test . '.php'))
-                && $directory_override === FALSE
+                && $directory_override === false
                 && is_dir(app_path('Controllers/'.$this->directory.$segments[0]))
             )
             {
-                $this->set_directory(array_shift($segments), TRUE);
+                $this->set_directory(array_shift($segments), true);
                 continue;
             }
 
@@ -396,7 +396,7 @@ class Router extends \CI_Router {
             }
 
             // Convert wildcards to RegEx
-            $key = str_replace(array(':any', ':num'), array('[^/]+', '[0-9]+'), $key);
+            $key = str_replace([':any', ':num'], ['[^/]+', '[0-9]+'], $key);
 
             // Does the RegEx match?
             if (preg_match('#^'.$key.'$#', $uri, $matches))
@@ -411,7 +411,7 @@ class Router extends \CI_Router {
                     $val = call_user_func_array($val, $matches);
                 }
                 // Are we using the default routing method for back-references?
-                elseif (strpos($val, '$') !== FALSE && strpos($key, '(') !== FALSE)
+                elseif (strpos($val, '$') !== false && strpos($key, '(') !== false)
                 {
                     $val = preg_replace('#^'.$key.'$#', $val, $uri);
                 }
@@ -436,7 +436,7 @@ class Router extends \CI_Router {
      */
     public function set_class($class)
     {
-        $this->class = str_replace(array('/', '.'), '', $class);
+        $this->class = str_replace(['/', '.'], '', $class);
     }
 
     // --------------------------------------------------------------------
@@ -487,9 +487,9 @@ class Router extends \CI_Router {
      * @param	bool	$append	Whether we're appending rather than setting the full value
      * @return	void
      */
-    public function set_directory($dir, $append = FALSE)
+    public function set_directory($dir, $append = false)
     {
-        if ($append !== TRUE OR empty($this->directory))
+        if ($append !== true OR empty($this->directory))
         {
             $this->directory = str_replace('.', '', trim($dir, '/')).'/';
         }

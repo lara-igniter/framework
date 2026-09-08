@@ -29,48 +29,22 @@ spl_autoload_register(static function ($class) {
         return;
     }
 
-    if ($class === 'MY_Input' && defined('BASEPATH') && ! class_exists('CI_Input', false)) {
-        require_once BASEPATH.'core/Input.php';
-    }
+    $parents = [
+        'MY_Input' => ['CI_Input', 'core/Input.php'],
+        'MY_Config' => ['CI_Config', 'core/Config.php'],
+        'MY_Loader' => ['CI_Loader', 'core/Loader.php'],
+        'MY_Router' => ['CI_Router', 'core/Router.php'],
+        'MY_Lang' => ['CI_Lang', 'core/Lang.php'],
+        'MY_Hooks' => ['CI_Hooks', 'core/Hooks.php'],
+        'MY_Exceptions' => ['CI_Exceptions', 'core/Exceptions.php'],
+        'MY_Upload' => ['CI_Upload', 'libraries/Upload.php'],
+        'MY_Form_validation' => ['CI_Form_validation', 'libraries/Form_validation.php'],
+        'MY_Session' => ['CI_Session', 'libraries/Session/Session.php'],
+        'MY_Session_files_driver' => ['CI_Session_files_driver', 'libraries/Session/drivers/Session_files_driver.php'],
+    ];
 
-    if ($class === 'MY_Config' && defined('BASEPATH') && ! class_exists('CI_Config', false)) {
-        require_once BASEPATH.'core/Config.php';
-    }
-
-    if ($class === 'MY_Loader' && defined('BASEPATH') && ! class_exists('CI_Loader', false)) {
-        require_once BASEPATH.'core/Loader.php';
-    }
-
-    if ($class === 'MY_Router' && defined('BASEPATH') && ! class_exists('CI_Router', false)) {
-        require_once BASEPATH.'core/Router.php';
-    }
-
-    if ($class === 'MY_Lang' && defined('BASEPATH') && ! class_exists('CI_Lang', false)) {
-        require_once BASEPATH.'core/Lang.php';
-    }
-
-    if ($class === 'MY_Hooks' && defined('BASEPATH') && ! class_exists('CI_Hooks', false)) {
-        require_once BASEPATH.'core/Hooks.php';
-    }
-
-    if ($class === 'MY_Exceptions' && defined('BASEPATH') && ! class_exists('CI_Exceptions', false)) {
-        require_once BASEPATH.'core/Exceptions.php';
-    }
-
-    if ($class === 'MY_Upload' && defined('BASEPATH') && ! class_exists('CI_Upload', false)) {
-        require_once BASEPATH.'libraries/Upload.php';
-    }
-
-    if ($class === 'MY_Form_validation' && defined('BASEPATH') && ! class_exists('CI_Form_validation', false)) {
-        require_once BASEPATH.'libraries/Form_validation.php';
-    }
-
-    if ($class === 'MY_Session' && defined('BASEPATH') && ! class_exists('CI_Session', false)) {
-        require_once BASEPATH.'libraries/Session/Session.php';
-    }
-
-    if ($class === 'MY_Session_files_driver' && defined('BASEPATH') && ! class_exists('CI_Session_files_driver', false)) {
-        require_once BASEPATH.'libraries/Session/drivers/Session_files_driver.php';
+    if (isset($parents[$class]) && defined('BASEPATH') && ! class_exists($parents[$class][0], false)) {
+        require_once BASEPATH.$parents[$class][1];
     }
 
     $target = $aliases[$class];

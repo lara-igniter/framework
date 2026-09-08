@@ -36,7 +36,7 @@
  * @since	Version 1.0.0
  * @filesource
  */
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') || exit('No direct script access allowed');
 
 /**
  * System Initialization File
@@ -93,7 +93,7 @@ if ( ! is_php('5.4'))
 
     if ((bool) ini_get('register_globals'))
     {
-        $_protected = array(
+        $_protected = [
             '_SERVER',
             '_GET',
             '_POST',
@@ -109,21 +109,21 @@ if ( ! is_php('5.4'))
             'view_folder',
             '_protected',
             '_registered'
-        );
+        ];
 
         $_registered = ini_get('variables_order');
-        foreach (array('E' => '_ENV', 'G' => '_GET', 'P' => '_POST', 'C' => '_COOKIE', 'S' => '_SERVER') as $key => $superglobal)
+        foreach (['E' => '_ENV', 'G' => '_GET', 'P' => '_POST', 'C' => '_COOKIE', 'S' => '_SERVER'] as $key => $superglobal)
         {
-            if (strpos($_registered, $key) === FALSE)
+            if (strpos($_registered, $key) === false)
             {
                 continue;
             }
 
             foreach (array_keys($$superglobal) as $var)
             {
-                if (isset($GLOBALS[$var]) && ! in_array($var, $_protected, TRUE))
+                if (isset($GLOBALS[$var]) && ! in_array($var, $_protected, true))
                 {
-                    $GLOBALS[$var] = NULL;
+                    $GLOBALS[$var] = null;
                 }
             }
         }
@@ -179,7 +179,7 @@ if(config_item('env') === 'testing') {
  */
 if ( ! empty($assign_to_config['subclass_prefix']))
 {
-    get_config(array('subclass_prefix' => $assign_to_config['subclass_prefix']));
+    get_config(['subclass_prefix' => $assign_to_config['subclass_prefix']]);
 }
 
 /*
@@ -189,7 +189,7 @@ if ( ! empty($assign_to_config['subclass_prefix']))
  */
 if ($composer_autoload = config_item('composer_autoload'))
 {
-    if ($composer_autoload === TRUE)
+    if ($composer_autoload === true)
     {
         file_exists(APPPATH.'vendor/autoload.php')
             ? require_once(APPPATH.'vendor/autoload.php')
@@ -261,7 +261,7 @@ ini_set('default_charset', $charset);
 
 if (extension_loaded('mbstring'))
 {
-    define('MB_ENABLED', TRUE);
+    define('MB_ENABLED', true);
     // mbstring.internal_encoding is deprecated starting with PHP 5.6
     // and it's usage triggers E_DEPRECATED messages.
     @ini_set('mbstring.internal_encoding', $charset);
@@ -271,21 +271,21 @@ if (extension_loaded('mbstring'))
 }
 else
 {
-    define('MB_ENABLED', FALSE);
+    define('MB_ENABLED', false);
 }
 
 // There's an ICONV_IMPL constant, but the PHP manual says that using
 // iconv's predefined constants is "strongly discouraged".
 if (extension_loaded('iconv'))
 {
-    define('ICONV_ENABLED', TRUE);
+    define('ICONV_ENABLED', true);
     // iconv.internal_encoding is deprecated starting with PHP 5.6
     // and it's usage triggers E_DEPRECATED messages.
     @ini_set('iconv.internal_encoding', $charset);
 }
 else
 {
-    define('ICONV_ENABLED', FALSE);
+    define('ICONV_ENABLED', false);
 }
 
 if (is_php('5.6'))
@@ -323,7 +323,7 @@ $URI =& load_class('URI', 'core');
  *  Instantiate the routing class and set the routing
  * ------------------------------------------------------
  */
-$RTR =& load_class('Router', 'core', isset($routing) ? $routing : NULL);
+$RTR =& load_class('Router', 'core', isset($routing) ? $routing : null);
 
 /*
  * ------------------------------------------------------
@@ -337,7 +337,7 @@ $OUT =& load_class('Output', 'core');
  *	Is there a valid cache file? If so, we're done...
  * ------------------------------------------------------
  */
-if ($EXT->call_hook('cache_override') === FALSE && $OUT->_display_cache($CFG, $URI) === TRUE)
+if ($EXT->call_hook('cache_override') === false && $OUT->_display_cache($CFG, $URI) === true)
 {
     exit;
 }
@@ -416,7 +416,7 @@ $BM->mark('loading_time:_base_classes_end');
  *  controller methods that begin with an underscore.
  */
 
-$e404 = FALSE;
+$e404 = false;
 $class = ucfirst($RTR->class);
 $method = $RTR->method;
 
@@ -428,7 +428,7 @@ if (empty($class) OR ! file_exists(app_path('Controllers/'.$RTR->directory.$clas
     if ($autoDiscovered !== null && class_exists($autoDiscovered) && method_exists($autoDiscovered, $method)) {
         $class = $autoDiscovered;
     } else {
-        $e404 = TRUE;
+        $e404 = true;
     }
 }
 else
@@ -444,16 +444,16 @@ else
 
     if ( ! class_exists($class) OR ($method[0] === '_' AND $method !== '__invoke') OR method_exists('CI_Controller', $method))
     {
-        $e404 = TRUE;
+        $e404 = true;
     }
     elseif (method_exists($class, '_remap'))
     {
-        $params = array($method, array_slice($URI->rsegments, 2));
+        $params = [$method, array_slice($URI->rsegments, 2)];
         $method = '_remap';
     }
     elseif ( ! method_exists($class, $method))
     {
-        $e404 = TRUE;
+        $e404 = true;
     }
     /**
      * DO NOT CHANGE THIS, NOTHING ELSE WORKS!
@@ -471,7 +471,7 @@ else
         $reflection = new ReflectionMethod($class, $method);
         if ( ! $reflection->isPublic() OR $reflection->isConstructor())
         {
-            $e404 = TRUE;
+            $e404 = true;
         }
     }
 }
@@ -487,18 +487,18 @@ if ($e404)
 
         $error_class = ucfirst($error_class);
 
-        if ( ! class_exists($error_class, FALSE))
+        if ( ! class_exists($error_class, false))
         {
             if (file_exists(app_path('Controllers/'.$RTR->directory.$error_class.'.php')))
             {
                 require_once(app_path('Controllers/'.$RTR->directory.$error_class.'.php'));
-                $e404 = ! class_exists($error_class, FALSE);
+                $e404 = ! class_exists($error_class, false);
             }
             // Were we in a directory? If so, check for a global override
             elseif ( ! empty($RTR->directory) && file_exists(app_path('Controllers/'.$error_class.'.php')))
             {
                 require_once(app_path('Controllers/'.$error_class.'.php'));
-                if (($e404 = ! class_exists($error_class, FALSE)) === FALSE)
+                if (($e404 = ! class_exists($error_class, false)) === false)
                 {
                     $RTR->directory = '';
                 }
@@ -506,7 +506,7 @@ if ($e404)
         }
         else
         {
-            $e404 = FALSE;
+            $e404 = false;
         }
     }
 
@@ -516,10 +516,10 @@ if ($e404)
         $class = $error_class;
         $method = $error_method;
 
-        $URI->rsegments = array(
+        $URI->rsegments = [
             1 => $class,
             2 => $method
-        );
+        ];
     }
     else
     {
@@ -579,7 +579,7 @@ $EXT->call_hook('post_controller_constructor');
  *  Call the requested method
  * ------------------------------------------------------
  */
-$response = call_user_func_array(array(&$CI, $method), $params);
+$response = call_user_func_array([&$CI, $method], $params);
 
 /*
  * ------------------------------------------------------
@@ -608,7 +608,7 @@ $EXT->call_hook('post_controller');
  *  Send the final rendered output to the browser
  * ------------------------------------------------------
  */
-if ($EXT->call_hook('display_override') === FALSE)
+if ($EXT->call_hook('display_override') === false)
 {
     $OUT->_display();
 }

@@ -8,12 +8,16 @@ use Elegant\Foundation\Exceptions\Handler;
 class HandleExceptions
 {
     /**
+     * The application instance.
+     *
      * @var \Elegant\Foundation\Application
      */
     protected $app;
 
     /**
-     * @param \Elegant\Foundation\Application $app
+     * Bootstrap the given application.
+     *
+     * @param  \Elegant\Foundation\Application  $app
      * @return void
      */
     public function bootstrap(Application $app)

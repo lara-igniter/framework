@@ -23,7 +23,7 @@ class Validator extends \CI_Form_validation
     /**
      * {@inheritdoc}
      */
-    public function set_rules($field, $label = '', $rules = array(), $errors = array())
+    public function set_rules($field, $label = '', $rules = [], $errors = [])
     {
         $method = $this->CI->input->method();
         if (empty($this->validation_data) && in_array($method, ['put', 'patch'], true)) {
@@ -44,7 +44,7 @@ class Validator extends \CI_Form_validation
      * @return    mixed
      * @throws \Elegant\Routing\Exceptions\RouteNotFoundException
      */
-    protected function _execute($row, $rules, $postdata = NULL, $cycles = 0)
+    protected function _execute($row, $rules, $postdata = null, $cycles = 0)
     {
         $this->setCurrentFieldName($row['field']);
 
@@ -68,11 +68,11 @@ class Validator extends \CI_Form_validation
 
         $rules = $this->_prepare_rules($rules);
         foreach ($rules as $rule) {
-            $_in_array = FALSE;
+            $_in_array = false;
 
             // We set the $postdata variable with the current data in our master array so that
             // each cycle of the loop is dealing with the processed data from the last cycle
-            if ($row['is_array'] === TRUE && is_array($this->_field_data[$row['field']]['postdata'])) {
+            if ($row['is_array'] === true && is_array($this->_field_data[$row['field']]['postdata'])) {
                 // We shouldn't need this safety, but just in case there isn't an array index
                 // associated with this cycle we'll bail out
                 if (!isset($this->_field_data[$row['field']]['postdata'][$cycles])) {
@@ -80,36 +80,36 @@ class Validator extends \CI_Form_validation
                 }
 
                 $postdata = $this->_field_data[$row['field']]['postdata'][$cycles];
-                $_in_array = TRUE;
+                $_in_array = true;
             } else {
                 // If we get an array field, but it's not expected - then it is most likely
                 // somebody messing with the form on the client side, so we'll just consider
                 // it an empty field
                 $postdata = is_array($this->_field_data[$row['field']]['postdata'])
-                    ? NULL
+                    ? null
                     : $this->_field_data[$row['field']]['postdata'];
             }
 
             // Is the rule a callback?
-            $callback = $callable = FALSE;
+            $callback = $callable = false;
             if (is_string($rule)) {
                 if (strpos($rule, 'callback_') === 0) {
                     $rule = substr($rule, 9);
-                    $callback = TRUE;
+                    $callback = true;
                 }
             } elseif (is_callable($rule)) {
-                $callable = TRUE;
+                $callable = true;
             } elseif (is_array($rule) && isset($rule[0], $rule[1]) && is_callable($rule[1])) {
                 // We have a "named" callable, so save the name
                 $callable = $rule[0];
                 $rule = $rule[1];
             } elseif ($rule instanceof Rule) {
-                $callback = TRUE;
+                $callback = true;
             }
 
             // Strip the parameter (if exists) from the rule
             // Rules can contain a parameter: max_length[5]
-            $param = FALSE;
+            $param = false;
             if ($rule instanceof Rule) {
                 //
             } elseif (!$callable && preg_match('/(.*?)\[(.*)\]/', $rule, $match)) {
@@ -119,16 +119,16 @@ class Validator extends \CI_Form_validation
 
             // Ignore empty, non-required inputs with a few exceptions ...
             if (
-                ($postdata === NULL or $postdata === '')
-                && $callback === FALSE
-                && $callable === FALSE
-                && !in_array($rule, array('required', 'filled', 'matches'), TRUE)
+                ($postdata === null or $postdata === '')
+                && $callback === false
+                && $callable === false
+                && !in_array($rule, ['required', 'filled', 'matches'], true)
             ) {
                 continue;
             }
 
             // Call the function that corresponds to the rule
-            if ($callback or $callable !== FALSE) {
+            if ($callback or $callable !== false) {
                 if ($callback) {
                     if ($rule instanceof Rule) {
                         $result = $rule->passes();
@@ -137,7 +137,7 @@ class Validator extends \CI_Form_validation
                         $result = $this->CI->$rule($postdata, $param);
                     } else {
                         log_message('debug', 'Unable to find callback validation rule: ' . $rule);
-                        $result = FALSE;
+                        $result = false;
                     }
                 } else {
                     $result = is_array($rule)
@@ -145,13 +145,13 @@ class Validator extends \CI_Form_validation
                         : $rule($postdata);
 
                     // Is $callable set to a rule name?
-                    if ($callable !== FALSE) {
+                    if ($callable !== false) {
                         $rule = $callable;
                     }
                 }
 
                 // Re-assign the result to the master data array
-                if ($_in_array === TRUE) {
+                if ($_in_array === true) {
                     $this->_field_data[$row['field']]['postdata'][$cycles] = is_bool($result) ? $postdata : $result;
                 } else {
                     $this->_field_data[$row['field']]['postdata'] = is_bool($result) ? $postdata : $result;
@@ -161,16 +161,16 @@ class Validator extends \CI_Form_validation
                 // Users can use any native PHP function call that has one param.
                 if (function_exists($rule)) {
                     // Native PHP functions issue warnings if you pass them more parameters than they use
-                    $result = ($param !== FALSE) ? $rule($postdata, $param) : $rule($postdata);
+                    $result = ($param !== false) ? $rule($postdata, $param) : $rule($postdata);
 
-                    if ($_in_array === TRUE) {
+                    if ($_in_array === true) {
                         $this->_field_data[$row['field']]['postdata'][$cycles] = is_bool($result) ? $postdata : $result;
                     } else {
                         $this->_field_data[$row['field']]['postdata'] = is_bool($result) ? $postdata : $result;
                     }
                 } else {
                     log_message('debug', 'Unable to find validation rule: ' . $rule);
-                    $result = FALSE;
+                    $result = false;
                 }
             } else {
 //                $method = "validate" . Str::studly($rule);
@@ -179,7 +179,7 @@ class Validator extends \CI_Form_validation
 
                 $result = $this->$rule($postdata, $param);
 
-                if ($_in_array === TRUE) {
+                if ($_in_array === true) {
                     $this->_field_data[$row['field']]['postdata'][$cycles] = is_bool($result) ? $postdata : $result;
                 } else {
                     $this->_field_data[$row['field']]['postdata'] = is_bool($result) ? $postdata : $result;
@@ -187,9 +187,9 @@ class Validator extends \CI_Form_validation
             }
 
             // Did the rule test negatively? If so, grab the error.
-            if ($result === FALSE) {
+            if ($result === false) {
                 // Bypass image validation rules if nullable or sometimes rule exist
-                if (in_array($rule, ['image', 'file', 'dimensions', 'mimes', 'mimetypes', 'between', 'size', 'min', 'max'], TRUE)
+                if (in_array($rule, ['image', 'file', 'dimensions', 'mimes', 'mimetypes', 'between', 'size', 'min', 'max'], true)
                     && count(array_intersect(['sometimes', 'nullable'], $rules)) > 0) {
                     if(is_array($row['postdata'])) {
                         foreach ($row['postdata'] as $value) {
@@ -270,10 +270,10 @@ class Validator extends \CI_Form_validation
         } // check if a custom message has been set using the set_message() function
         elseif (isset($this->_error_messages[$rule])) {
             return $this->_error_messages[$rule];
-        } elseif (FALSE !== ($line = $this->CI->lang->line('form_validation_' . $rule, false))) {
+        } elseif (false !== ($line = $this->CI->lang->line('form_validation_' . $rule, false))) {
             return is_array($line) ? $line[$type] : $line;
         } // DEPRECATED support for non-prefixed keys, lang file again
-        elseif (FALSE !== ($line = $this->CI->lang->line($rule, false))) {
+        elseif (false !== ($line = $this->CI->lang->line($rule, false))) {
             return is_array($line) ? $line[$type] : $line;
         }
 
@@ -287,8 +287,8 @@ class Validator extends \CI_Form_validation
      */
     protected function _prepare_rules($rules): array
     {
-        $new_rules = array();
-        $callbacks = array();
+        $new_rules = [];
+        $callbacks = [];
 
         foreach ($rules as &$rule) {
             // Let 'required' always be the first (non-callback) rule
