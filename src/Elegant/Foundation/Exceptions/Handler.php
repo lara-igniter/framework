@@ -2,9 +2,9 @@
 
 namespace Elegant\Foundation\Exceptions;
 
-use App\Exceptions\Database\ModelNotFoundException;
-use App\Exceptions\Database\RecordsNotFoundException;
 use Closure;
+use Elegant\Database\Model\ModelNotFoundException;
+use Elegant\Database\RecordsNotFoundException;
 use Elegant\Contracts\Debug\ExceptionHandler as ExceptionHandlerContract;
 use Exception;
 use Psr\Log\LoggerInterface;

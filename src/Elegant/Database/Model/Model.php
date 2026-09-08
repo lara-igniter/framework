@@ -2,9 +2,7 @@
 
 namespace Elegant\Database\Model;
 
-use App\Exceptions\Database\ModelNotFoundException;
 use BadMethodCallException;
-use CI_Model;
 use Elegant\Foundation\Exceptions\MassAssignmentException;
 use Elegant\Pagination\Cursor;
 use Elegant\Pagination\CursorPaginator;
@@ -1108,7 +1106,7 @@ abstract class Model extends \CI_Model
      * @param $id
      * @return mixed
      *
-     * @throws \App\Exceptions\Database\ModelNotFoundException
+     * @throws \Elegant\Database\Model\ModelNotFoundException
      */
     public function findOrFail($id)
     {
@@ -1136,7 +1134,7 @@ abstract class Model extends \CI_Model
      *
      * @return mixed
      *
-     * @throws \App\Exceptions\Database\ModelNotFoundException
+     * @throws \Elegant\Database\Model\ModelNotFoundException
      */
     public function firstOrFail()
     {
