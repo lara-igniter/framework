@@ -2,6 +2,7 @@
 
 namespace Elegant\Foundation\Http;
 
+use Elegant\Contracts\Debug\ExceptionHandler;
 use Elegant\Contracts\Http\Kernel as KernelContract;
 use Elegant\Foundation\Application;
 use Elegant\Routing\Exceptions\RouteNotFoundException;
@@ -223,15 +224,19 @@ class Kernel implements KernelContract
      */
     public function handle($request)
     {
-        $this->bootstrap();
-        $this->currentRequest = $request;
-        $this->applyRequestGlobals($request);
+        try {
+            $this->bootstrap();
+            $this->currentRequest = $request;
+            $this->applyRequestGlobals($request);
 
-        if (! self::$codeIgniterLoaded) {
-            return $this->handleFirstRequest();
+            if (! self::$codeIgniterLoaded) {
+                return $this->handleFirstRequest();
+            }
+
+            return $this->handleSubsequentRequest();
+        } catch (Throwable $e) {
+            return $this->toExceptionResponse($e);
         }
-
-        return $this->handleSubsequentRequest();
     }
 
     /**
@@ -281,7 +286,7 @@ class Kernel implements KernelContract
         }
 
         if ($error) {
-            return new Response($error->getMessage(), 500, []);
+            return $this->toExceptionResponse($error);
         }
 
         return $this->captureResponse($buffered);
@@ -312,7 +317,7 @@ class Kernel implements KernelContract
         $buffered = ob_get_clean();
 
         if ($error) {
-            return new Response($error->getMessage(), 500, []);
+            return $this->toExceptionResponse($error);
         }
 
         if ($this->lastControllerResult instanceof SymfonyResponse) {
@@ -332,11 +337,104 @@ class Kernel implements KernelContract
             try {
                 $buffered = (string) $this->lastControllerResult->render();
             } catch (Throwable $e) {
-                return new Response($e->getMessage(), 500, []);
+                return $this->toExceptionResponse($e);
             }
         }
 
         return $this->captureResponse($buffered);
+    }
+
+    /**
+     * Report an exception and convert it to an HTTP response (Laravel Kernel).
+     *
+     * @param \Throwable $e
+     * @return \Elegant\Foundation\Http\Response
+     */
+    protected function toExceptionResponse(Throwable $e): Response
+    {
+        $this->reportException($e);
+
+        return $this->renderException($this->currentRequest, $e);
+    }
+
+    /**
+     * Report the exception to the exception handler.
+     *
+     * @param \Throwable $e
+     * @return void
+     */
+    protected function reportException(Throwable $e): void
+    {
+        try {
+            $this->app->make(ExceptionHandler::class)->report($e);
+        } catch (Throwable $ignored) {
+            //
+        }
+    }
+
+    /**
+     * Render the exception to an HTTP response.
+     *
+     * @param mixed $request
+     * @param \Throwable $e
+     * @return \Elegant\Foundation\Http\Response
+     */
+    protected function renderException($request, Throwable $e): Response
+    {
+        try {
+            $rendered = $this->app->make(ExceptionHandler::class)->render($request, $e);
+        } catch (Throwable $ignored) {
+            return new Response($e->getMessage(), 500, [
+                'Content-Type' => 'text/html; charset=utf-8',
+            ]);
+        }
+
+        return $this->normalizeExceptionResponse($rendered, $e);
+    }
+
+    /**
+     * Normalize handler output into the Kernel response object.
+     *
+     * @param mixed $rendered
+     * @param \Throwable $e
+     * @return \Elegant\Foundation\Http\Response
+     */
+    protected function normalizeExceptionResponse($rendered, Throwable $e): Response
+    {
+        if ($rendered instanceof Response) {
+            return $rendered;
+        }
+
+        if ($rendered instanceof SymfonyResponse) {
+            $headers = [];
+            foreach ($rendered->headers->all() as $name => $values) {
+                $headers[$name] = implode(', ', $values);
+            }
+
+            return new Response(
+                (string) $rendered->getContent(),
+                $rendered->getStatusCode(),
+                $headers
+            );
+        }
+
+        if (is_object($rendered) && method_exists($rendered, 'get_output')) {
+            return new Response(
+                (string) $rendered->get_output(),
+                500,
+                ['Content-Type' => 'text/html; charset=utf-8']
+            );
+        }
+
+        if (is_string($rendered)) {
+            return new Response($rendered, 500, [
+                'Content-Type' => 'text/html; charset=utf-8',
+            ]);
+        }
+
+        return new Response($e->getMessage(), 500, [
+            'Content-Type' => 'text/html; charset=utf-8',
+        ]);
     }
 
     /**
