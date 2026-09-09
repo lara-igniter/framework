@@ -475,15 +475,22 @@ class Handler implements ExceptionHandlerContract
     protected function renderHttpException(Throwable $e): string
     {
         $status = $this->isHttpException($e) ? (int) $e->getStatusCode() : 500;
+        $debug = $this->shouldDisplayDebugInfo();
+        $heading = $this->getHttpStatusText($status);
+        $message = $debug ? ($e->getMessage() ?: $heading) : $heading;
         $view = $this->getHttpExceptionView($status);
 
         if (function_exists('view') && $this->httpExceptionViewExists($view)) {
             try {
-                return (string) view($view, [
+                $html = $this->renderView($view, [
                     'exception' => $e,
-                    'heading' => $this->getHttpStatusText($status),
-                    'message' => $e->getMessage() ?: $this->getHttpStatusText($status),
+                    'heading' => $heading,
+                    'message' => $message,
                 ]);
+
+                if ($html !== '') {
+                    return $html;
+                }
             } catch (Throwable $viewException) {
                 error_log('Failed to render error view: ' . $viewException->getMessage());
             }
@@ -492,16 +499,35 @@ class Handler implements ExceptionHandlerContract
         if (function_exists('load_class')) {
             try {
                 $exceptions = & load_class('Exceptions', 'core');
-                $heading = $this->getHttpStatusText($status);
-                $message = $e->getMessage() ?: $heading;
 
-                return $exceptions->show_error($heading, $message, (string) $status, $status);
+                return $exceptions->show_error($heading, $message, 'error_general', $status);
             } catch (Throwable $ciException) {
                 error_log('Failed to render CI exception page: ' . $ciException->getMessage());
             }
         }
 
         return $this->renderExceptionAsGenericHTML($e);
+    }
+
+    /**
+     * Render a Blade view to a string without using the echoing view() helper.
+     *
+     * @param string $view
+     * @param array<string, mixed> $data
+     * @return string
+     */
+    protected function renderView(string $view, array $data): string
+    {
+        $factory = app('view');
+
+        if (is_object($factory) && method_exists($factory, 'make')) {
+            return (string) $factory->make($view, $data)->render();
+        }
+
+        ob_start();
+        echo $factory->make($view, $data);
+
+        return (string) ob_get_clean();
     }
 
     /**
@@ -673,9 +699,8 @@ class Handler implements ExceptionHandlerContract
             if ($debug === true || $debug === 'true' || $debug === '1' || $debug === 1) {
                 return true;
             }
-            // Explicit false from config wins over ENVIRONMENT heuristics.
             if ($debug === false || $debug === 'false' || $debug === '0' || $debug === 0) {
-                // Still allow env() override below only if config key missing — config is set.
+                return false;
             }
         }
 

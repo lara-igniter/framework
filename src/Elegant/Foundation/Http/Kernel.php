@@ -381,15 +381,34 @@ class Kernel implements KernelContract
      */
     protected function renderException($request, Throwable $e): Response
     {
+        ob_start();
+
         try {
             $rendered = $this->app->make(ExceptionHandler::class)->render($request, $e);
         } catch (Throwable $ignored) {
-            return new Response($e->getMessage(), 500, [
+            $buffered = (string) ob_get_clean();
+
+            if ($buffered !== '') {
+                return new Response($buffered, 500, [
+                    'Content-Type' => 'text/html; charset=utf-8',
+                ]);
+            }
+
+            return new Response('Server Error', 500, [
                 'Content-Type' => 'text/html; charset=utf-8',
             ]);
         }
 
-        return $this->normalizeExceptionResponse($rendered, $e);
+        $buffered = (string) ob_get_clean();
+        $response = $this->normalizeExceptionResponse($rendered, $e);
+
+        if ($response->getContent() === '' && $buffered !== '') {
+            return new Response($buffered, 500, [
+                'Content-Type' => 'text/html; charset=utf-8',
+            ]);
+        }
+
+        return $response;
     }
 
     /**
