@@ -113,10 +113,10 @@ class RouteBuilder
 
         if (isset($attributes['middleware'])) {
             if (is_string($attributes['middleware'])) {
-                if (isset(\App\Kernel::$routeMiddleware[$attributes['middleware']])) {
+                if (isset(\App\Http\Kernel::$routeMiddleware[$attributes['middleware']])) {
                     $attributes['middleware'] = [$attributes['middleware']];
                 } else {
-                    show_error('Route group middleware {' . $attributes['middleware'] . '} must be register at application\Kernel.php');
+                    show_error('Route group middleware {' . $attributes['middleware'] . '} must be register at app/Http/Kernel.php');
                 }
             } else {
                 if (!is_array($attributes['middleware']) && !is_object($attributes['middleware'])) {
@@ -129,8 +129,8 @@ class RouteBuilder
 
                 foreach ($attributes['middleware'] as $middleware) {
                     if (is_string($middleware)) {
-                        if (isset(\App\Kernel::$routeMiddleware[$middleware])) {
-                            $existMiddlewares[] = new \App\Kernel::$routeMiddleware[$middleware];
+                        if (isset(\App\Http\Kernel::$routeMiddleware[$middleware])) {
+                            $existMiddlewares[] = new \App\Http\Kernel::$routeMiddleware[$middleware];
                         }
                     } elseif (is_object($middleware)) {
                         $existMiddlewares[] = $middleware;

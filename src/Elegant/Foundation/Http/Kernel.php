@@ -74,12 +74,12 @@ class Kernel implements KernelContract
 
     /**
      * @param \Elegant\Foundation\Application $app
-     * @param string $basePath
+     * @param string|null $basePath
      */
-    public function __construct(Application $app, string $basePath)
+    public function __construct(Application $app, ?string $basePath = null)
     {
         $this->app = $app;
-        $this->basePath = rtrim($basePath, '/\\');
+        $this->basePath = rtrim($basePath ?? $app->basePath(), '/\\');
         self::$instance = $this;
     }
 
@@ -213,6 +213,7 @@ class Kernel implements KernelContract
         $this->registerTestingPolyfills();
         $this->forceWebMode();
         $this->defineConstants();
+        $this->configureErrorReporting();
 
         $this->bootstrapped = true;
     }
@@ -257,7 +258,7 @@ class Kernel implements KernelContract
                 define('SELF', 'index.php');
             }
 
-            require_once $this->basePath . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'lara-igniter' . DIRECTORY_SEPARATOR . 'framework' . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'Elegant' . DIRECTORY_SEPARATOR . 'Foundation' . DIRECTORY_SEPARATOR . 'Http' . DIRECTORY_SEPARATOR . 'start.php';
+            require_once $this->startScriptPath();
         } catch (Throwable $e) {
             $error = $e;
         } finally {
@@ -570,13 +571,13 @@ class Kernel implements KernelContract
         if (is_string($class) && $class !== '' && ! class_exists($class)) {
             $candidates = [
                 $class,
-                'App\\Controllers\\' . ltrim($class, '\\'),
-                'App\\Controllers\\' . str_replace('/', '\\', $class),
+                'App\\Http\\Controllers\\' . ltrim($class, '\\'),
+                'App\\Http\\Controllers\\' . str_replace('/', '\\', $class),
             ];
 
             $namespace = $route->getNamespace();
             if (is_string($namespace) && $namespace !== '') {
-                $candidates[] = 'App\\Controllers\\' . str_replace('/', '\\', trim($namespace, '/\\')) . '\\' . ltrim($class, '\\');
+                $candidates[] = 'App\\Http\\Controllers\\' . str_replace('/', '\\', trim($namespace, '/\\')) . '\\' . ltrim($class, '\\');
             }
 
             foreach ($candidates as $candidate) {
@@ -846,6 +847,10 @@ class Kernel implements KernelContract
      */
     protected function forceWebMode()
     {
+        if (PHP_SAPI === 'cli' && (getenv('APP_ENV') ?: (defined('ENVIRONMENT') ? ENVIRONMENT : '')) !== 'testing') {
+            return;
+        }
+
         // is_cli() is forced false by Elegant/Foundation/Testing/phpunit.php when
         // PHPUnit runs (Composer autoload files). Keep a defensive define here.
         if (! function_exists('is_cli')) {
@@ -864,7 +869,17 @@ class Kernel implements KernelContract
         $basePath = $this->basePath;
 
         if (! defined('ENVIRONMENT')) {
-            define('ENVIRONMENT', getenv('APP_ENV') ?: 'testing');
+            if (isset($_SERVER['CI_ENV'])) {
+                define('ENVIRONMENT', $_SERVER['CI_ENV']);
+            } elseif (function_exists('env')) {
+                define('ENVIRONMENT', env('APP_ENV', 'production'));
+            } else {
+                define('ENVIRONMENT', getenv('APP_ENV') ?: 'production');
+            }
+        }
+
+        if (! defined('SELF')) {
+            define('SELF', PHP_SAPI === 'cli' ? 'index.php' : pathinfo($_SERVER['SCRIPT_FILENAME'] ?? 'index.php', PATHINFO_BASENAME));
         }
 
         if (! defined('BASEPATH')) {
@@ -886,6 +901,52 @@ class Kernel implements KernelContract
 
         if (! defined('VIEWPATH')) {
             define('VIEWPATH', realpath($basePath . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'views') . DIRECTORY_SEPARATOR);
+        }
+    }
+
+    /**
+     * Path to the CodeIgniter start script.
+     *
+     * @return string
+     */
+    public function startScriptPath(): string
+    {
+        return $this->basePath
+            . DIRECTORY_SEPARATOR . 'vendor'
+            . DIRECTORY_SEPARATOR . 'lara-igniter'
+            . DIRECTORY_SEPARATOR . 'framework'
+            . DIRECTORY_SEPARATOR . 'src'
+            . DIRECTORY_SEPARATOR . 'Elegant'
+            . DIRECTORY_SEPARATOR . 'Foundation'
+            . DIRECTORY_SEPARATOR . 'Http'
+            . DIRECTORY_SEPARATOR . 'start.php';
+    }
+
+    /**
+     * @return void
+     */
+    protected function configureErrorReporting()
+    {
+        if (ENVIRONMENT === 'testing') {
+            return;
+        }
+
+        switch (ENVIRONMENT) {
+            case 'local':
+                ini_set('display_errors', '1');
+                ini_set('display_startup_errors', '1');
+                error_reporting(E_ALL);
+                break;
+            case 'testing':
+            case 'development':
+                error_reporting(1);
+                ini_set('display_errors', '1');
+                break;
+            case 'staging':
+            case 'production':
+                ini_set('display_errors', '0');
+                error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT & ~E_USER_NOTICE & ~E_USER_DEPRECATED);
+                break;
         }
     }
 

@@ -25,7 +25,7 @@ class Middleware
             return self::$loadedMiddleware[$middleware];
         }
 
-        $target = app_path('Middlewares/' . $middleware . '.php');
+        $target = app_path('Http/Middleware/' . $middleware . '.php');
 
         if (file_exists($target)) {
             require_once($target);
@@ -41,7 +41,7 @@ class Middleware
             return $middlewareInstance;
         }
 
-        show_error('Unable to find <strong>' . $middleware . '.php</strong> in your application/middleware folder');
+        show_error('Unable to find <strong>' . $middleware . '.php</strong> in your app/Http/Middleware folder');
     }
 
     /**
@@ -83,8 +83,8 @@ class Middleware
 
             return;
         } elseif (is_string($middleware)) {
-            if (isset(\App\Kernel::$routeMiddleware[$middleware])) {
-                $middleware = new \App\Kernel::$routeMiddleware[$middleware]();
+            if (isset(\App\Http\Kernel::$routeMiddleware[$middleware])) {
+                $middleware = new \App\Http\Kernel::$routeMiddleware[$middleware]();
 
                 if (!$middleware instanceof MiddlewareInterface) {
                     if (method_exists($middleware, 'run')) {
@@ -94,7 +94,7 @@ class Middleware
 
                 $result = $middleware->run($args);
             } else {
-                show_error('Route middleware {' . $middleware . '} does not exist in application\Kernel.php');
+                show_error('Route middleware {' . $middleware . '} does not exist in app/Http/Kernel.php');
             }
         } else {
             $middlewareInstance = self::load($middleware);
@@ -132,8 +132,8 @@ class Middleware
         } elseif (is_string($middleware)) {
             $candidates = [$middleware];
 
-            if (isset(\App\Kernel::$routeMiddleware[$middleware])) {
-                $candidates[] = \App\Kernel::$routeMiddleware[$middleware];
+            if (isset(\App\Http\Kernel::$routeMiddleware[$middleware])) {
+                $candidates[] = \App\Http\Kernel::$routeMiddleware[$middleware];
             }
         } else {
             return false;

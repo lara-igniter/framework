@@ -87,6 +87,20 @@ class Request
     }
 
     /**
+     * Create a request from PHP global variables.
+     *
+     * @return static
+     */
+    public static function capture()
+    {
+        $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        $uri = $_SERVER['REQUEST_URI'] ?? '/';
+        $parameters = strtoupper($method) === 'GET' ? $_GET : $_POST;
+
+        return static::create($method, $uri, $parameters, $_COOKIE, $_FILES, $_SERVER);
+    }
+
+    /**
      * @return string
      */
     public function getRequestUri()

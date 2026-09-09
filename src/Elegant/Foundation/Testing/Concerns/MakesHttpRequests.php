@@ -77,7 +77,7 @@ trait MakesHttpRequests
     protected function kernel()
     {
         if (! isset($this->httpKernel) || ! $this->httpKernel instanceof Kernel) {
-            $this->httpKernel = new Kernel($this->app, $this->applicationBasePath());
+            $this->httpKernel = $this->app->make(\Elegant\Contracts\Http\Kernel::class);
         }
 
         return $this->httpKernel;

@@ -303,7 +303,7 @@ class Router extends \CI_Router {
             $method = 'index';
         }
 
-        if ( ! file_exists(app_path('Controllers/' . $this->directory.ucfirst($class) . '.php')))
+        if ( ! file_exists(app_path('Http/Controllers/' . $this->directory.ucfirst($class) . '.php')))
         {
             // This will trigger 404 later
             return;
@@ -344,9 +344,9 @@ class Router extends \CI_Router {
             $test = $this->directory
                 .ucfirst($this->translate_uri_dashes === true ? str_replace('-', '_', $segments[0]) : $segments[0]);
 
-            if ( ! file_exists(app_path('Controllers/' . $test . '.php'))
+            if ( ! file_exists(app_path('Http/Controllers/' . $test . '.php'))
                 && $directory_override === false
-                && is_dir(app_path('Controllers/'.$this->directory.$segments[0]))
+                && is_dir(app_path('Http/Controllers/'.$this->directory.$segments[0]))
             )
             {
                 $this->set_directory(array_shift($segments), true);

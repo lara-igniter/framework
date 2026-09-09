@@ -150,7 +150,7 @@ class ControllerMakeCommand extends GeneratorCommand
      */
     protected function getDefaultNamespace(string $rootNamespace): string
     {
-        return $rootNamespace . '\Controllers';
+        return $rootNamespace . '\Http\Controllers';
     }
 }
 

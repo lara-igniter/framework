@@ -121,7 +121,7 @@ class Request extends \CI_Input {
         $this->_sanitize_globals();
 
         // CSRF Protection check
-        // app/Middleware/VerifyCsrfToken.php
+        // app/Http/Middleware/VerifyCsrfToken.php
 
         log_message('info', 'Input Class Initialized');
     }

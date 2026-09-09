@@ -420,9 +420,9 @@ $e404 = false;
 $class = ucfirst($RTR->class);
 $method = $RTR->method;
 
-if (empty($class) OR ! file_exists(app_path('Controllers/'.$RTR->directory.$class.'.php')))
+if (empty($class) OR ! file_exists(app_path('Http/Controllers/'.$RTR->directory.$class.'.php')))
 {
-    // Fallback: check auto-discovered console commands (classes outside app/Controllers/)
+    // Fallback: check auto-discovered console commands (classes outside app/Http/Controllers/)
     $autoDiscovered = \App\Console\Kernel::resolveByShortName($class);
 
     if ($autoDiscovered !== null && class_exists($autoDiscovered) && method_exists($autoDiscovered, $method)) {
@@ -433,13 +433,13 @@ if (empty($class) OR ! file_exists(app_path('Controllers/'.$RTR->directory.$clas
 }
 else
 {
-//    $classNameSpace = 'App\\Controllers\\'. trim(implode('\\', array_slice(explode('/', $RTR->directory.$class), 0, 2)), '\\');
-    $classNameSpace = 'App\\Controllers\\'. str_replace('/', '\\', $RTR->directory.$class);
+//    $classNameSpace = 'App\\Http\\Controllers\\'. trim(implode('\\', array_slice(explode('/', $RTR->directory.$class), 0, 2)), '\\');
+    $classNameSpace = 'App\\Http\\Controllers\\'. str_replace('/', '\\', $RTR->directory.$class);
 
     if(class_exists($classNameSpace)) {
         $class = $classNameSpace;
     } else {
-        require_once(app_path('Controllers/'.$RTR->directory.$class.'.php'));
+        require_once(app_path('Http/Controllers/'.$RTR->directory.$class.'.php'));
     }
 
     if ( ! class_exists($class) OR ($method[0] === '_' AND $method !== '__invoke') OR method_exists('CI_Controller', $method))
@@ -489,15 +489,15 @@ if ($e404)
 
         if ( ! class_exists($error_class, false))
         {
-            if (file_exists(app_path('Controllers/'.$RTR->directory.$error_class.'.php')))
+            if (file_exists(app_path('Http/Controllers/'.$RTR->directory.$error_class.'.php')))
             {
-                require_once(app_path('Controllers/'.$RTR->directory.$error_class.'.php'));
+                require_once(app_path('Http/Controllers/'.$RTR->directory.$error_class.'.php'));
                 $e404 = ! class_exists($error_class, false);
             }
             // Were we in a directory? If so, check for a global override
-            elseif ( ! empty($RTR->directory) && file_exists(app_path('Controllers/'.$error_class.'.php')))
+            elseif ( ! empty($RTR->directory) && file_exists(app_path('Http/Controllers/'.$error_class.'.php')))
             {
-                require_once(app_path('Controllers/'.$error_class.'.php'));
+                require_once(app_path('Http/Controllers/'.$error_class.'.php'));
                 if (($e404 = ! class_exists($error_class, false)) === false)
                 {
                     $RTR->directory = '';
@@ -532,6 +532,15 @@ if ($method !== '_remap')
     $params = array_slice($URI->rsegments, 2);
 }
 
+if (! isset($params)) {
+    $params = [];
+}
+
+$GLOBALS['params'] =& $params;
+$GLOBALS['URI'] =& $URI;
+$GLOBALS['class'] =& $class;
+$GLOBALS['method'] =& $method;
+
 /*
  * ------------------------------------------------------
  *  Is there a "pre_controller" hook?
@@ -555,9 +564,9 @@ if (\Elegant\Support\Str::startsWith($class, 'App\\') || str_contains($class, '\
     }
 } else {
     if (is_cli() && $class === 'MyCliController') {
-        $classNameSpace = "App\Controllers\\Commands\\{$class}";
+        $classNameSpace = "App\Http\Controllers\\Commands\\{$class}";
     } else {
-        $classNameSpace = "App\Controllers\\{$class}";
+        $classNameSpace = "App\Http\Controllers\\{$class}";
     }
 
     if (class_exists($classNameSpace)) {

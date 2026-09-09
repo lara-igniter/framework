@@ -144,7 +144,7 @@ abstract class TestCase extends BaseTestCase
     protected function refreshApplication(): void
     {
         $this->app = $this->createApplication();
-        $this->httpKernel = new \Elegant\Foundation\Http\Kernel($this->app, $this->applicationBasePath());
+        $this->httpKernel = $this->app->make(\Elegant\Contracts\Http\Kernel::class);
         $this->httpKernel->bootstrap();
         $this->ensureCodeIgniterStubs();
     }

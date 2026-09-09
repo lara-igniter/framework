@@ -65,7 +65,7 @@ class MiddlewareMakeCommand extends GeneratorCommand
      */
     protected function getDefaultNamespace(string $rootNamespace): string
     {
-        return $rootNamespace . '\Middleware';
+        return $rootNamespace . '\Http\Middleware';
     }
 }
 

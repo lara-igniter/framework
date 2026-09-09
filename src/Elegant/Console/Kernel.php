@@ -12,11 +12,11 @@ use RuntimeException;
 class Kernel implements KernelContract
 {
     /**
-     * The path to the application's front controller.
+     * The application instance.
      *
-     * @var string
+     * @var \Elegant\Foundation\Application|null
      */
-    protected string $entryPoint = 'public/index.php';
+    protected ?Application $app;
 
     /**
      * The framework's Command-based CLI command names.
@@ -40,6 +40,16 @@ class Kernel implements KernelContract
      * @var array<string, class-string>
      */
     protected static array $discovered = [];
+
+    /**
+     * Create a new console kernel instance.
+     *
+     * @param \Elegant\Foundation\Application|null $app
+     */
+    public function __construct(?Application $app = null)
+    {
+        $this->app = $app;
+    }
 
     /**
      * Handle an incoming CLI command.
@@ -102,13 +112,49 @@ class Kernel implements KernelContract
      */
     public function bootstrap(): void
     {
-        if (!file_exists($this->entryPoint)) {
-            throw new RuntimeException(
-                sprintf('Application entry point [%s] not found.', $this->entryPoint)
-            );
+        $httpKernel = $this->httpKernel();
+        $httpKernel->bootstrap();
+
+        $basePath = $this->resolveBasePath();
+        $start = $httpKernel->startScriptPath();
+
+        if (! is_file($start)) {
+            throw new RuntimeException(sprintf('Application start script [%s] not found.', $start));
         }
 
-        require $this->entryPoint;
+        $previous = getcwd();
+        chdir($basePath . DIRECTORY_SEPARATOR . 'public');
+        require $start;
+
+        if ($previous) {
+            chdir($previous);
+        }
+    }
+
+    /**
+     * @return \Elegant\Foundation\Http\Kernel
+     */
+    protected function httpKernel()
+    {
+        if ($this->app) {
+            return $this->app->make(\Elegant\Contracts\Http\Kernel::class);
+        }
+
+        $basePath = $this->resolveBasePath();
+
+        return new \Elegant\Foundation\Http\Kernel(new Application($basePath), $basePath);
+    }
+
+    /**
+     * @return string
+     */
+    protected function resolveBasePath(): string
+    {
+        if ($this->app) {
+            return $this->app->basePath();
+        }
+
+        return getcwd() ?: dirname(__DIR__, 4);
     }
 
     /**

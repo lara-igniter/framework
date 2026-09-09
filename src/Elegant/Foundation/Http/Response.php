@@ -57,4 +57,24 @@ class Response
     {
         return $this->headers;
     }
+
+    /**
+     * Send the response to the browser.
+     *
+     * @return $this
+     */
+    public function send()
+    {
+        if (! headers_sent()) {
+            http_response_code($this->status);
+
+            foreach ($this->headers as $name => $value) {
+                header($name . ': ' . $value, false);
+            }
+        }
+
+        echo $this->content;
+
+        return $this;
+    }
 }

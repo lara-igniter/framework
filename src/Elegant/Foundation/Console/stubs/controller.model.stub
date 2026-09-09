@@ -2,9 +2,9 @@
 
 namespace {{ namespace }};
 
-use App\Controllers\Controller;
+use App\Http\Controllers\Controller;
 use App\Repositories\BaseRepository as Repository;
-use App\Requests\{{ requestNamespace }};
+use App\Http\Requests\{{ requestNamespace }};
 use {{ namespacedModel }};
 
 class {{ class }} extends Controller

@@ -34,13 +34,13 @@ class RouteServiceProvider implements PreSystem, PreController, PostControllerCo
             mkdir(base_path('routes'));
         }
 
-        if (!file_exists(app_path('Middleware'))) {
-            mkdir(app_path('Middleware'));
+        if (!file_exists(app_path('Http/Middleware'))) {
+            mkdir(app_path('Http/Middleware'), 0777, true);
         }
 
         if ($isWeb) {
             $preSystemMiddlewares = [];
-            foreach (\App\Kernel::$middlewareGroups['web'] as $web) {
+            foreach (\App\Http\Kernel::$middlewareGroups['web'] as $web) {
                 $preSystemMiddlewares[] = self::prepareMiddleware($web);
             }
 
@@ -55,7 +55,7 @@ class RouteServiceProvider implements PreSystem, PreController, PostControllerCo
 
         if ($isAjax || $isWeb) {
             $preSystemApiMiddlewares = [];
-            foreach (\App\Kernel::$middlewareGroups['api'] as $api) {
+            foreach (\App\Http\Kernel::$middlewareGroups['api'] as $api) {
                 $preSystemApiMiddlewares[] = self::prepareMiddleware($api);
             }
 
@@ -157,7 +157,7 @@ class RouteServiceProvider implements PreSystem, PreController, PostControllerCo
                 $dir = $route->getNamespace();
                 [$_class, $_method] = explode('@', $route->getAction());
 
-                $_controller = app_path('Controllers/'. (!empty($dir) ? $dir . '/' : '') . $_class . '.php');
+                $_controller = app_path('Http/Controllers/'. (!empty($dir) ? $dir . '/' : '') . $_class . '.php');
 
                 if (file_exists($_controller)) {
                     require_once $_controller;
@@ -176,6 +176,9 @@ class RouteServiceProvider implements PreSystem, PreController, PostControllerCo
         }
 
         if (!$route->isCli) {
+            if ($URI === null && function_exists('load_class')) {
+                $URI =& load_class('URI', 'core');
+            }
             $params_result = [];
 
             $sCount = 0;
@@ -222,7 +225,7 @@ class RouteServiceProvider implements PreSystem, PreController, PostControllerCo
             $class = Route::DEFAULT_CONTROLLER;
 
             if (!class_exists($class)) {
-                require_once app_path('/Controllers/' . Route::DEFAULT_CONTROLLER . '.php');
+                require_once app_path('/Http/Controllers/' . Route::DEFAULT_CONTROLLER . '.php');
             }
 
             $method = 'index';
@@ -296,10 +299,10 @@ class RouteServiceProvider implements PreSystem, PreController, PostControllerCo
         if (class_exists($middleware)) {
             return new $middleware();
         } elseif (is_string($middleware)) {
-            if (isset(\App\Kernel::$routeMiddleware[$middleware])) {
-                return new \App\Kernel::$routeMiddleware[$middleware]();
+            if (isset(\App\Http\Kernel::$routeMiddleware[$middleware])) {
+                return new \App\Http\Kernel::$routeMiddleware[$middleware]();
             } else {
-                show_error('Route middleware {' . $middleware . '} does not exist in application\Kernel.php');
+                show_error('Route middleware {' . $middleware . '} does not exist in app/Http/Kernel.php');
             }
         } else {
             show_error('Route middleware must be a string or a new instance');

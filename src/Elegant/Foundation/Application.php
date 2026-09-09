@@ -2,6 +2,7 @@
 
 namespace Elegant\Foundation;
 
+use Closure;
 use Elegant\Contracts\Foundation\Application as ApplicationContract;
 use Elegant\Foundation\Bootstrap\LoadEnvironmentVariables;
 
@@ -12,7 +13,7 @@ class Application implements ApplicationContract
      *
      * @var string
      */
-    const VERSION = '1.67.3';
+    const VERSION = '1.68.0';
 
     /**
      * The base path for the Laraigniter installation.
@@ -34,6 +35,20 @@ class Application implements ApplicationContract
      * @var string
      */
     protected $environmentFile = '.env';
+
+    /**
+     * The container's shared instances.
+     *
+     * @var array<string, mixed>
+     */
+    protected array $instances = [];
+
+    /**
+     * The container's bindings.
+     *
+     * @var array<string, \Closure|string>
+     */
+    protected array $bindings = [];
 
     public function __construct($basePath = null)
     {
@@ -65,6 +80,68 @@ class Application implements ApplicationContract
         $this->basePath = rtrim($basePath, '\/');
 
         return $this;
+    }
+
+    /**
+     * Get the base path of the Laraigniter installation.
+     *
+     * @param string $path
+     * @return string
+     */
+    public function basePath(string $path = ''): string
+    {
+        return $this->basePath.($path !== '' ? DIRECTORY_SEPARATOR.ltrim($path, DIRECTORY_SEPARATOR) : '');
+    }
+
+    /**
+     * Register a shared binding in the container.
+     *
+     * @param string $abstract
+     * @param \Closure|string|null $concrete
+     * @return void
+     */
+    public function singleton($abstract, $concrete = null): void
+    {
+        $this->bindings[$abstract] = $concrete ?? $abstract;
+    }
+
+    /**
+     * Register an existing instance as shared in the container.
+     *
+     * @param string $abstract
+     * @param mixed $instance
+     * @return mixed
+     */
+    public function instance($abstract, $instance)
+    {
+        $this->instances[$abstract] = $instance;
+
+        return $instance;
+    }
+
+    /**
+     * Resolve the given type from the container.
+     *
+     * @param string $abstract
+     * @return mixed
+     */
+    public function make($abstract)
+    {
+        if (isset($this->instances[$abstract])) {
+            return $this->instances[$abstract];
+        }
+
+        $concrete = $this->bindings[$abstract] ?? $abstract;
+
+        if ($concrete instanceof Closure) {
+            $object = $concrete($this);
+        } elseif (is_object($concrete)) {
+            $object = $concrete;
+        } else {
+            $object = new $concrete($this);
+        }
+
+        return $this->instances[$abstract] = $object;
     }
 
     /**
