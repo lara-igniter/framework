@@ -9,7 +9,6 @@ use Elegant\Foundation\Exceptions\Handler;
 
 spl_autoload_register(static function ($class) {
     $aliases = [
-        'App\\Core\\MY_Model' => \Elegant\Database\Model\Model::class,
         'MY_Model' => \Elegant\Database\Model\Model::class,
         'MY_Input' => \Elegant\Http\Request::class,
         'MY_Config' => \Elegant\Config\Repository::class,
@@ -18,6 +17,7 @@ spl_autoload_register(static function ($class) {
         'MY_Lang' => \Elegant\Translation\Translator::class,
         'MY_Hooks' => \Elegant\Foundation\Http\Hooks::class,
         'MY_Exceptions' => \Elegant\Foundation\Exceptions\Displayer::class,
+        'MY_Log' => \Elegant\Log\Logger::class,
         'MY_Upload' => \Elegant\Http\File\Upload::class,
         'MY_Form_validation' => \Elegant\Validation\Validator::class,
         'MY_Session' => \Elegant\Session\Store::class,
@@ -37,6 +37,7 @@ spl_autoload_register(static function ($class) {
         'MY_Lang' => ['CI_Lang', 'core/Lang.php'],
         'MY_Hooks' => ['CI_Hooks', 'core/Hooks.php'],
         'MY_Exceptions' => ['CI_Exceptions', 'core/Exceptions.php'],
+        'MY_Log' => ['CI_Log', 'core/Log.php'],
         'MY_Upload' => ['CI_Upload', 'libraries/Upload.php'],
         'MY_Form_validation' => ['CI_Form_validation', 'libraries/Form_validation.php'],
         'MY_Session' => ['CI_Session', 'libraries/Session/Session.php'],
@@ -87,6 +88,7 @@ if (! function_exists('load_class')) {
             'Lang' => \Elegant\Translation\Translator::class,
             'Loader' => \Elegant\Foundation\Loader::class,
             'Exceptions' => \Elegant\Foundation\Exceptions\Displayer::class,
+            'Log' => \Elegant\Log\Logger::class,
         ];
 
         $name = false;
