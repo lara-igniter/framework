@@ -59,8 +59,8 @@ class DownCommand extends Command
             'refresh' => $this->option('refresh'),
             'secret' => $secret,
             'status' => (int)($this->option('status') ?: 503),
-            'template' => '503',
-        ], JSON_PRETTY_PRINT));
+            'template' => $this->prerenderTemplate(),
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 
         $stub = base_path('stubs/maintenance-mode.stub');
 
@@ -75,6 +75,23 @@ class DownCommand extends Command
 
         if (!is_null($secret)) {
             $this->info('You may bypass maintenance mode via [' . config_item('base_url') . '?secret=' . $secret . ']');
+        }
+    }
+
+    /**
+     * Prerender the 503 view so maintenance.php can echo it before Composer loads.
+     *
+     * @return string
+     */
+    protected function prerenderTemplate(): string
+    {
+        try {
+            return app('view')->make('errors.503', [
+                'heading' => '503 Service Unavailable',
+                'message' => 'Service Unavailable',
+            ])->render();
+        } catch (\Throwable $e) {
+            return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>503 Service Unavailable</title></head><body><h1>503 Service Unavailable</h1><p>Service Unavailable</p></body></html>';
         }
     }
 }

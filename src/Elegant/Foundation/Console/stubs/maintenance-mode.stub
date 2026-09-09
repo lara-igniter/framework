@@ -86,6 +86,6 @@ if (isset($data['refresh'])) {
     header('Refresh: '.$data['refresh']);
 }
 
-handle_exception((string) $data['template'] ?? '503', (int) $data['status'] ?? 503);
+echo $data['template'];
 
 exit;
