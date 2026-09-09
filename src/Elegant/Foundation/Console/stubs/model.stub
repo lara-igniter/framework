@@ -2,11 +2,10 @@
 
 namespace App\Models;
 
-use App\Core\MY_Model;
-use App\Traits\Model\HasFactory;
-use App\Traits\Model\SoftDeletes;
+use Elegant\Database\Model\Factories\HasFactory;
+use Elegant\Database\Model\Model;
 
-class {{ class }} extends MY_Model
+class {{ class }} extends Model
 {
     use HasFactory;
 

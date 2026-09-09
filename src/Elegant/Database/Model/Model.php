@@ -1676,7 +1676,7 @@ abstract class Model extends \CI_Model
      * The model instance ($this) is always passed as the first argument so
      * scopes can be written in the same Laravel-style convention:
      *
-     *   public function scopeActive(MY_Model $query): Model
+     *   public function scopeActive(Model $query): Model
      *   {
      *       return $query->where('active', 1);
      *   }
@@ -2075,8 +2075,4 @@ abstract class Model extends \CI_Model
 
 if (! class_exists('MY_Model', false)) {
     class_alias(Model::class, 'MY_Model');
-}
-
-if (! class_exists('App\\Core\\MY_Model', false)) {
-    class_alias(Model::class, 'App\\Core\\MY_Model');
 }
