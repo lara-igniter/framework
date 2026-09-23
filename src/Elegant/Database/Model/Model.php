@@ -3,6 +3,7 @@
 namespace Elegant\Database\Model;
 
 use BadMethodCallException;
+use Elegant\Database\QueryException;
 use Elegant\Foundation\Exceptions\MassAssignmentException;
 use Elegant\Pagination\Cursor;
 use Elegant\Pagination\CursorPaginator;
@@ -390,7 +391,10 @@ abstract class Model extends \CI_Model
             }
         }
 
-        return $this->database->insert_batch($this->table, $values, null, $batch);
+        $batchResult = $this->database->insert_batch($this->table, $values, null, $batch);
+        $this->assertQuerySucceeded($batchResult !== false, 'insert batch');
+
+        return true;
     }
 
     /**
@@ -442,11 +446,26 @@ abstract class Model extends \CI_Model
 
         $attributes = static::creating($attributes);
 
-        if (!$this->database->insert($this->table, $attributes)) {
-            return 0;
-        }
+        $this->assertQuerySucceeded(
+            $this->database->insert($this->table, $attributes),
+            'insert'
+        );
 
         return $this->database->insert_id();
+    }
+
+    /**
+     * @param bool $result
+     * @param string $operation
+     * @return void
+     */
+    protected function assertQuerySucceeded(bool $result, string $operation): void
+    {
+        if ($result) {
+            return;
+        }
+
+        throw new QueryException(sprintf('Failed to %s on table [%s].', $operation, $this->table));
     }
 
     /**
@@ -711,9 +730,10 @@ abstract class Model extends \CI_Model
 
         $this->updateWhere($attributes, $where);
 
-        if (!$this->database->update($this->table, $attributes)) {
-            return 0;
-        }
+        $this->assertQuerySucceeded(
+            $this->database->update($this->table, $attributes),
+            'update'
+        );
 
         return $this->database->affected_rows();
     }
@@ -754,7 +774,10 @@ abstract class Model extends \CI_Model
                 foreach ($to_update as &$row) {
                     $row[$this->deleted_at_column] = date($this->getDateFormat());
                 }
-                $affected_rows = $this->database->update_batch($this->table, $to_update, $this->primaryKey);
+                $batchResult = $this->database->update_batch($this->table, $to_update, $this->primaryKey);
+                $this->assertQuerySucceeded($batchResult !== false, 'soft delete');
+
+                $affected_rows = (int) $batchResult;
 
                 /**
                  * Add $affected_row_ids variable return when
@@ -778,24 +801,23 @@ abstract class Model extends \CI_Model
             //return $affected_rows;
             return $affected_row_ids;
         } else {
-            if ($this->database->delete($this->table)) {
-                $affected_rows = $this->database->affected_rows();
-                if (!empty($this->deleted)) {
-                    $to_update['affected_rows'] = $affected_rows;
-                    $to_update = static::deleted($to_update);
-                    $affected_rows = $to_update;
-                }
+            $this->assertQuerySucceeded($this->database->delete($this->table), 'delete');
 
-                /**
-                 * Fix issue #227
-                 * https://github.com/avenirer/CodeIgniter-MY_Model/issues/227
-                 */
-                $this->database->reset_query();
-
-                return $affected_rows;
+            $affected_rows = $this->database->affected_rows();
+            if (!empty($this->deleted)) {
+                $to_update['affected_rows'] = $affected_rows;
+                $to_update = static::deleted($to_update);
+                $affected_rows = $to_update;
             }
+
+            /**
+             * Fix issue #227
+             * https://github.com/avenirer/CodeIgniter-MY_Model/issues/227
+             */
+            $this->database->reset_query();
+
+            return $affected_rows;
         }
-        return false;
     }
 
     /**

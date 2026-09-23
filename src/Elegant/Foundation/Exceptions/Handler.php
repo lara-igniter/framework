@@ -105,6 +105,28 @@ class Handler implements ExceptionHandlerContract
      */
     public static function resolve(): ?Handler
     {
+        // Prefer the handler bound on the current HTTP Kernel. A static cache
+        // survives between PHP-FPM requests and would report through a dead container.
+        if (class_exists(\Elegant\Foundation\Http\Kernel::class)) {
+            $kernel = \Elegant\Foundation\Http\Kernel::getInstance();
+
+            if ($kernel !== null) {
+                try {
+                    $app = $kernel->getApplication();
+
+                    if (is_object($app) && method_exists($app, 'make')) {
+                        $handler = $app->make(ExceptionHandlerContract::class);
+
+                        if ($handler instanceof self) {
+                            return static::$resolvedInstance = $handler;
+                        }
+                    }
+                } catch (Throwable $e) {
+                    // Kernel may not be ready yet during early bootstrap.
+                }
+            }
+        }
+
         if (static::$resolvedInstance instanceof self) {
             return static::$resolvedInstance;
         }
@@ -896,7 +918,7 @@ class Handler implements ExceptionHandlerContract
             <h1>{$title}</h1>
             <p>{$message}</p>" .
             ($this->shouldDisplayDebugInfo() ? "<div class=\"trace\">{$e->getTraceAsString()}</div>" : '') .
-        '</div>
+            '</div>
     </body>
 </html>';
     }
@@ -1391,13 +1413,13 @@ class Handler implements ExceptionHandlerContract
         $message = $e->getMessage();
 
         return strpos($message, 'Unable to locate the model') !== false ||
-               strpos($message, 'Unable to load the requested class') !== false ||
-               strpos($message, 'The configuration file') !== false ||
-               strpos($message, 'Unable to connect to your database server') !== false ||
-               strpos($message, '404 Page Not Found') !== false ||
-               strpos($message, 'The page you requested was not found') !== false ||
-               (class_exists('CI_DB_Exception') && $e instanceof \CI_DB_Exception) ||
-               ($e instanceof \Exception && strpos($e->getFile(), 'system/core/') !== false);
+            strpos($message, 'Unable to load the requested class') !== false ||
+            strpos($message, 'The configuration file') !== false ||
+            strpos($message, 'Unable to connect to your database server') !== false ||
+            strpos($message, '404 Page Not Found') !== false ||
+            strpos($message, 'The page you requested was not found') !== false ||
+            (class_exists('CI_DB_Exception') && $e instanceof \CI_DB_Exception) ||
+            ($e instanceof \Exception && strpos($e->getFile(), 'system/core/') !== false);
     }
 
     /**
