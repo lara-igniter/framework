@@ -28,6 +28,20 @@ class Translator extends \CI_Lang
     protected array $loadedLanguageLines = [];
 
     /**
+     * Map translation keys to the language file prefix that defined them.
+     *
+     * @var array<string, string>
+     */
+    protected array $keyPrefixes = [];
+
+    /**
+     * Prefix of the most recently loaded language file.
+     *
+     * @var string|null
+     */
+    protected ?string $lastLoadedFilePrefix = null;
+
+    /**
      * Fallback language
      *
      * @var    string
@@ -92,6 +106,7 @@ class Translator extends \CI_Lang
                 $this->language,
                 $this->loadedLanguageLines[$languageCacheKey] ?? []
             );
+            $this->rememberLoadedFilePrefix($langfile);
 
             return;
         }
@@ -151,6 +166,7 @@ class Translator extends \CI_Lang
         $this->is_loaded[$langfile] = $idiom;
         $this->loadedLanguageLines[$languageCacheKey] = $lang;
         $this->language = array_merge($this->language, $lang);
+        $this->rememberLoadedFilePrefix($langfile, $lang);
 
         log_message('info', 'Language file loaded: language/' . $idiom . '/' . $langfile);
         return true;
@@ -173,10 +189,43 @@ class Translator extends \CI_Lang
 
         // Because killer robots like unicorns!
         if ($value === false && $log_errors === true) {
-            log_message('error', 'Could not find the language line "' . $line . '"');
+            log_message('error', 'Could not find the language line "' . $this->formatMissingLineKey($line) . '"');
         }
 
         return $value;
+    }
+
+    /**
+     * Build a fully qualified language key for missing-line logs.
+     */
+    protected function formatMissingLineKey(string $line): string
+    {
+        $prefix = $this->keyPrefixes[$line] ?? $this->lastLoadedFilePrefix;
+
+        if ($prefix === null || $prefix === '') {
+            return $line;
+        }
+
+        return $prefix . '.' . $line;
+    }
+
+    /**
+     * Remember which language file prefix owns the loaded lines.
+     *
+     * @param array<string, string>|null $lines
+     */
+    protected function rememberLoadedFilePrefix(string $langfile, ?array $lines = null): void
+    {
+        $prefix = preg_replace('/_lang\.php$/', '', $langfile) ?? $langfile;
+        $this->lastLoadedFilePrefix = $prefix;
+
+        if ($lines === null) {
+            $lines = $this->loadedLanguageLines[($this->is_loaded[$langfile] ?? '') . '/' . $langfile] ?? [];
+        }
+
+        foreach (array_keys($lines) as $key) {
+            $this->keyPrefixes[$key] = $prefix;
+        }
     }
 
 }
