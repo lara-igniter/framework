@@ -68,8 +68,13 @@ class Response
         if (! headers_sent()) {
             http_response_code($this->status);
 
-            foreach ($this->headers as $name => $value) {
-                header($name . ': ' . $value, false);
+            // CI _display() already queued headers via header() while the Kernel
+            // output buffer captured the body. Replaying them here duplicates every
+            // response header (Set-Cookie, Cache-Control, phpdebugbar-id, etc.).
+            if (headers_list() === []) {
+                foreach ($this->headers as $name => $value) {
+                    header($name . ': ' . $value, false);
+                }
             }
         }
 
