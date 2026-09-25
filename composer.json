@@ -28,7 +28,6 @@
         "league/flysystem": "^1.1",
         "league/flysystem-cached-adapter": "^1.0",
         "league/flysystem-sftp": "^1.0",
-        "maximebf/debugbar": "^1.17.2",
         "nesbot/carbon": "^2.68",
         "ramsey/uuid": "^4.0",
         "swiftmailer/swiftmailer": "^6.3",
@@ -106,6 +105,13 @@
         "sort-packages": true,
         "allow-plugins": {
             "composer/package-versions-deprecated": true
+        },
+        "audit": {
+            "ignore": {
+                "PKSA-9q1p-3s19-bp1q": "No patched 1.x; 2.9.1+ needs PHP 8.1+",
+                "PKSA-t21r-vtr5-3mdz": "No patched 1.x; 2.9.1+ needs PHP 8.1+",
+                "PKSA-fndg-qryc-dyc9": "No patched 1.x; 2.9.1+ needs PHP 8.1+"
+            }
         }
     },
     "minimum-stability": "dev",
