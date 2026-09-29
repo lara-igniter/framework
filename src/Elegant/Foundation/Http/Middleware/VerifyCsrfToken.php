@@ -37,6 +37,7 @@ class VerifyCsrfToken implements Middleware
     {
         if (
             $this->isReading($request) ||
+            $this->runningUnitTests() ||
             $this->runningInConsole() ||
             $this->isGloballyDisabled() ||
             $this->inExceptArray($request)
@@ -61,6 +62,29 @@ class VerifyCsrfToken implements Middleware
     protected function isReading(Request $request): bool
     {
         return in_array($request->method(true), ['HEAD', 'GET', 'OPTIONS']);
+    }
+
+    /**
+     * Determine if the application is running unit tests.
+     *
+     * PHP_SAPI is used instead of is_cli() because HTTP tests force is_cli()
+     * to false so web routes load. Matches Laravel: console SAPI + testing env.
+     *
+     * @return bool
+     */
+    protected function runningUnitTests(): bool
+    {
+        if (PHP_SAPI !== 'cli' && PHP_SAPI !== 'phpdbg') {
+            return false;
+        }
+
+        $environment = getenv('APP_ENV');
+
+        if ($environment === false || $environment === '') {
+            $environment = defined('ENVIRONMENT') ? ENVIRONMENT : '';
+        }
+
+        return $environment === 'testing';
     }
 
     /**
