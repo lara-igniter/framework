@@ -57,8 +57,9 @@ class TestCommand extends Command
         }
 
         $args = [];
-        $argv = $_SERVER['argv'] ?? [];
+        $argv = $_SERVER['_laraigniter_command_argv'] ?? $_SERVER['argv'] ?? [];
         $found = false;
+        $compact = false;
 
         foreach ($argv as $arg) {
             if (! $found) {
@@ -69,14 +70,28 @@ class TestCommand extends Command
                 continue;
             }
 
+            if ($arg === '--compact') {
+                $compact = true;
+
+                continue;
+            }
+
             $args[] = $arg;
+        }
+
+        if ($compact) {
+            putenv('ELEGANT_PRINTER_COMPACT=true');
+            $_ENV['ELEGANT_PRINTER_COMPACT'] = 'true';
+            $_SERVER['ELEGANT_PRINTER_COMPACT'] = 'true';
         }
 
         // Laravel-style colored printer (not plain --testdox), unless the caller
         // already chose another printer / format option.
         if (! $this->hasPrinterOption($args)) {
             $args[] = '--printer';
-            $args[] = \Elegant\Foundation\Testing\Printer::class;
+            $args[] = $compact
+                ? \Elegant\Foundation\Testing\CompactPrinter::class
+                : \Elegant\Foundation\Testing\Printer::class;
         }
 
         // Ensure colors even when stdout is not detected as a TTY (piped/CI).

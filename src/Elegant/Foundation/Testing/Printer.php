@@ -38,6 +38,31 @@ class Printer extends TestDoxPrinter
     private $lastMessageLines = 0;
 
     /**
+     * @var bool
+     */
+    private static $compact = false;
+
+    /**
+     * @var int
+     */
+    private $compactProcessed = 0;
+
+    /**
+     * @var int
+     */
+    private $compactSymbolsPerLine = 76;
+
+    /**
+     * @var float
+     */
+    private $startedAt = 0.0;
+
+    /**
+     * @var array<int, array>
+     */
+    private $deferredFailures = [];
+
+    /**
      * @param null|resource|string $out
      * @param int|string $numberOfColumns
      */
@@ -49,6 +74,28 @@ class Printer extends TestDoxPrinter
         $colored = new \ReflectionProperty(OutputStyle::class, 'isColored');
         $colored->setAccessible(true);
         $colored->setValue(null, $this->colors || OutputStyle::hasColorSupport(STDOUT));
+
+        if (getenv('ELEGANT_PRINTER_COMPACT') === 'true') {
+            self::$compact = true;
+        }
+
+        $this->compactSymbolsPerLine = max(10, $this->terminalColumns() - 4);
+        $this->startedAt = microtime(true);
+    }
+
+    /**
+     * Enable or inspect compact output (ticks on one line).
+     *
+     * @param bool|null $value
+     * @return bool
+     */
+    public static function compact(?bool $value = null): bool
+    {
+        if ($value !== null) {
+            self::$compact = $value;
+        }
+
+        return self::$compact;
     }
 
     /**
@@ -72,7 +119,7 @@ class Printer extends TestDoxPrinter
      */
     public function startTest(Test $test): void
     {
-        if ($test instanceof TestCase) {
+        if ($test instanceof TestCase && ! self::$compact) {
             $class = get_class($test);
 
             if ($this->bufferClass !== $class) {
@@ -99,6 +146,18 @@ class Printer extends TestDoxPrinter
      */
     protected function writeTestResult(array $prevResult, array $result): void
     {
+        if (self::$compact) {
+            $this->writeCompactSymbol($result);
+
+            if ($this->isFailureStatus($result['status'])) {
+                $this->deferredFailures[] = $result;
+            }
+
+            $this->flushStdout();
+
+            return;
+        }
+
         $this->write($this->formatTestLine($result, $this->terminalColumns()) . PHP_EOL);
         $this->printedTestsInClass++;
         $this->lastMessageLines = 0;
@@ -118,14 +177,171 @@ class Printer extends TestDoxPrinter
     }
 
     /**
+     * Print a single compact-mode status icon, wrapping at the terminal width.
+     *
+     * @param array $result
+     * @return void
+     */
+    private function writeCompactSymbol(array $result): void
+    {
+        if ($this->compactProcessed % $this->compactSymbolsPerLine === 0) {
+            $this->write(PHP_EOL . '  ');
+        }
+
+        $this->write($this->statusSymbol($result['status']));
+        $this->compactProcessed++;
+    }
+
+    /**
+     * @param int $status
+     * @return string
+     */
+    private function statusSymbol(int $status): string
+    {
+        if ($status === BaseTestRunner::STATUS_PASSED) {
+            return OutputStyle::color('✓', 'green');
+        }
+
+        if (in_array($status, [
+            BaseTestRunner::STATUS_FAILURE,
+            BaseTestRunner::STATUS_ERROR,
+        ], true)) {
+            return OutputStyle::color('⨯', 'red');
+        }
+
+        if ($status === BaseTestRunner::STATUS_SKIPPED) {
+            return OutputStyle::color('↩', 'cyan');
+        }
+
+        return OutputStyle::color('•', 'yellow');
+    }
+
+    /**
      * @param TestResult $result
      * @return void
      */
     public function printResult(TestResult $result): void
     {
         $this->write(PHP_EOL);
-        $this->printFooter($result);
+
+        if (self::$compact && $this->deferredFailures !== []) {
+            $this->writeDeferredFailures();
+            $this->write(PHP_EOL);
+        }
+
+        $this->writeRecap($result);
         $this->flushStdout();
+    }
+
+    /**
+     * Print compact-mode failures in the same layout as the verbose printer.
+     *
+     * @return void
+     */
+    private function writeDeferredFailures(): void
+    {
+        $currentClass = '';
+
+        foreach ($this->deferredFailures as $result) {
+            $class = (string) $result['className'];
+
+            if ($class !== $currentClass) {
+                $currentClass = $class;
+                $this->bufferClass = $class;
+                $this->write(PHP_EOL);
+                $this->writeClassHeader(false);
+            }
+
+            $this->write($this->formatTestLine($result, $this->terminalColumns()) . PHP_EOL);
+
+            if (! empty($result['message'])) {
+                $this->write(OutputStyle::color(rtrim((string) $result['message']), 'light_gray') . PHP_EOL);
+            }
+        }
+    }
+
+    /**
+     * Laravel / Collision recap, always printed.
+     *
+     * @param TestResult $result
+     * @return void
+     */
+    private function writeRecap(TestResult $result): void
+    {
+        $failed = $result->failureCount() + $result->errorCount();
+        $warnings = $result->warningCount();
+        $skipped = $result->skippedCount();
+        $incomplete = $result->notImplementedCount();
+        $risky = $result->riskyCount();
+        $total = count($result);
+        $passed = $total - $failed - $warnings - $skipped - $incomplete - $risky;
+
+        if ($passed < 0) {
+            $passed = 0;
+        }
+
+        $parts = [];
+
+        if ($failed > 0) {
+            $parts[] = OutputStyle::color($failed . ' failed', 'light_red');
+        }
+
+        if ($warnings > 0) {
+            $parts[] = OutputStyle::color($warnings . ($warnings === 1 ? ' warning' : ' warnings'), 'yellow');
+        }
+
+        if ($skipped > 0) {
+            $parts[] = OutputStyle::color($skipped . ' skipped', 'cyan');
+        }
+
+        if ($incomplete > 0) {
+            $parts[] = OutputStyle::color($incomplete . ' incomplete', 'yellow');
+        }
+
+        if ($risky > 0) {
+            $parts[] = OutputStyle::color($risky . ' risky', 'yellow');
+        }
+
+        if ($passed > 0 || $parts === []) {
+            $parts[] = OutputStyle::color($passed . ' passed', 'light_green');
+        }
+
+        $assertions = $this->numAssertions;
+        $duration = number_format(microtime(true) - $this->startedAt, 2, '.', '');
+        $separator = OutputStyle::color(', ', 'light_gray');
+
+        $this->write(
+            '  '
+            . OutputStyle::color('Tests:', 'light_gray')
+            . '    '
+            . implode($separator, $parts)
+            . OutputStyle::color(
+                ' (' . $assertions . ' assertion' . ($assertions === 1 ? '' : 's') . ')',
+                'light_gray'
+            )
+            . PHP_EOL
+        );
+
+        $this->write(
+            '  '
+            . OutputStyle::color('Duration:', 'light_gray')
+            . ' '
+            . $duration
+            . 's'
+            . PHP_EOL
+        );
+    }
+
+    /**
+     * @param int $status
+     * @return bool
+     */
+    private function isFailureStatus(int $status): bool
+    {
+        return in_array($status, [
+            BaseTestRunner::STATUS_FAILURE,
+            BaseTestRunner::STATUS_ERROR,
+        ], true);
     }
 
     /**
@@ -191,28 +407,12 @@ class Printer extends TestDoxPrinter
      */
     private function formatTestLine(array $result, int $columns): string
     {
-        $status = $result['status'];
-        $passed = $status === BaseTestRunner::STATUS_PASSED;
-        $failed = in_array($status, [
-            BaseTestRunner::STATUS_FAILURE,
-            BaseTestRunner::STATUS_ERROR,
-        ], true);
-
-        if ($passed) {
-            $symbol = OutputStyle::color('✓', 'green');
-        } elseif ($failed) {
-            $symbol = OutputStyle::color('⨯', 'red');
-        } elseif ($status === BaseTestRunner::STATUS_SKIPPED) {
-            $symbol = OutputStyle::color('↩', 'cyan');
-        } else {
-            $symbol = OutputStyle::color('•', 'yellow');
-        }
+        $symbol = $this->statusSymbol($result['status']);
 
         $name = (string) $result['testMethod'];
         $time = sprintf('%.2fs', $result['time']);
 
-        // "  ✓ name … time" — pad so duration sits toward the right edge.
-        $prefixLen = 4; // two spaces + symbol + space (symbol counts as 1 col)
+        $prefixLen = 4;
         $available = max(10, $columns - $prefixLen - strlen($time));
         $nameDisplay = $this->truncate($name, $available);
         $pad = max(1, $available - $this->visibleLength($nameDisplay));
