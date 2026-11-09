@@ -9,6 +9,8 @@ use Elegant\Contracts\Hook\PostController;
 use Elegant\Contracts\Hook\PreController;
 use Elegant\Contracts\Hook\PreSystem;
 use Elegant\Http\Response;
+use Elegant\Http\ResponseCapture;
+use Elegant\Http\ResponseReady;
 use Elegant\Routing\Exceptions\RouteNotFoundException;
 use Elegant\Routing\Middleware\Middleware;
 use Elegant\Routing\RouteBuilder as Route;
@@ -232,6 +234,9 @@ class RouteServiceProvider implements PreSystem, PreController, PostControllerCo
         }
     }
 
+    /**
+     * @throws ResponseReady
+     */
     public function postControllerConstructor(&$params)
     {
         // Current route configuration and dispatch
@@ -272,7 +277,13 @@ class RouteServiceProvider implements PreSystem, PreController, PostControllerCo
         }
 
         if (is_callable(app('route')->getAction())) {
-            call_user_func_array(app('route')->getAction(), (array) $params);
+            $result = call_user_func_array(app('route')->getAction(), (array) $params);
+
+            if ($result instanceof \Symfony\Component\HttpFoundation\Response) {
+                ResponseCapture::apply($result, app('output'));
+
+                throw new ResponseReady();
+            }
         }
     }
 

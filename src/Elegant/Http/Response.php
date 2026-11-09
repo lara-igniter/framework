@@ -50,11 +50,11 @@ class Response
      * @param string|null $name
      * @param array $headers
      * @param string|null $disposition
-     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     * @return \Elegant\Http\FileResponse
      */
-    public function download($file, string $name = null, array $headers = [], ?string $disposition = 'attachment'): BinaryFileResponse
+    public function download($file, string $name = null, array $headers = [], ?string $disposition = 'attachment'): FileResponse
     {
-        $response = new BinaryFileResponse($file, 200, $headers, true, $disposition);
+        $response = new FileResponse($file, 200, $headers, true, $disposition);
 
         if (!is_null($name)) {
             return $response->setContentDisposition($disposition, $name, $this->fallbackName($name));

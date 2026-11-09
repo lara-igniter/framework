@@ -5,6 +5,8 @@ namespace Elegant\Foundation\Http;
 use Elegant\Contracts\Debug\ExceptionHandler;
 use Elegant\Contracts\Http\Kernel as KernelContract;
 use Elegant\Foundation\Application;
+use Elegant\Http\ResponseCapture;
+use Elegant\Http\ResponseReady;
 use Elegant\Routing\Exceptions\RouteNotFoundException;
 use Elegant\Routing\Middleware\Middleware;
 use Elegant\Routing\RouteBuilder as Route;
@@ -225,6 +227,7 @@ class Kernel implements KernelContract
     public function handle($request)
     {
         try {
+            ResponseCapture::reset();
             $this->bootstrap();
             $this->currentRequest = $request;
             $this->applyRequestGlobals($request);
@@ -310,6 +313,10 @@ class Kernel implements KernelContract
             $this->resetUriFromGlobals();
             $this->rematchCurrentRoute();
             $this->dispatchCurrentRoute();
+        } catch (ResponseReady $ready) {
+            if (!$this->lastControllerResult instanceof SymfonyResponse) {
+                $this->lastControllerResult = ResponseCapture::response();
+            }
         } catch (Throwable $e) {
             $error = $e;
         }

@@ -133,6 +133,18 @@ class RedirectResponse extends BaseRedirectResponse
     }
 
     /**
+     * Store the redirect on CI_Output. public/index.php sends the kernel response.
+     *
+     * @return $this
+     */
+    public function send()
+    {
+        ResponseCapture::apply($this);
+
+        return $this;
+    }
+
+    /**
      * Dynamically bind flash data in the session.
      *
      * @param string $method

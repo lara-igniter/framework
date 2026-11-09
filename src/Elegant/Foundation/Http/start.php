@@ -581,14 +581,24 @@ if (\Elegant\Support\Str::startsWith($class, 'App\\') || str_contains($class, '\
  *  Is there a "post_controller_constructor" hook?
  * ------------------------------------------------------
  */
-$EXT->call_hook('post_controller_constructor');
+$response = null;
+$responseReady = false;
+
+try {
+    $EXT->call_hook('post_controller_constructor');
+} catch (\Elegant\Http\ResponseReady $ready) {
+    $responseReady = true;
+    $response = \Elegant\Http\ResponseCapture::response();
+}
 
 /*
  * ------------------------------------------------------
  *  Call the requested method
  * ------------------------------------------------------
  */
-$response = call_user_func_array([&$CI, $method], $params);
+if (!$responseReady) {
+    $response = call_user_func_array([&$CI, $method], $params);
+}
 
 /*
  * ------------------------------------------------------
@@ -601,6 +611,9 @@ if ($response instanceof \Elegant\Contracts\Support\Htmlable) {
     $OUT->set_content_type('text/html', 'utf-8');
     $OUT->set_output($response->toHtml());
 }
+
+// Returned JSON, redirects and downloads are sent once by public/index.php.
+\Elegant\Http\ResponseCapture::apply($response, $OUT);
 
 // Mark a benchmark end point
 $BM->mark('controller_execution_time_( '.$class.' / '.$method.' )_end');

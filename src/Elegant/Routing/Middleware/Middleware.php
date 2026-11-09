@@ -3,6 +3,8 @@
 namespace Elegant\Routing\Middleware;
 
 use Elegant\Foundation\Http\Kernel as HttpKernel;
+use Elegant\Http\ResponseCapture;
+use Elegant\Http\ResponseReady;
 use Elegant\Routing\Contracts\MiddlewareInterface;
 
 class Middleware
@@ -51,6 +53,7 @@ class Middleware
      * @param array $args
      *
      * @return void
+     * @throws ResponseReady
      */
     final public function run($middleware, array $args = [])
     {
@@ -102,10 +105,12 @@ class Middleware
             $result = call_user_func([$middlewareInstance, 'run'], $args);
         }
 
-        // Middleware may already have send()'d a redirect; stop the request so the
-        // controller does not keep running after fastcgi_finish_request().
+        // Stop the rest of the pipeline. start.php displays the stored response
+        // and public/index.php sends it once.
         if ($result instanceof \Symfony\Component\HttpFoundation\Response) {
-            exit;
+            ResponseCapture::apply($result);
+
+            throw new ResponseReady();
         }
     }
 

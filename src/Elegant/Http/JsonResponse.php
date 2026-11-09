@@ -172,9 +172,32 @@ class JsonResponse extends BaseJsonResponse
      */
     public function send(): JsonResponse
     {
+        if (ResponseCapture::already($this)) {
+            return $this;
+        }
+
+        ResponseCapture::mark($this);
+
         $this->response->set_status_header($this->getStatusCode());
         $this->response->set_content_type('application/json');
         $this->response->set_output($this->getContent());
+
+        foreach ($this->headers->all() as $name => $values) {
+            if (strtolower((string) $name) === 'content-type') {
+                continue;
+            }
+
+            $headerName = ucwords((string) $name, '-');
+            $replace = strcasecmp($headerName, 'Set-Cookie') !== 0;
+
+            foreach ($values as $value) {
+                if ($value === null) {
+                    continue;
+                }
+
+                $this->response->set_header($headerName . ': ' . $value, $replace);
+            }
+        }
 
         return $this;
     }
