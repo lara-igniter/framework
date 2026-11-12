@@ -32,9 +32,9 @@ class Argon2IdHasher extends ArgonHasher
     /**
      * Get the algorithm that should be used for hashing.
      *
-     * @return int
+     * @return string
      */
-    protected function algorithm(): int
+    protected function algorithm(): string
     {
         return PASSWORD_ARGON2ID;
     }
