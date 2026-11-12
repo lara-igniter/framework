@@ -3,6 +3,7 @@
 namespace Elegant\Support;
 
 use Closure;
+use Elegant\Support\Facades\Crypt;
 use Elegant\Support\Traits\Macroable;
 use Ramsey\Uuid\Codec\TimestampFirstCombCodec;
 use Ramsey\Uuid\Generator\CombGenerator;
@@ -618,7 +619,7 @@ class Str
             while (($len = strlen($string)) < $length) {
                 $size = $length - $len;
 
-                $bytes = random_bytes($size);
+                $bytes = Crypt::randomBytes($size);
 
                 $string .= substr(str_replace(['/', '+', '='], '', base64_encode($bytes)), 0, $size);
             }
