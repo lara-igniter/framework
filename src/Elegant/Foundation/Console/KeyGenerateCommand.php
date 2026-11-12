@@ -3,6 +3,7 @@
 namespace Elegant\Foundation\Console;
 
 use Elegant\Console\Command;
+use Elegant\Support\Facades\Crypt;
 
 class KeyGenerateCommand extends Command
 {
@@ -35,14 +36,7 @@ class KeyGenerateCommand extends Command
      */
     public function handle(): void
     {
-        app('load')->library('encryption');
-
-        app('encryption')->initialize([
-            'cipher' => config_item('cipher'),
-            'mode' => config_item('cipher_mode'),
-        ]);
-
-        $key = base64_encode(app('encryption')->create_key(32));
+        $key = base64_encode(Crypt::generateKey());
 
         if (config_item('env') === 'production' && !$this->option('force')) {
             $this->alert('Application In Production!');

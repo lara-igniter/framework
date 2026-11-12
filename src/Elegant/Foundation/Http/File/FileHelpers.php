@@ -2,6 +2,8 @@
 
 namespace Elegant\Foundation\Http\File;
 
+use Elegant\Support\Facades\Crypt;
+
 trait FileHelpers
 {
     /**
@@ -43,7 +45,7 @@ trait FileHelpers
             $path = rtrim($path, '/').'/';
         }
 
-        $hash = $this->hashName ?: $this->hashName = bin2hex(app('encryption')->create_key(40));
+        $hash = $this->hashName ?: $this->hashName = Crypt::randomHex(80);
 
         if ($extension = $this->guessExtension()) {
             $extension = '.'.$extension;

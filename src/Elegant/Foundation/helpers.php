@@ -138,16 +138,15 @@ if (!function_exists('base_path')) {
 
 if (!function_exists('bcrypt')) {
     /**
-     * Hash string with default ion_auth hashing method.
+     * Hash the given value against the bcrypt algorithm.
      *
-     * @param string $password
-     * @return mixed
+     * @param string $value
+     * @param  array  $options
+     * @return string
      */
-    function bcrypt(string $password)
+    function bcrypt(string $value, $options = [])
     {
-        return password_hash($password, PASSWORD_BCRYPT, [
-            'cost' => 12
-        ]);
+        return app('hash')->driver('bcrypt')->make($value, $options);
     }
 }
 
