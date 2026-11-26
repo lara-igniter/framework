@@ -13,7 +13,7 @@ class Application implements ApplicationContract
      *
      * @var string
      */
-    const VERSION = '1.72.2';
+    const VERSION = '1.73.0';
 
     /**
      * The base path for the Laraigniter installation.
@@ -117,6 +117,28 @@ class Application implements ApplicationContract
         $this->instances[$abstract] = $instance;
 
         return $instance;
+    }
+
+    /**
+     * Determine whether an instance has already been registered.
+     *
+     * @param string $abstract
+     * @return bool
+     */
+    public function hasInstance(string $abstract): bool
+    {
+        return array_key_exists($abstract, $this->instances);
+    }
+
+    /**
+     * Get an instance already registered on the container.
+     *
+     * @param string $abstract
+     * @return mixed
+     */
+    public function &registeredInstance(string $abstract)
+    {
+        return $this->instances[$abstract];
     }
 
     /**

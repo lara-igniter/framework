@@ -1,6 +1,8 @@
 <?php
 
 use Elegant\Database\Model\Factories\Factory;
+use Elegant\Foundation\Application;
+use Elegant\Foundation\Http\Kernel;
 use Elegant\Http\RedirectResponse;
 use Elegant\Routing\UrlGenerator;
 use Elegant\Support\Facades\Date;
@@ -24,6 +26,21 @@ if (!function_exists('app')) {
          */
         if (is_null($abstract)) {
             return get_instance();
+        }
+
+        /**
+         * Instances registered through the test container (swap / instance)
+         * live on the application, which is the object app() must read.
+         */
+        if (is_null($instance) && class_exists(Kernel::class, false)) {
+            $kernel = Kernel::getInstance();
+            $application = $kernel ? $kernel->getApplication() : null;
+
+            if ($application instanceof Application && $application->hasInstance($abstract)) {
+                $shared = &$application->registeredInstance($abstract);
+
+                return $shared;
+            }
         }
 
         /**
